@@ -56,11 +56,14 @@ BusManager::BusManager(std::vector<PostRequest> requests) {
 void BusManager::AddStop(const std::string &stop,
                          Coords coords) {
   constexpr double k = 3.1415926535 / 180;
-  stop_coords_.emplace(stop, Coords{coords.latitude * k, coords.longitude * k});
+  stop_info_[stop].coords = {coords.latitude * k, coords.longitude * k};
 }
 
 void BusManager::AddBus(const std::string &bus,
                         std::vector<std::string> stops) {
+  for (auto &stop : stops)
+    stop_info_[stop].buses.insert(bus);
+
   BusInfo bus_info;
   bus_info.stops = std::move(stops);
   bus_info_[bus] = bus_info;
@@ -78,11 +81,19 @@ std::optional<BusResponse> BusManager::GetBusInfo(const std::string &bus) const 
   };
 }
 
+std::optional<StopResponse> BusManager::GetStopInfo(const std::string &stop) const {
+  auto it = stop_info_.find(stop);
+  if (it == stop_info_.end())
+    return std::nullopt;
+  
+  return StopResponse{it->second.buses};
+}
+
 double BusManager::ComputeDistance(const std::vector<std::string> &stops) {
   double distance = 0;
   for (int i = 1; i < stops.size(); ++i) {
-    distance += CalculateDistance(stop_coords_[stops[i - 1]],
-                                  stop_coords_[stops[i]]);
+    distance += CalculateDistance(stop_info_[stops[i - 1]].coords,
+                                  stop_info_[stops[i]].coords);
 
   }
   return distance;

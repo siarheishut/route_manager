@@ -10,6 +10,10 @@ struct GetBusRequest {
   std::string bus;
 };
 
+struct GetStopRequest {
+  std::string stop;
+};
+
 struct PostBusRequest {
   std::string bus;
   std::vector<std::string> stops;
@@ -25,7 +29,7 @@ struct PostStopRequest {
 };
 
 using PostRequest = std::variant<PostBusRequest, PostStopRequest>;
-using GetRequest = std::variant<GetBusRequest>;
+using GetRequest = std::variant<GetBusRequest, GetStopRequest>;
 }
 
 #endif // ROOT_MANAGER_SRC_REQUEST_TYPES_H_

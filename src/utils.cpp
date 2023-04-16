@@ -17,6 +17,7 @@ std::string_view TrimEnd(std::string_view sv) {
   return sv;
 }
 
+// If empty "" delim is provided, just trims the string.
 std::string_view ReadNextToken(std::string_view &sv,
                                std::string_view delim) {
   sv = TrimStart(sv);

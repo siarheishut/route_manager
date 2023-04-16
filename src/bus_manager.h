@@ -3,6 +3,7 @@
 
 #include "request_types.h"
 
+#include <set>
 #include <string>
 #include <optional>
 #include <unordered_map>
@@ -15,11 +16,22 @@ struct BusResponse {
   double length;
 };
 
+struct StopResponse {
+  std::set<std::string> buses;
+};
+
+struct StopInfo {
+  Coords coords;
+  std::set<std::string> buses;
+};
+
 class BusManager {
  public:
   explicit BusManager(std::vector<PostRequest> requests);
 
   std::optional<BusResponse> GetBusInfo(const std::string &bus) const;
+
+  std::optional<StopResponse> GetStopInfo(const std::string &stop) const;
 
  private:
   void AddStop(const std::string &stop,
@@ -36,7 +48,7 @@ class BusManager {
   };
   double ComputeDistance(const std::vector<std::string> &stops);
 
-  std::unordered_map<std::string, Coords> stop_coords_;
+  std::unordered_map<std::string, StopInfo> stop_info_;
   std::unordered_map<std::string, BusInfo> bus_info_;
 };
 }

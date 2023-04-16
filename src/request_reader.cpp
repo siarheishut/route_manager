@@ -13,6 +13,7 @@
 
 namespace {
 std::optional<int> ToInt(std::string_view sv) {
+  sv = rm::TrimEnd(rm::TrimStart(sv));
   int ans;
   auto [ptr, ec] = std::from_chars(sv.begin(), sv.end(), ans);
   if (ec != std::errc{} || ptr != sv.end()) return std::nullopt;
@@ -29,14 +30,14 @@ std::optional<double> ToDouble(std::string_view sv) {
 }
 
 namespace rm {
-std::vector<PostRequest> ReadInputRequests(std::istream &in) {
+std::optional<std::vector<PostRequest>> ReadInputRequests(std::istream &in) {
   std::vector<PostRequest> requests;
 
   std::string line;
 
   std::getline(in, line);
   auto line_count = ToInt(line);
-  if (!line_count) return {};
+  if (!line_count) return std::nullopt;
 
   while ((*line_count)--) {
     std::getline(in, line);
@@ -56,14 +57,14 @@ std::vector<PostRequest> ReadInputRequests(std::istream &in) {
   return requests;
 }
 
-std::vector<GetRequest> ReadOutputRequests(std::istream &in) {
+std::optional<std::vector<GetRequest>> ReadOutputRequests(std::istream &in) {
   std::vector<GetRequest> requests;
 
   std::string line;
 
   std::getline(in, line);
   auto line_count = ToInt(line);
-  if (!line_count) return {};
+  if (!line_count) return std::nullopt;
 
   while ((*line_count)--) {
     std::getline(in, line);
@@ -74,6 +75,10 @@ std::vector<GetRequest> ReadOutputRequests(std::istream &in) {
     if (key == "Bus") {
       if (auto br = ParseGetBusRequest(sv))
         requests.emplace_back(std::move(*br));
+    }
+    if (key == "Stop") {
+      if (auto sr = ParseGetStopRequest(sv))
+        requests.emplace_back(std::move(*sr));
     }
   }
 
@@ -132,5 +137,11 @@ std::optional<GetBusRequest> ParseGetBusRequest(std::string_view sv) {
   std::string_view bus = ReadNextToken(sv, "");
   if (bus.empty()) return std::nullopt;
   return GetBusRequest{.bus = std::string(bus)};
+}
+
+std::optional<GetStopRequest> ParseGetStopRequest(std::string_view sv) {
+  std::string_view stop = ReadNextToken(sv, "");
+  if (stop.empty()) return std::nullopt;
+  return GetStopRequest{.stop = std::string(stop)};
 }
 }
