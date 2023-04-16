@@ -6,6 +6,14 @@
 #include <ostream>
 
 namespace rm {
+void ProcessBusRequest(const BusManager &bm,
+                       const GetBusRequest &request,
+                       std::ostream &os);
+
+void ProcessStopRequest(const BusManager &bm,
+                        const GetStopRequest &request,
+                        std::ostream &os);
+
 void ProcessRequest(const BusManager &bm,
                     const GetRequest &request,
                     std::ostream &os);
