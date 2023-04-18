@@ -8,7 +8,7 @@
 #include <variant>
 #include <vector>
 
-TEST(TestParser, TestPostBusRequest) {
+TEST(TestParseRequests, PostBusRequest) {
   using rm::PostBusRequest;
 
   struct TestCase {
@@ -144,7 +144,7 @@ TEST(TestParser, TestPostBusRequest) {
   }
 }
 
-TEST(TestParsr, TestPostStopRequest) {
+TEST(TestParseRequests, PostStopRequest) {
   using rm::PostStopRequest;
 
   struct TestCase {
@@ -239,7 +239,7 @@ TEST(TestParsr, TestPostStopRequest) {
   }
 }
 
-TEST(TestParser, TestGetBusRequest) {
+TEST(TestParseRequests, GetBusRequest) {
   using rm::GetBusRequest;
 
   struct TestCase {
@@ -275,14 +275,57 @@ TEST(TestParser, TestGetBusRequest) {
           .want = GetBusRequest{.bus = "long bus name 2"},
       },
   };
+}
+
+TEST(TestParseRequests, GetStopRequest) {
+  using rm::GetStopRequest;
+
+  struct TestCase {
+    std::string name;
+    std::string input;
+    std::optional<GetStopRequest> want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Wrong format: empty STOP_NAME",
+          .input = "",
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Short STOP_NAME",
+          .input = "stop1",
+          .want = GetStopRequest{.stop = "stop1"},
+      },
+      TestCase{
+          .name = "Extra spaces",
+          .input = "  123  ",
+          .want = GetStopRequest{.stop = "123"},
+      },
+      TestCase{
+          .name = "Long STOP_NAME",
+          .input = "long stop name 1",
+          .want = GetStopRequest{.stop = "long stop name 1"},
+      },
+      TestCase{
+          .name = "Long STOP_NAME + extra spaces",
+          .input = "  long stop name 2  ",
+          .want = GetStopRequest{.stop = "long stop name 2"},
+      },
+  };
 
   for (auto &[name, input, want] : test_cases) {
-    auto got = rm::ParseGetBusRequest(input);
+    auto got = rm::ParseGetStopRequest(input);
+    EXPECT_EQ(want, got) << name;
+  }
+
+  for (auto &[name, input, want] : test_cases) {
+    auto got = rm::ParseGetStopRequest(input);
     EXPECT_EQ(want, got) << name;
   }
 }
 
-TEST(TestReadInputRequests, TestRequests) {
+TEST(TestReadRequests, InputRequests) {
   using rm::PostStopRequest;
   using rm::PostBusRequest;
   using rm::GetBusRequest;
@@ -292,38 +335,62 @@ TEST(TestReadInputRequests, TestRequests) {
   struct TestCase {
     std::string name;
     std::string input;
-    std::vector<PostRequest> want;
+    std::optional<std::vector<PostRequest>> want;
   };
 
   std::vector<TestCase> test_cases{
       TestCase{
           .name = "empty request",
           .input = "0\n",
-          .want = {},
+          .want = {{}},
       },
       TestCase{
-          .name = "Wrong format(request_count): non-numeric symbols",
+          .name = "Wrong format(request_count): leading non-digital symbols",
           .input = "a3\n"
                    "Stop stop1: 18.407908, 23.355151\n"
                    "Bus 2: stop6 - stop7 - stop8\n"
-                   "Bus 4: stop2 > stop4 > stop7 > stop12",
-          .want = {},
+                   "Bus 4: stop2 > stop4 > stop7 > stop2",
+          .want = std::nullopt,
       },
       TestCase{
-          .name = "Wrong format(request_count): leading spaces",
-          .input = " 3\n"
+          .name = "Wrong format(request_count): following non-digital symbols",
+          .input = "12test\n"
                    "Stop stop1: 18.407908, 23.355151\n"
                    "Bus 2: stop6 - stop7 - stop8\n"
-                   "Bus 4: stop2 > stop4 > stop7 > stop12",
-          .want = {},
+                   "Bus 4: stop2 > stop4 > stop7 > stop2",
+          .want = std::nullopt,
       },
       TestCase{
-          .name = "Wrong format(request_count): following spaces",
+          .name = "Request_counter: leading spaces",
+          .input = "  3\n"
+                   "Stop stop1: 18.407908, 23.355151\n"
+                   "Bus 2: stop6 - stop7 - stop8\n"
+                   "Bus 4: stop2 > stop4 > stop7 > stop2",
+          .want = {{PostStopRequest{
+              .stop = "stop1",
+              .coords = {18.407908, 23.355151}},
+                    PostBusRequest{
+                        .bus = "2",
+                        .stops = {"stop6", "stop7", "stop8", "stop7", "stop6"}},
+                    PostBusRequest{
+                        .bus = "4",
+                        .stops = {"stop2", "stop4", "stop7", "stop2"}}}},
+      },
+      TestCase{
+          .name = "Request_counter: following spaces",
           .input = "3  \n"
                    "Stop stop1: 18.407908, 23.355151\n"
                    "Bus 2: stop6 - stop7 - stop8\n"
-                   "Bus 4: stop2 > stop4 > stop7 > stop12",
-          .want = {},
+                   "Bus 4: stop2 > stop4 > stop7 > stop2",
+          .want = {{PostStopRequest{
+              .stop = "stop1",
+              .coords = {18.407908, 23.355151}},
+                    PostBusRequest{
+                        .bus = "2",
+                        .stops = {"stop6", "stop7", "stop8", "stop7", "stop6"}},
+                    PostBusRequest{
+                        .bus = "4",
+                        .stops = {"stop2", "stop4", "stop7", "stop2"}}}},
       },
       TestCase{
           .name = "Valid requests",
@@ -336,100 +403,140 @@ TEST(TestReadInputRequests, TestRequests) {
                    "fifth\n"
                    "Bus 4: stop2 > stop4 > stop7 > stop2\n"
                    "Stop Stop2: 35.395105, 82.385629\n",
-          .want = {PostBusRequest{
+          .want = {{PostBusRequest{
               .bus = "1",
               .stops = {"stop1", "stop2", "stop3", "stop4",
                         "stop5", "stop1"}},
-                   PostBusRequest{
-                       .bus = "2",
-                       .stops = {"stop6", "stop7", "stop8", "stop7", "stop6"}},
-                   PostStopRequest{
-                       .stop = "Stop1",
-                       .coords = {87.327412, 62.912265}},
-                   PostBusRequest{
-                       .bus = "3",
-                       .stops = {"first stop", "second", "third", "forth",
-                                 "fifth", "forth", "third", "second",
-                                 "first stop"}},
-                   PostBusRequest{
-                       .bus = "4",
-                       .stops = {"stop2", "stop4", "stop7", "stop2"}},
-                   PostStopRequest{
-                       .stop = "Stop2",
-                       .coords = {35.395105, 82.385629}},
+                    PostBusRequest{
+                        .bus = "2",
+                        .stops = {"stop6", "stop7", "stop8", "stop7",
+                                  "stop6"}},
+                    PostStopRequest{
+                        .stop = "Stop1",
+                        .coords = {87.327412, 62.912265}},
+                    PostBusRequest{
+                        .bus = "3",
+                        .stops = {"first stop", "second", "third", "forth",
+                                  "fifth", "forth", "third", "second",
+                                  "first stop"}},
+                    PostBusRequest{
+                        .bus = "4",
+                        .stops = {"stop2", "stop4", "stop7", "stop2"}},
+                    PostStopRequest{
+                        .stop = "Stop2",
+                        .coords = {35.395105, 82.385629}}},
           },
       }
   };
 
-  for (auto &[name, input, want_input] : test_cases) {
-    std::vector<PostRequest> got_input;
-
+  for (auto &[name, input, want] : test_cases) {
     std::istringstream ss_input(input);
     auto got = rm::ReadInputRequests(ss_input);
-    for (auto &req : got)
+
+    if (!want) {
+      EXPECT_TRUE(!got) << name;
+      continue;
+    }
+
+    std::vector<PostRequest> got_input;
+    for (auto &req : *got)
       got_input.emplace_back(req);
 
-    EXPECT_EQ(want_input, got_input) << name;
+    EXPECT_EQ(want, got_input) << name;
   }
 }
 
-TEST(TestReadOutputRequests, TestRequests) {
+TEST(TestReadRequests, OutputRequests) {
   using rm::GetBusRequest;
+  using rm::GetStopRequest;
   using rm::GetRequest;
 
   struct TestCase {
     std::string name;
     std::string input;
-    std::vector<GetRequest> want;
+    std::optional<std::vector<GetRequest>> want;
   };
 
   std::vector<TestCase> test_cases{
       TestCase{
           .name = "empty request",
           .input = "0",
-          .want = {}
+          .want = {{}}
       },
       TestCase{
           .name = "Wrong format(request_count): non-numeric symbols",
           .input = "at2\n"
                    "Bus bus1\n"
                    "Bus bus2",
-          .want = {},
+          .want = std::nullopt,
+      },
+
+      TestCase{
+          .name = "Wrong format(request_count): leading non-digital symbols",
+          .input = "a3\n"
+                   "Bus bus1\n"
+                   "Bus bus2\n"
+                   "Bus bus3",
+          .want = std::nullopt,
       },
       TestCase{
-          .name = "Wrong format(request_count): leading spaces",
-          .input = " at2\n"
+          .name = "Wrong format(request_count): following non-digital symbols",
+          .input = "3test\n"
                    "Bus bus1\n"
-                   "Bus bus2",
-          .want = {},
+                   "Bus bus2\n"
+                   "Bus bus3",
+          .want = std::nullopt,
       },
       TestCase{
-          .name = "Wrong format(request_count): following spaces",
-          .input = "at2 \n"
+          .name = "Request_count: leading spaces",
+          .input = " 2\n"
                    "Bus bus1\n"
                    "Bus bus2",
-          .want = {},
+          .want = {{GetBusRequest{.bus = "bus1"},
+                    GetBusRequest{.bus = "bus2"}}},
+      },
+      TestCase{
+          .name = "Request_count: following spaces",
+          .input = "2 \n"
+                   "Bus bus1\n"
+                   "Bus bus2",
+          .want = {{GetBusRequest{.bus = "bus1"},
+                    GetBusRequest{.bus = "bus2"}}},
       },
       TestCase{
           .name = "Valid requests",
-          .input = "4\n"
-                   "  Bus 123  \n"
-                   "Bus    432  \n"
-                   "   Bus    234  \n"
-                   "    Bus   543",
-          .want = {GetBusRequest{.bus = "123"},
-                   GetBusRequest{.bus = "432"},
-                   GetBusRequest{.bus = "234"},
-                   GetBusRequest{.bus = "543"}},
+          .input = "8\n"
+                   "  Bus 1  \n"
+                   "Bus    2  \n"
+                   "   Bus    3  \n"
+                   "    Bus   4\n"
+                   "  Stop 1  \n"
+                   "Stop    2  \n"
+                   "   Stop    3  \n"
+                   "    Stop   4",
+          .want = {{GetBusRequest{.bus = "1"},
+                    GetBusRequest{.bus = "2"},
+                    GetBusRequest{.bus = "3"},
+                    GetBusRequest{.bus = "4"},
+                    GetStopRequest{.stop = "1"},
+                    GetStopRequest{.stop = "2"},
+                    GetStopRequest{.stop = "3"},
+                    GetStopRequest{.stop = "4"}}},
       },
   };
 
   for (auto &[name, input, want] : test_cases) {
-    std::vector<GetRequest> got_output;
 
     std::istringstream ss_output(input);
     auto got = rm::ReadOutputRequests(ss_output);
-    for (auto &req : got)
+
+    if (!want) {
+      EXPECT_TRUE(!got) << name;
+      continue;
+    }
+
+    std::vector<GetRequest> got_output;
+    for (auto &req : *got)
       got_output.emplace_back(req);
 
     EXPECT_EQ(want, got_output) << name;

@@ -18,6 +18,10 @@ bool operator==(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs) {
   return lhs.bus == rhs.bus;
 }
 
+bool operator==(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs) {
+  return lhs.stop == rhs.stop;
+}
+
 bool operator==(const rm::BusResponse &lhs, const rm::BusResponse &rhs) {
   return std::tie(lhs.stop_count, lhs.unique_stop_count, lhs.length)
       == std::tie(rhs.stop_count, rhs.unique_stop_count, rhs.length);
@@ -34,6 +38,10 @@ bool operator==(const rm::PostStopRequest &lhs,
 }
 
 bool operator!=(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs) {
   return !(lhs == rhs);
 }
 
@@ -67,6 +75,10 @@ std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr) {
 
 std::ostream &operator<<(std::ostream &out, const rm::GetBusRequest &br) {
   return out << br.bus;
+}
+
+std::ostream &operator<<(std::ostream &out, const rm::GetStopRequest &br) {
+  return out << br.stop;
 }
 
 std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br) {
