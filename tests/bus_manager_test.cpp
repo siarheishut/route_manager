@@ -4,7 +4,6 @@
 
 #include <optional>
 #include <string>
-#include <utility>
 #include <vector>
 
 TEST(TestBusManager, TestGetBusInfo) {
@@ -34,10 +33,12 @@ TEST(TestBusManager, TestGetBusInfo) {
               PostBusRequest{"Bus2",
                              {"stop4", "stop5", "stop6",
                               "stop7", "stop8", "stop4"}},
-              PostStopRequest{"stop1", {55.611087, 37.20829}},
+              PostStopRequest{"stop1", {55.611087, 37.20829},
+                              {{"stop2", 3000}}},
               PostStopRequest{"stop2", {55.595884, 37.209755}},
               PostStopRequest{"stop3", {55.632761, 37.333324}},
-              PostStopRequest{"stop4", {55.574371, 37.6517}},
+              PostStopRequest{"stop4", {55.574371, 37.6517},
+                              {{"stop5", 4000}, {"stop3", 4000}}},
               PostStopRequest{"stop5", {55.581065, 37.64839}},
               PostStopRequest{"stop6", {55.587655, 37.645687}},
               PostStopRequest{"stop7", {55.592028, 37.653656}},
@@ -46,8 +47,8 @@ TEST(TestBusManager, TestGetBusInfo) {
           .requests = {GetBusRequest{.bus = "Bus1"},
                        GetBusRequest{.bus = "Bus2"},
                        GetBusRequest{.bus = "none"}},
-          .want = {BusResponse{5, 3, 20939.5},
-                   BusResponse{6, 5, 4371.02},
+          .want = {BusResponse{5, 3, 2.35535e+04},
+                   BusResponse{6, 5, 7598.15},
                    std::nullopt},
       },
   };
@@ -59,7 +60,7 @@ TEST(TestBusManager, TestGetBusInfo) {
       auto got = bm.GetBusInfo(requests[i].bus);
 
       if (!want[i].has_value()) {
-        EXPECT_TRUE(!got.has_value());
+        EXPECT_TRUE(!got.has_value()) << name;
         continue;
       }
 
@@ -70,7 +71,7 @@ TEST(TestBusManager, TestGetBusInfo) {
       if (want[i] != std::nullopt)
         EXPECT_TRUE(CompareLength(want[i]->length, got->length, 6))
                   << std::setprecision(6) << "want: " << want[i]->length
-                  << ", got: " << got->length;
+                  << ", got: " << got->length << '\n' << name;
     }
   }
 }
@@ -130,7 +131,7 @@ TEST(TestBusManager, TestGetStopInfo) {
       auto got = bm.GetStopInfo(requests[i].stop);
 
       if (!want[i].has_value()) {
-        EXPECT_TRUE(!got.has_value());
+        EXPECT_TRUE(!got.has_value()) << name;
         continue;
       }
 

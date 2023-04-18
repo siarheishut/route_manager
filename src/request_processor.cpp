@@ -17,7 +17,8 @@ void ProcessBusRequest(const BusManager &bm,
   os << "Bus " << request.bus << ": " << resp->stop_count
      << " stops on route, " << resp->unique_stop_count
      << " unique stops, " << std::setprecision(6)
-     << resp->length << " route length\n";
+     << resp->length << " route length, " << std::setprecision(7)
+     << resp->curvature << " curvature\n";
 }
 
 void ProcessStopRequest(const BusManager &bm,

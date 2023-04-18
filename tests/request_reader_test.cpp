@@ -190,6 +190,31 @@ TEST(TestParseRequests, PostStopRequest) {
           .want = std::nullopt,
       },
       TestCase{
+          .name = "Wrong extended format - no 'm' after length",
+          .input = "stop1: 55.611087, 37.20829, 3900 to stop2",
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong extended format - no length",
+          .input = "stop1: 55.611087, 37.20829, m to stop2",
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong extended format - no 'to'",
+          .input = "stop1: 55.611087, 37.20829, 3900m  stop2",
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong extended format - incorrect preposition",
+          .input = "stop1: 55.611087, 37.20829, 3900m an stop2",
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong extended format - no STOP_NAME",
+          .input = "stop1: 55.611087, 37.20829, 3900m to ",
+          .want = std::nullopt,
+      },
+      TestCase{
           .name = "Positive coords",
           .input = "stop1: 18.407908, 23.355151",
           .want = PostStopRequest{
@@ -230,6 +255,33 @@ TEST(TestParseRequests, PostStopRequest) {
           .want = PostStopRequest{
               .stop = "stop5",
               .coords = {-57.407908, -23.355151}},
+      },
+      TestCase{
+          .name = "New format - one stop",
+          .input = "stop1: 55.611087, 37.20829, 3900m to stop2",
+          .want = PostStopRequest{
+              .stop = "stop1",
+              .coords = {55.611087, 37.20829},
+              .stops = {{"stop2", 3900}}},
+      },
+      TestCase{
+          .name = "New format - several stops",
+          .input = "stop1: -55.574371, -37.6517, 7500m to stop2, "
+                   "1800m to stop3, 2400m to stop4",
+          .want = PostStopRequest{
+              .stop = "stop1",
+              .coords = {-55.574371, -37.6517},
+              .stops = {{"stop2", 7500}, {"stop3", 1800}, {"stop4", 2400}}},
+      },
+      TestCase{
+          .name = "New format - several stops long names",
+          .input = "long stop 1: -55.574371, -37.6517, 7500m to long stop 2, "
+                   "1800m to long stop 3, 2400m to long stop 4",
+          .want = PostStopRequest{
+              .stop = "long stop 1",
+              .coords = {-55.574371, -37.6517},
+              .stops = {{"long stop 2", 7500}, {"long stop 3", 1800},
+                        {"long stop 4", 2400}}},
       },
   };
 
@@ -402,7 +454,7 @@ TEST(TestReadRequests, InputRequests) {
                    "Bus 3: first stop - second - third - forth - "
                    "fifth\n"
                    "Bus 4: stop2 > stop4 > stop7 > stop2\n"
-                   "Stop Stop2: 35.395105, 82.385629\n",
+                   "Stop Stop2: 35.395105, 82.385629, 6000000m to Stop1\n",
           .want = {{PostBusRequest{
               .bus = "1",
               .stops = {"stop1", "stop2", "stop3", "stop4",
@@ -424,7 +476,8 @@ TEST(TestReadRequests, InputRequests) {
                         .stops = {"stop2", "stop4", "stop7", "stop2"}},
                     PostStopRequest{
                         .stop = "Stop2",
-                        .coords = {35.395105, 82.385629}}},
+                        .coords = {35.395105, 82.385629},
+                        .stops = {{"stop1", 6000000}}}},
           },
       }
   };

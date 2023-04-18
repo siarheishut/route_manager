@@ -9,7 +9,6 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-#include <exception>
 
 namespace {
 std::optional<int> ToInt(std::string_view sv) {
@@ -121,15 +120,20 @@ std::optional<PostStopRequest> ParsePostStopRequest(std::string_view sv) {
   if (pos == sv.npos) return std::nullopt;
 
   auto lat = ToDouble(ReadNextToken(sv, ","));
-  auto lon = ToDouble(ReadNextToken(sv, ""));
+  auto lon = ToDouble(ReadNextToken(sv, ","));
   if (!lat || !lon) return std::nullopt;
+  sr.coords.latitude = *lat;
+  sr.coords.longitude = *lon;
 
-  try {
-    sr.coords.latitude = *lat;
-    sr.coords.longitude = *lon;
-  } catch (std::exception &ex) {
-    return std::nullopt;
+  while (!sv.empty()) {
+    auto dist = ToInt(ReadNextToken(sv, "m"));
+    if (!dist) return std::nullopt;
+    if (ReadNextToken(sv, " ") != "to") return std::nullopt;
+    auto stop_to = ReadNextToken(sv, ",");
+    if (stop_to.empty()) return std::nullopt;
+    sr.stops.emplace_back(RoadDistance{std::string(stop_to), *dist});
   }
+
   return sr;
 }
 
