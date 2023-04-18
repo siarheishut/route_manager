@@ -4,7 +4,6 @@
 
 #include <optional>
 #include <string>
-#include <utility>
 #include <vector>
 
 TEST(TestBusManager, TestGetBusInfo) {
@@ -40,7 +39,8 @@ TEST(TestBusManager, TestGetBusInfo) {
                             "stop4"}},
               PostStopRequest{
                   .stop = "stop1",
-                  .coords = {55.611087, 37.20829}},
+                  .coords = {55.611087, 37.20829},
+                  .stops = {{"stop2", 3000}}},
               PostStopRequest{
                   .stop = "stop2",
                   .coords = {55.595884, 37.209755}},
@@ -49,7 +49,8 @@ TEST(TestBusManager, TestGetBusInfo) {
                   .coords = {55.632761, 37.333324}},
               PostStopRequest{
                   .stop = "stop4",
-                  .coords = {55.574371, 37.6517}},
+                  .coords = {55.574371, 37.6517},
+                  .stops = {{"stop5", 4000}, {"stop3", 4000}}},
               PostStopRequest{
                   .stop = "stop5",
                   .coords = {55.581065, 37.64839}},
@@ -66,8 +67,8 @@ TEST(TestBusManager, TestGetBusInfo) {
           .requests = {GetBusRequest{.bus = "Bus1"},
                        GetBusRequest{.bus = "Bus2"},
                        GetBusRequest{.bus = "none"}},
-          .want = {BusResponse{5, 3, 20939.5},
-                   BusResponse{6, 5, 4371.02},
+          .want = {BusResponse{5, 3, 2.35535e+04},
+                   BusResponse{6, 5, 7598.15},
                    std::nullopt},
       },
   };
@@ -79,7 +80,7 @@ TEST(TestBusManager, TestGetBusInfo) {
       auto got = bm.GetBusInfo(requests[i].bus);
 
       if (!want[i].has_value()) {
-        EXPECT_TRUE(!got.has_value());
+        EXPECT_TRUE(!got.has_value()) << name;
         continue;
       }
 
@@ -170,7 +171,7 @@ TEST(TestBusManager, TestGetStopInfo) {
       auto got = bm.GetStopInfo(requests[i].stop);
 
       if (!want[i].has_value()) {
-        EXPECT_TRUE(!got.has_value());
+        EXPECT_TRUE(!got.has_value()) << name;
         continue;
       }
 

@@ -8,13 +8,12 @@ int main() {
   using namespace rm;
 
   auto input = ReadInputRequests(std::cin);
-  if (!input) return 0;
+  auto output = ReadOutputRequests(std::cin);
+  if (!input || !output) return -1;
 
   BusManager bm(std::move(*input));
 
-  auto output = ReadOutputRequests(std::cin);
-  if (!output) return 0;
-  for (auto &req : std::move(*output))
-    ProcessRequest(bm, req, std::cout);
+  for (auto &req : *output)
+    ProcessRequest(bm, std::move(req), std::cout);
   return 0;
 }
