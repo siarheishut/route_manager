@@ -23,9 +23,16 @@ struct Coords {
   double latitude, longitude;
 };
 
+struct RoadDistance {
+  std::string destination;
+  int distance;
+};
+
 struct PostStopRequest {
   std::string stop;
   Coords coords;
+  // Pairs of stop_to and dist from stop to stop_to.
+  std::vector<RoadDistance> stops;
 };
 
 using PostRequest = std::variant<PostBusRequest, PostStopRequest>;

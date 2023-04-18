@@ -14,6 +14,7 @@ struct BusResponse {
   int stop_count;
   int unique_stop_count;
   double length;
+  double curvature;
 };
 
 struct StopResponse {
@@ -21,6 +22,8 @@ struct StopResponse {
 };
 
 struct StopInfo {
+  // Distances to other stops.
+  std::unordered_map<std::string, int> dists;
   Coords coords;
   std::set<std::string> buses;
 };
@@ -34,19 +37,20 @@ class BusManager {
   std::optional<StopResponse> GetStopInfo(const std::string &stop) const;
 
  private:
-  void AddStop(const std::string &stop,
-               Coords coords);
+  void AddStop(const std::string &stop, Coords coords,
+               std::vector<RoadDistance> stops);
 
-  void AddBus(const std::string &bus,
-              std::vector<std::string> stops);
+  void AddBus(std::string bus, std::vector<std::string> stops);
 
  private:
   struct BusInfo {
     std::vector<std::string> stops;
     int unique_stop_count;
     double distance;
+    double curvature;
   };
-  double ComputeDistance(const std::vector<std::string> &stops);
+  double ComputeGeoDistance(const std::vector<std::string> &stops) const;
+  double ComputeRoadDistance(const std::vector<std::string> &stops) const;
 
   std::unordered_map<std::string, StopInfo> stop_info_;
   std::unordered_map<std::string, BusInfo> bus_info_;

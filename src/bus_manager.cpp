@@ -39,34 +39,47 @@ int ComputeUniqueCount(std::vector<std::string> stops) {
 namespace rm {
 BusManager::BusManager(std::vector<PostRequest> requests) {
   for (auto &request : requests) {
-    if (auto ptr_b = std::get_if<PostBusRequest>(&request)) {
-      AddBus(ptr_b->bus, ptr_b->stops);
-    } else if (auto ptr_s = std::get_if<PostStopRequest>(&request)) {
-      AddStop(ptr_s->stop,
-              ptr_s->coords);
+    if (std::holds_alternative<PostBusRequest>(request)) {
+      auto &bus = std::get<PostBusRequest>(request);
+      AddBus(std::move(bus.bus), std::move(bus.stops));
+    } else if (std::holds_alternative<PostStopRequest>(request)) {
+      auto &stop = std::get<PostStopRequest>(request);
+      AddStop(stop.stop,
+              stop.coords,
+              stop.stops);
     }
   }
 
   for (auto &[bus, bus_info] : bus_info_) {
-    bus_info.distance = ComputeDistance(bus_info.stops);
+    double geo_dist = ComputeGeoDistance(bus_info.stops);
+    bus_info.distance = ComputeRoadDistance(bus_info.stops);
     bus_info.unique_stop_count = ComputeUniqueCount(bus_info.stops);
+    bus_info.curvature = bus_info.distance / geo_dist;
   }
 }
 
-void BusManager::AddStop(const std::string &stop,
-                         Coords coords) {
+void BusManager::AddStop(const std::string &stop, Coords coords,
+                         std::vector<RoadDistance> stops) {
   constexpr double k = 3.1415926535 / 180;
-  stop_info_[stop].coords = {coords.latitude * k, coords.longitude * k};
+  auto &info = stop_info_[stop];
+  info.coords = {coords.latitude * k, coords.longitude * k};
+  for (auto &[stop_to, dist] : stops) {
+    auto &stop_to_dists = stop_info_[stop_to].dists;
+    if (auto it = stop_to_dists.find(stop); it == stop_to_dists.end()) {
+      stop_to_dists[stop] = dist;
+    }
+    info.dists[std::move(stop_to)] = dist;
+  }
 }
 
-void BusManager::AddBus(const std::string &bus,
+void BusManager::AddBus(std::string bus,
                         std::vector<std::string> stops) {
   for (auto &stop : stops)
     stop_info_[stop].buses.insert(bus);
 
   BusInfo bus_info;
   bus_info.stops = std::move(stops);
-  bus_info_[bus] = bus_info;
+  bus_info_[std::move(bus)] = bus_info;
 }
 
 std::optional<BusResponse> BusManager::GetBusInfo(const std::string &bus) const {
@@ -77,7 +90,8 @@ std::optional<BusResponse> BusManager::GetBusInfo(const std::string &bus) const 
   return BusResponse{
       .stop_count = static_cast<int>(b.stops.size()),
       .unique_stop_count = b.unique_stop_count,
-      .length = b.distance
+      .length = b.distance,
+      .curvature = b.curvature,
   };
 }
 
@@ -85,16 +99,29 @@ std::optional<StopResponse> BusManager::GetStopInfo(const std::string &stop) con
   auto it = stop_info_.find(stop);
   if (it == stop_info_.end())
     return std::nullopt;
-  
+
   return StopResponse{it->second.buses};
 }
 
-double BusManager::ComputeDistance(const std::vector<std::string> &stops) {
+double BusManager::ComputeGeoDistance(const std::vector<std::string> &stops) const {
   double distance = 0;
   for (int i = 1; i < stops.size(); ++i) {
-    distance += CalculateDistance(stop_info_[stops[i - 1]].coords,
-                                  stop_info_[stops[i]].coords);
+    distance += CalculateDistance(stop_info_.at(stops[i - 1]).coords,
+                                  stop_info_.at(stops[i]).coords);
+  }
+  return distance;
+}
 
+double BusManager::ComputeRoadDistance(const std::vector<std::string> &stops) const {
+  double distance = 0;
+  for (int i = 1; i < stops.size(); ++i) {
+    auto &dists = stop_info_.at(stops[i - 1]).dists;
+
+    if (auto found = dists.find(stops[i]); found != dists.end())
+      distance += found->second;
+    else
+      distance += CalculateDistance(stop_info_.at(stops[i - 1]).coords,
+                                    stop_info_.at(stops[i]).coords);
   }
   return distance;
 }
