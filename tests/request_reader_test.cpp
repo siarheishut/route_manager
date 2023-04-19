@@ -72,8 +72,7 @@ TEST(TestParseRequests, PostBusRequest) {
           .input = " long bus name 1: stop2 - stop3 - stop4",
           .want = PostBusRequest{
               .bus = "long bus name 1",
-              .stops = {"stop2", "stop3", "stop4", "stop3",
-                        "stop2"}},
+              .stops = {"stop2", "stop3", "stop4", "stop3", "stop2"}},
       },
       TestCase{
           .name = "Short BUS_NAME(circular)",
@@ -87,10 +86,8 @@ TEST(TestParseRequests, PostBusRequest) {
           .input = " bus3: stop1 - stop1 - stop2 - stop1 - stop2 - stop3",
           .want = PostBusRequest{
               .bus = "bus3",
-              .stops = {"stop1", "stop1", "stop2", "stop1",
-                        "stop2",
-                        "stop3", "stop2", "stop1", "stop2",
-                        "stop1",
+              .stops = {"stop1", "stop1", "stop2", "stop1", "stop2",
+                        "stop3", "stop2", "stop1", "stop2", "stop1",
                         "stop1"}},
       },
       TestCase{
@@ -98,17 +95,15 @@ TEST(TestParseRequests, PostBusRequest) {
           .input = " bus4: stop1 > stop1 > stop2 > stop1 > stop2 > stop3 > stop1",
           .want = PostBusRequest{
               .bus = "bus4",
-              .stops = {"stop1", "stop1", "stop2", "stop1",
-                        "stop2",
-                        "stop3", "stop1"}},
+              .stops = {"stop1", "stop1", "stop2", "stop1", "stop2", "stop3",
+                        "stop1"}},
       },
       TestCase{
           .name = "Long STOP_NAME(non-circular)",
           .input = " bus5: long stop 1 - long stop 2 - long stop 3",
           .want = PostBusRequest{
               .bus = "bus5",
-              .stops = {"long stop 1", "long stop 2",
-                        "long stop 3",
+              .stops = {"long stop 1", "long stop 2", "long stop 3",
                         "long stop 2", "long stop 1"}},
       },
       TestCase{
@@ -116,25 +111,22 @@ TEST(TestParseRequests, PostBusRequest) {
           .input = " bus6: long stop 1 > long stop 2 > long stop 1",
           .want = PostBusRequest{
               .bus = "bus6",
-              .stops = {"long stop 1", "long stop 2",
-                        "long stop 1"}},
+              .stops = {"long stop 1", "long stop 2", "long stop 1"}},
       },
       TestCase{
           .name = "Extra spaces",
-          .input = "  b 1  :  long   stop   1  -  long stop 2   -   long stop 3  ",
+          .input = "  b 1  :  long  stop   1  -  long stop 2  -  long stop 3  ",
           .want = PostBusRequest{
               .bus = "b 1",
-              .stops = {"long   stop   1", "long stop 2",
-                        "long stop 3",
-                        "long stop 2", "long   stop   1"}},
+              .stops = {"long  stop   1", "long stop 2", "long stop 3",
+                        "long stop 2", "long  stop   1"}},
       },
       TestCase{
           .name = "No spaces",
           .input = "b2:stop3-stop2-stop1",
           .want = PostBusRequest{
               .bus = "b2",
-              .stops = {"stop3", "stop2", "stop1", "stop2",
-                        "stop3"}},
+              .stops = {"stop3", "stop2", "stop1", "stop2", "stop3"}},
       },
   };
 
@@ -397,31 +389,27 @@ TEST(TestReadRequests, InputRequests) {
       TestCase{
           .name = "Valid requests",
           .input = "6\n"
-                   "Bus 1: stop1 > stop2 > stop3 > stop4 > "
-                   "stop5 > stop1\n"
+                   "Bus 1: stop1 > stop2 > stop3 > stop4 > stop5 > stop1\n"
                    "Bus 2: stop6 - stop7 - stop8\n"
                    "Stop Stop1: 87.327412, 62.912265\n"
-                   "Bus 3: first stop - second - third - forth - "
-                   "fifth\n"
+                   "Bus 3: first stop - second - third - forth - fifth\n"
                    "Bus 4: stop2 > stop4 > stop7 > stop2\n"
                    "Stop Stop2: 35.395105, 82.385629\n",
           .want = {
               {PostBusRequest{
                   .bus = "1",
-                  .stops = {"stop1", "stop2", "stop3", "stop4",
-                            "stop5", "stop1"}},
+                  .stops = {"stop1", "stop2", "stop3", "stop4", "stop5",
+                            "stop1"}},
                PostBusRequest{
                    .bus = "2",
-                   .stops = {"stop6", "stop7", "stop8", "stop7",
-                             "stop6"}},
+                   .stops = {"stop6", "stop7", "stop8", "stop7", "stop6"}},
                PostStopRequest{
                    .stop = "Stop1",
                    .coords = {87.327412, 62.912265}},
                PostBusRequest{
                    .bus = "3",
-                   .stops = {"first stop", "second", "third", "forth",
-                             "fifth", "forth", "third", "second",
-                             "first stop"}},
+                   .stops = {"first stop", "second", "third", "forth", "fifth",
+                             "forth", "third", "second", "first stop"}},
                PostBusRequest{
                    .bus = "4",
                    .stops = {"stop2", "stop4", "stop7", "stop2"}},
