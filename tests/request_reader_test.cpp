@@ -87,28 +87,23 @@ TEST(TestParseRequests, PostBusRequest) {
           .input = " bus3: stop1 - stop1 - stop2 - stop1 - stop2 - stop3",
           .want = PostBusRequest{
               .bus = "bus3",
-              .stops = {"stop1", "stop1", "stop2", "stop1",
-                        "stop2",
-                        "stop3", "stop2", "stop1", "stop2",
-                        "stop1",
-                        "stop1"}},
+              .stops = {"stop1", "stop1", "stop2", "stop1", "stop2",
+                        "stop3", "stop2", "stop1", "stop2", "stop1", "stop1"}},
       },
       TestCase{
           .name = "Many stops(circular)",
           .input = " bus4: stop1 > stop1 > stop2 > stop1 > stop2 > stop3 > stop1",
           .want = PostBusRequest{
               .bus = "bus4",
-              .stops = {"stop1", "stop1", "stop2", "stop1",
-                        "stop2",
-                        "stop3", "stop1"}},
+              .stops = {"stop1", "stop1", "stop2", "stop1", "stop2", "stop3",
+                        "stop1"}},
       },
       TestCase{
           .name = "Long STOP_NAME(non-circular)",
           .input = " bus5: long stop 1 - long stop 2 - long stop 3",
           .want = PostBusRequest{
               .bus = "bus5",
-              .stops = {"long stop 1", "long stop 2",
-                        "long stop 3",
+              .stops = {"long stop 1", "long stop 2", "long stop 3",
                         "long stop 2", "long stop 1"}},
       },
       TestCase{
@@ -116,17 +111,15 @@ TEST(TestParseRequests, PostBusRequest) {
           .input = " bus6: long stop 1 > long stop 2 > long stop 1",
           .want = PostBusRequest{
               .bus = "bus6",
-              .stops = {"long stop 1", "long stop 2",
-                        "long stop 1"}},
+              .stops = {"long stop 1", "long stop 2", "long stop 1"}},
       },
       TestCase{
           .name = "Extra spaces",
-          .input = "  b 1  :  long   stop   1  -  long stop 2   -   long stop 3  ",
+          .input = "  b 1  :  long  stop   1  -  long stop 2  -  long stop 3  ",
           .want = PostBusRequest{
               .bus = "b 1",
-              .stops = {"long   stop   1", "long stop 2",
-                        "long stop 3",
-                        "long stop 2", "long   stop   1"}},
+              .stops = {"long  stop   1", "long stop 2", "long stop 3",
+                        "long stop 2", "long  stop   1"}},
       },
       TestCase{
           .name = "No spaces",
@@ -418,15 +411,16 @@ TEST(TestReadRequests, InputRequests) {
                    "Stop stop1: 18.407908, 23.355151\n"
                    "Bus 2: stop6 - stop7 - stop8\n"
                    "Bus 4: stop2 > stop4 > stop7 > stop2",
-          .want = {{PostStopRequest{
-              .stop = "stop1",
-              .coords = {18.407908, 23.355151}},
-                    PostBusRequest{
-                        .bus = "2",
-                        .stops = {"stop6", "stop7", "stop8", "stop7", "stop6"}},
-                    PostBusRequest{
-                        .bus = "4",
-                        .stops = {"stop2", "stop4", "stop7", "stop2"}}}},
+          .want = {
+              {PostStopRequest{
+                  .stop = "stop1",
+                  .coords = {18.407908, 23.355151}},
+               PostBusRequest{
+                   .bus = "2",
+                   .stops = {"stop6", "stop7", "stop8", "stop7", "stop6"}},
+               PostBusRequest{
+                   .bus = "4",
+                   .stops = {"stop2", "stop4", "stop7", "stop2"}}}},
       },
       TestCase{
           .name = "Request_counter: following spaces",
@@ -434,15 +428,16 @@ TEST(TestReadRequests, InputRequests) {
                    "Stop stop1: 18.407908, 23.355151\n"
                    "Bus 2: stop6 - stop7 - stop8\n"
                    "Bus 4: stop2 > stop4 > stop7 > stop2",
-          .want = {{PostStopRequest{
-              .stop = "stop1",
-              .coords = {18.407908, 23.355151}},
-                    PostBusRequest{
-                        .bus = "2",
-                        .stops = {"stop6", "stop7", "stop8", "stop7", "stop6"}},
-                    PostBusRequest{
-                        .bus = "4",
-                        .stops = {"stop2", "stop4", "stop7", "stop2"}}}},
+          .want = {
+              {PostStopRequest{
+                  .stop = "stop1",
+                  .coords = {18.407908, 23.355151}},
+               PostBusRequest{
+                   .bus = "2",
+                   .stops = {"stop6", "stop7", "stop8", "stop7", "stop6"}},
+               PostBusRequest{
+                   .bus = "4",
+                   .stops = {"stop2", "stop4", "stop7", "stop2"}}}},
       },
       TestCase{
           .name = "Valid requests",
@@ -455,29 +450,30 @@ TEST(TestReadRequests, InputRequests) {
                    "fifth\n"
                    "Bus 4: stop2 > stop4 > stop7 > stop2\n"
                    "Stop Stop2: 35.395105, 82.385629, 6000000m to Stop1\n",
-          .want = {{PostBusRequest{
-              .bus = "1",
-              .stops = {"stop1", "stop2", "stop3", "stop4",
-                        "stop5", "stop1"}},
-                    PostBusRequest{
-                        .bus = "2",
-                        .stops = {"stop6", "stop7", "stop8", "stop7",
-                                  "stop6"}},
-                    PostStopRequest{
-                        .stop = "Stop1",
-                        .coords = {87.327412, 62.912265}},
-                    PostBusRequest{
-                        .bus = "3",
-                        .stops = {"first stop", "second", "third", "forth",
-                                  "fifth", "forth", "third", "second",
-                                  "first stop"}},
-                    PostBusRequest{
-                        .bus = "4",
-                        .stops = {"stop2", "stop4", "stop7", "stop2"}},
-                    PostStopRequest{
-                        .stop = "Stop2",
-                        .coords = {35.395105, 82.385629},
-                        .stops = {{"stop1", 6000000}}}},
+          .want = {{
+                       PostBusRequest{
+                           .bus = "1",
+                           .stops = {"stop1", "stop2", "stop3",
+                                     "stop4", "stop5", "stop1"}},
+                       PostBusRequest{
+                           .bus = "2",
+                           .stops = {"stop6", "stop7", "stop8", "stop7",
+                                     "stop6"}},
+                       PostStopRequest{
+                           .stop = "Stop1",
+                           .coords = {87.327412, 62.912265}},
+                       PostBusRequest{
+                           .bus = "3",
+                           .stops = {"first stop", "second", "third", "forth",
+                                     "fifth", "forth", "third", "second",
+                                     "first stop"}},
+                       PostBusRequest{
+                           .bus = "4",
+                           .stops = {"stop2", "stop4", "stop7", "stop2"}},
+                       PostStopRequest{
+                           .stop = "Stop2",
+                           .coords = {35.395105, 82.385629},
+                           .stops = {{"stop1", 6000000}}}},
           },
       }
   };
@@ -545,16 +541,18 @@ TEST(TestReadRequests, OutputRequests) {
           .input = " 2\n"
                    "Bus bus1\n"
                    "Bus bus2",
-          .want = {{GetBusRequest{.bus = "bus1"},
-                    GetBusRequest{.bus = "bus2"}}},
+          .want = {
+              {GetBusRequest{.bus = "bus1"},
+               GetBusRequest{.bus = "bus2"}}},
       },
       TestCase{
           .name = "Request_count: following spaces",
           .input = "2 \n"
                    "Bus bus1\n"
                    "Bus bus2",
-          .want = {{GetBusRequest{.bus = "bus1"},
-                    GetBusRequest{.bus = "bus2"}}},
+          .want = {
+              {GetBusRequest{.bus = "bus1"},
+               GetBusRequest{.bus = "bus2"}}},
       },
       TestCase{
           .name = "Valid requests",
@@ -567,14 +565,15 @@ TEST(TestReadRequests, OutputRequests) {
                    "Stop    2  \n"
                    "   Stop    3  \n"
                    "    Stop   4",
-          .want = {{GetBusRequest{.bus = "1"},
-                    GetBusRequest{.bus = "2"},
-                    GetBusRequest{.bus = "3"},
-                    GetBusRequest{.bus = "4"},
-                    GetStopRequest{.stop = "1"},
-                    GetStopRequest{.stop = "2"},
-                    GetStopRequest{.stop = "3"},
-                    GetStopRequest{.stop = "4"}}},
+          .want = {
+              {GetBusRequest{.bus = "1"},
+               GetBusRequest{.bus = "2"},
+               GetBusRequest{.bus = "3"},
+               GetBusRequest{.bus = "4"},
+               GetStopRequest{.stop = "1"},
+               GetStopRequest{.stop = "2"},
+               GetStopRequest{.stop = "3"},
+               GetStopRequest{.stop = "4"}}},
       },
   };
 

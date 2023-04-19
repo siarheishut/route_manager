@@ -28,21 +28,39 @@ TEST(TestBusManager, TestGetBusInfo) {
       TestCase{
           .name = "Common requests",
           .config = {
-              PostBusRequest{"Bus1",
-                             {"stop1", "stop2", "stop3", "stop2", "stop1"}},
-              PostBusRequest{"Bus2",
-                             {"stop4", "stop5", "stop6",
-                              "stop7", "stop8", "stop4"}},
-              PostStopRequest{"stop1", {55.611087, 37.20829},
-                              {{"stop2", 3000}}},
-              PostStopRequest{"stop2", {55.595884, 37.209755}},
-              PostStopRequest{"stop3", {55.632761, 37.333324}},
-              PostStopRequest{"stop4", {55.574371, 37.6517},
-                              {{"stop5", 4000}, {"stop3", 4000}}},
-              PostStopRequest{"stop5", {55.581065, 37.64839}},
-              PostStopRequest{"stop6", {55.587655, 37.645687}},
-              PostStopRequest{"stop7", {55.592028, 37.653656}},
-              PostStopRequest{"stop8", {55.580999, 37.659164}},
+              PostBusRequest{
+                  .bus = "Bus1",
+                  .stops = {"stop1", "stop2", "stop3", "stop2", "stop1"}},
+              PostBusRequest{
+                  .bus = "Bus2",
+                  .stops = {"stop4", "stop5", "stop6", "stop7", "stop8",
+                            "stop4"}},
+              PostStopRequest{
+                  .stop = "stop1",
+                  .coords = {55.611087, 37.20829},
+                  .stops = {{"stop2", 3000}}},
+              PostStopRequest{
+                  .stop = "stop2",
+                  .coords = {55.595884, 37.209755}},
+              PostStopRequest{
+                  .stop = "stop3",
+                  .coords = {55.632761, 37.333324}},
+              PostStopRequest{ // 3000 + 4000 + 4000 +
+                  .stop = "stop4",
+                  .coords = {55.574371, 37.6517},
+                  .stops = {{"stop5", 4000}, {"stop3", 4000}}},
+              PostStopRequest{
+                  .stop = "stop5",
+                  .coords = {55.581065, 37.64839}},
+              PostStopRequest{
+                  .stop = "stop6",
+                  .coords = {55.587655, 37.645687}},
+              PostStopRequest{
+                  .stop = "stop7",
+                  .coords = {55.592028, 37.653656}},
+              PostStopRequest{
+                  .stop = "stop8",
+                  .coords = {55.580999, 37.659164}},
           },
           .requests = {GetBusRequest{.bus = "Bus1"},
                        GetBusRequest{.bus = "Bus2"},
@@ -70,8 +88,8 @@ TEST(TestBusManager, TestGetBusInfo) {
 
       if (want[i] != std::nullopt)
         EXPECT_TRUE(CompareLength(want[i]->length, got->length, 6))
-                  << std::setprecision(6) << "want: " << want[i]->length
-                  << ", got: " << got->length << '\n' << name;
+                  << name << " – " << std::setprecision(6) << "want: "
+                  << want[i]->length << ", got: " << got->length;
     }
   }
 }
@@ -98,19 +116,37 @@ TEST(TestBusManager, TestGetStopInfo) {
       TestCase{
           .name = "Common requests",
           .config = {
-              PostBusRequest{"Bus1",
-                             {"stop1", "stop2", "stop3", "stop2", "stop1"}},
-              PostBusRequest{"Bus2",
-                             {"stop3", "stop4", "stop5",
-                              "stop6", "stop7", "stop3"}},
-              PostStopRequest{"stop1", {55.611087, 37.20829}},
-              PostStopRequest{"stop2", {55.595884, 37.209755}},
-              PostStopRequest{"stop3", {55.632761, 37.333324}},
-              PostStopRequest{"stop4", {55.574371, 37.6517}},
-              PostStopRequest{"stop5", {55.581065, 37.64839}},
-              PostStopRequest{"stop6", {55.587655, 37.645687}},
-              PostStopRequest{"stop7", {55.592028, 37.653656}},
-              PostStopRequest{"stop8", {55.580999, 37.659164}},
+              PostBusRequest{
+                  .bus = "Bus1",
+                  .stops = {"stop1", "stop2", "stop3", "stop2", "stop1"}},
+              PostBusRequest{
+                  .bus = "Bus2",
+                  .stops = {"stop3", "stop4", "stop5", "stop6", "stop7",
+                            "stop3"}},
+              PostStopRequest{
+                  .stop = "stop1",
+                  .coords = {55.611087, 37.20829}},
+              PostStopRequest{
+                  .stop = "stop2",
+                  .coords = {55.595884, 37.209755}},
+              PostStopRequest{
+                  .stop = "stop3",
+                  .coords = {55.632761, 37.333324}},
+              PostStopRequest{
+                  .stop = "stop4",
+                  .coords = {55.574371, 37.6517}},
+              PostStopRequest{
+                  .stop = "stop5",
+                  .coords = {55.581065, 37.64839}},
+              PostStopRequest{
+                  .stop = "stop6",
+                  .coords = {55.587655, 37.645687}},
+              PostStopRequest{
+                  .stop = "stop7",
+                  .coords = {55.592028, 37.653656}},
+              PostStopRequest{
+                  .stop = "stop8",
+                  .coords = {55.580999, 37.659164}},
           },
           .requests = {GetStopRequest{.stop = "stop1"},
                        GetStopRequest{.stop = "stop3"},
