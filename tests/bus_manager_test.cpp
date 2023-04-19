@@ -24,7 +24,9 @@ TEST(TestBusManager, TestGetBusInfo) {
           .requests = {GetBusRequest{.bus = "123"},
                        GetBusRequest{.bus = "some bus"},
                        GetBusRequest{.bus = "s      s"},},
-          .want = {std::nullopt, std::nullopt, std::nullopt},
+          .want = {std::nullopt,
+                   std::nullopt,
+                   std::nullopt},
       },
       TestCase{
           .name = "Common requests",
@@ -110,7 +112,9 @@ TEST(TestBusManager, TestGetStopInfo) {
           .requests = {GetStopRequest{.stop = "123"},
                        GetStopRequest{.stop = "some stop"},
                        GetStopRequest{.stop = "s      s"},},
-          .want = {std::nullopt, std::nullopt, std::nullopt},
+          .want = {std::nullopt,
+                   std::nullopt,
+                   std::nullopt},
       },
       TestCase{
           .name = "Common requests",
