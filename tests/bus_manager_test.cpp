@@ -89,8 +89,8 @@ TEST(TestBusManager, TestGetBusInfo) {
 
       if (want[i] != std::nullopt)
         EXPECT_TRUE(CompareLength(want[i]->length, got->length, 6))
-                  << std::setprecision(6) << "want: " << want[i]->length
-                  << ", got: " << got->length;
+                  << name << " – " << std::setprecision(6) << "want: "
+                  << want[i]->length << ", got: " << got->length;
     }
   }
 }
