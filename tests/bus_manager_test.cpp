@@ -30,12 +30,12 @@ TEST(TestFactoryMethod, TestInitializing) {
               PostStopRequest{
                   .stop = "stop 1",
                   .coords = {11.111111, 11.111111},
-                  .stops = {{"stop 2", 10000}, {"stop 3", 20000}}
+                  .stop_distances = {{"stop 2", 10000}, {"stop 3", 20000}}
               },
               PostStopRequest{
                   .stop = "stop 2",
                   .coords = {22.222222, 22.222222},
-                  .stops = {{"stop 3", 7000}},
+                  .stop_distances = {{"stop 3", 7000}},
               },
               PostStopRequest{
                   .stop = "stop 3",
@@ -58,12 +58,12 @@ TEST(TestFactoryMethod, TestInitializing) {
               PostStopRequest{
                   .stop = "stop 1",
                   .coords = {11.111111, 11.111111},
-                  .stops = {{"stop 2", 10000}, {"stop 3", 20000}}
+                  .stop_distances = {{"stop 2", 10000}, {"stop 3", 20000}}
               },
               PostStopRequest{
                   .stop = "stop 2",
                   .coords = {22.222222, 22.222222},
-                  .stops = {{"stop 3", 7000}},
+                  .stop_distances = {{"stop 3", 7000}},
               },
               PostStopRequest{
                   .stop = "stop 3",
@@ -170,17 +170,17 @@ TEST(TestFactoryMethod, TestInitializing) {
               PostStopRequest{
                   .stop = "stop 1",
                   .coords = {11.111111, 11.111111},
-                  .stops = {{"stop 2", 2000},},
+                  .stop_distances = {{"stop 2", 2000},},
               },
               PostStopRequest{
                   .stop = "stop 2",
                   .coords = {22.222222, 22.222222},
-                  .stops = {{"stop 4", 5000}},
+                  .stop_distances = {{"stop 4", 5000}},
               },
               PostStopRequest{
                   .stop = "stop 3",
                   .coords = {33.333333, 33.333333},
-                  .stops = {{"stop 1", 4000}},
+                  .stop_distances = {{"stop 1", 4000}},
               },
           },
           .want = false,
@@ -195,17 +195,17 @@ TEST(TestFactoryMethod, TestInitializing) {
               PostStopRequest{
                   .stop = "stop 1",
                   .coords = {11.111111, 11.111111},
-                  .stops = {{"stop 2", 2000},},
+                  .stop_distances = {{"stop 2", 2000},},
               },
               PostStopRequest{
                   .stop = "stop 2",
                   .coords = {22.222222, 22.222222},
-                  .stops = {{"stop 3", 5000}},
+                  .stop_distances = {{"stop 3", 5000}},
               },
               PostStopRequest{
                   .stop = "stop 3",
                   .coords = {33.333333, 33.333333},
-                  .stops = {{"stop 1", 4000}},
+                  .stop_distances = {{"stop 1", 4000}},
               },
           },
           .want = true,
@@ -220,22 +220,22 @@ TEST(TestFactoryMethod, TestInitializing) {
               PostStopRequest{
                   .stop = "stop 1",
                   .coords = {11.111111, 11.111111},
-                  .stops = {{"stop 2", 2000},},
+                  .stop_distances = {{"stop 2", 2000},},
               },
               PostStopRequest{
                   .stop = "stop 2",
                   .coords = {22.222222, 22.222222},
-                  .stops = {{"stop 3", 2000},},
+                  .stop_distances = {{"stop 3", 2000},},
               },
               PostStopRequest{
                   .stop = "stop 3",
                   .coords = {33.333333, 33.333333},
-                  .stops = {{"stop 4", 5000}},
+                  .stop_distances = {{"stop 4", 5000}},
               },
               PostStopRequest{
                   .stop = "stop 4",
                   .coords = {44.444444, 44.444444},
-                  .stops = {{"stop 1", 4000}},
+                  .stop_distances = {{"stop 1", 4000}},
               },
           },
           .want = true,
@@ -258,12 +258,12 @@ TEST(TestFactoryMethod, TestInitializing) {
               PostStopRequest{
                   .stop = "stop 1",
                   .coords = {11.111111, 11.111111},
-                  .stops = {{"stop 2", 10000}, {"stop 3", 20000}}
+                  .stop_distances = {{"stop 2", 10000}, {"stop 3", 20000}}
               },
               PostStopRequest{
                   .stop = "stop 2",
                   .coords = {22.222222, 22.222222},
-                  .stops = {{"stop 3", 7000}},
+                  .stop_distances = {{"stop 3", 7000}},
               },
               PostStopRequest{
                   .stop = "stop 3",
@@ -314,7 +314,7 @@ TEST(TestBusManager, TestGetBusInfo) {
               PostStopRequest{
                   .stop = "stop1",
                   .coords = {55.611087, 37.20829},
-                  .stops = {{"stop2", 3000}}},
+                  .stop_distances = {{"stop2", 3000}}},
               PostStopRequest{
                   .stop = "stop2",
                   .coords = {55.595884, 37.209755}},
@@ -324,7 +324,7 @@ TEST(TestBusManager, TestGetBusInfo) {
               PostStopRequest{
                   .stop = "stop4",
                   .coords = {55.574371, 37.6517},
-                  .stops = {{"stop5", 4000}, {"stop3", 4000}}},
+                  .stop_distances = {{"stop5", 4000}, {"stop3", 4000}}},
               PostStopRequest{
                   .stop = "stop5",
                   .coords = {55.581065, 37.64839}},

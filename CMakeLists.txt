@@ -15,25 +15,24 @@ FetchContent_MakeAvailable(googletest)
 # root_manager config start
 add_executable(root_manager
         src/main.cpp
+        src/json/json.cpp
         src/bus_manager.cpp
-        src/utils.cpp
         src/request_processor.cpp
-        src/request_reader.cpp)
+        src/request_parser.cpp)
 
 target_include_directories(root_manager PUBLIC .)
 # root_manager config end
 
 # tests start
 add_executable(route_manager_tests
-        tests/request_reader_test.cpp
-        tests/json_test.cpp
-        tests/bus_manager_test.cpp
-        tests/test_utils.cpp
         src/json/json.cpp
-        src/request_reader.cpp
-        src/utils.cpp
+        src/request_parser.cpp
         src/request_processor.cpp
-        src/bus_manager.cpp)
+        src/bus_manager.cpp
+        tests/request_parser_test.cpp
+        tests/bus_manager_test.cpp
+        tests/json_test.cpp
+        tests/test_utils.cpp)
 
 target_link_libraries(route_manager_tests GTest::gtest_main)
 target_include_directories(route_manager_tests PUBLIC . tests)

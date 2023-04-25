@@ -3,10 +3,10 @@
 
 #include "request_types.h"
 
-#include <set>
 #include <string>
 #include <optional>
 #include <unordered_map>
+#include <map>
 #include <vector>
 
 namespace rm {
@@ -18,14 +18,14 @@ struct BusResponse {
 };
 
 struct StopResponse {
-  std::set<std::string> buses;
+  std::vector<std::string> buses;
 };
 
 struct StopInfo {
   // Distances to other stops.
   std::unordered_map<std::string, int> dists;
   Coords coords;
-  std::set<std::string> buses;
+  std::vector<std::string> buses;
 };
 
 class BusManager {
@@ -40,7 +40,7 @@ class BusManager {
   explicit BusManager(std::vector<PostRequest> requests);
 
   void AddStop(const std::string &stop, Coords coords,
-               std::vector<RoadDistance> stops);
+               std::map<std::string, int> stops);
 
   void AddBus(std::string bus, std::vector<std::string> stops);
 
