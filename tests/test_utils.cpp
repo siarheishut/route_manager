@@ -33,8 +33,13 @@ bool operator==(const rm::PostBusRequest &lhs, const rm::PostBusRequest &rhs) {
 
 bool operator==(const rm::PostStopRequest &lhs,
                 const rm::PostStopRequest &rhs) {
-  return std::tie(lhs.stop, lhs.coords.latitude, lhs.coords.longitude) ==
-      std::tie(rhs.stop, rhs.coords.latitude, rhs.coords.longitude);
+  return
+      std::tie(lhs.stop,
+               lhs.coords.latitude,
+               lhs.coords.longitude,
+               lhs.stop_distances)
+          == std::tie(rhs.stop, rhs.coords.latitude, rhs.coords.longitude,
+                      rhs.stop_distances);
 }
 
 bool operator!=(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs) {
@@ -57,10 +62,11 @@ bool operator!=(const rm::PostStopRequest &lhs,
   return !(lhs == rhs);
 }
 
+template<typename T>
 std::ostream &operator<<(std::ostream &out,
-                         const std::vector<std::string> &str_v) {
-  for (auto &str : str_v)
-    out << str << ' ';
+                         const std::vector<T> &str_v) {
+  for (auto &item : str_v)
+    out << ' ' << item;
   return out;
 }
 
@@ -69,16 +75,20 @@ std::ostream &operator<<(std::ostream &out, const rm::PostBusRequest &br) {
 }
 
 std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr) {
-  return out << sr.stop << ": " << std::setprecision(6) << sr.coords.latitude
-             << ' ' << std::setprecision(6) << sr.coords.longitude;
+  out << sr.stop << ": " << sr.coords.latitude << ' ' <<
+      sr.coords.longitude << '\t';
+  for (auto [stop, dist] : sr.stop_distances) {
+    out << '{' << stop << ':' << dist << "} ";
+  }
+  return out;
 }
 
 std::ostream &operator<<(std::ostream &out, const rm::GetBusRequest &br) {
-  return out << br.bus;
+  return out << br.bus << " – " << br.id;
 }
 
 std::ostream &operator<<(std::ostream &out, const rm::GetStopRequest &br) {
-  return out << br.stop;
+  return out << br.stop << " – " << br.id;
 }
 
 std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br) {

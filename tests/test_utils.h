@@ -31,9 +31,6 @@ bool operator==(const rm::PostStopRequest &lhs, const rm::PostStopRequest &rhs);
 
 bool operator!=(const rm::PostStopRequest &lhs, const rm::PostStopRequest &rhs);
 
-std::ostream &operator<<(std::ostream &out,
-                         const std::vector<std::string> &str_v);
-
 std::ostream &operator<<(std::ostream &out, const rm::PostBusRequest &br);
 
 std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr);

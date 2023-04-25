@@ -2,24 +2,24 @@
 
 #include <vector>
 #include <string>
-#include <optional>
-#include <sstream>
+#include <iostream>
 #include <ios>
 #include <cctype>
 
 namespace rm::json {
 std::istream &ReadArray(std::istream &input, Node &arr) {
-  char c;
-  if (!(input >> c)) return input;
-  if (c == ']') {
-    arr = List{};
-    return input;
-  } else {
-    input.putback(c);
-  }
-
   List result;
+  char c;
+
   do {
+    if (!(input >> c)) return input;
+    if (c == ']') {
+      arr = result;
+      return input;
+    } else {
+      input.putback(c);
+    }
+
     Node node;
     if (!(input >> node >> c)) return input;
     result.push_back(std::move(node));
@@ -28,6 +28,7 @@ std::istream &ReadArray(std::istream &input, Node &arr) {
       return input;
     }
   } while (c == ',');
+
   input.setstate(std::ios_base::failbit);
   return input;
 }
@@ -37,7 +38,12 @@ std::istream &ReadNumber(std::istream &input, Node &num) {
   input >> value;
   if (!input) return input;
   if (modf(value, &int_part) == 0.0) {
-    num = static_cast<int>(int_part);
+    if (int_part <= std::numeric_limits<int>::max() &&
+        int_part >= std::numeric_limits<int>::min()) {
+      num = static_cast<int>(int_part);
+    } else {
+      num = value;
+    }
   } else {
     num = value;
   }
@@ -79,19 +85,17 @@ std::istream &ReadNull(std::istream &input, Node &null) {
 }
 
 std::istream &ReadDict(std::istream &input, Node &dict) {
-  char c;
-  if (!(input >> c)) return input;
-  if (c == '}') {
-    dict = Dict{};
-    return input;
-  } else {
-    input.putback(c);
-  }
-
   Dict result;
-
-  char c1, c2;
+  char comma, c1, c2;
   do {
+    if (!(input >> comma)) return input;
+    if (comma == '}') {
+      dict = result;
+      return input;
+    } else {
+      input.putback(comma);
+    }
+
     Node key, value;
     input >> key >> c1 >> value >> c2;
     if (!input) return input;
@@ -99,8 +103,11 @@ std::istream &ReadDict(std::istream &input, Node &dict) {
       input.setstate(std::ios_base::failbit);
       return input;
     }
-    result.emplace(key.AsString(), value);
-
+    auto [_, inserted] = result.emplace(std::move(key.ReleaseString()), value);
+    if (!inserted) {
+      input.setstate(std::ios_base::failbit);
+      return input;
+    }
     if (c2 == '}') {
       dict = std::move(result);
       return input;

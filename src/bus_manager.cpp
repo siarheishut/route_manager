@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <cmath>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
+#include <map>
 #include <unordered_map>
 #include <utility>
 #include <variant>
@@ -47,7 +49,7 @@ std::unique_ptr<BusManager> BusManager::Create(const std::vector<PostRequest> &r
       if (!buses.insert(ptr_b->bus).second)
         return nullptr;
     } else if (auto ptr_s = std::get_if<PostStopRequest>(&req)) {
-      for (auto &[dst_stop, dist] : ptr_s->stops) {
+      for (auto &[dst_stop, dist] : ptr_s->stop_distances) {
         road_dists_stops.insert(dst_stop);
       }
       if (!stop_requests_stops.insert(ptr_s->stop).second)
@@ -73,7 +75,7 @@ BusManager::BusManager(std::vector<PostRequest> requests) {
       auto &stop = std::get<PostStopRequest>(request);
       AddStop(stop.stop,
               stop.coords,
-              stop.stops);
+              stop.stop_distances);
     }
   }
 
@@ -83,10 +85,16 @@ BusManager::BusManager(std::vector<PostRequest> requests) {
     bus_info.unique_stop_count = ComputeUniqueCount(bus_info.stops);
     bus_info.curvature = bus_info.distance / geo_dist;
   }
+  for (auto &[_, info] : stop_info_) {
+    auto &buses = info.buses;
+    std::sort(buses.begin(), buses.end());
+    buses.erase(std::unique(buses.begin(), buses.end()),
+                buses.end());
+  }
 }
 
 void BusManager::AddStop(const std::string &stop, Coords coords,
-                         std::vector<RoadDistance> stops) {
+                         std::map<std::string, int> stops) {
   constexpr double k = 3.1415926535 / 180;
   auto &info = stop_info_[stop];
   info.coords = {coords.latitude * k, coords.longitude * k};
@@ -102,7 +110,7 @@ void BusManager::AddStop(const std::string &stop, Coords coords,
 void BusManager::AddBus(std::string bus,
                         std::vector<std::string> stops) {
   for (auto &stop : stops)
-    stop_info_[stop].buses.insert(bus);
+    stop_info_[stop].buses.push_back(bus);
 
   BusInfo bus_info;
   bus_info.stops = std::move(stops);
