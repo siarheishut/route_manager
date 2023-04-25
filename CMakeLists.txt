@@ -26,8 +26,10 @@ target_include_directories(root_manager PUBLIC .)
 # tests start
 add_executable(route_manager_tests
         tests/request_reader_test.cpp
+        tests/json_test.cpp
         tests/bus_manager_test.cpp
         tests/test_utils.cpp
+        src/json/json.cpp
         src/request_reader.cpp
         src/utils.cpp
         src/request_processor.cpp
