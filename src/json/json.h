@@ -1,7 +1,8 @@
-#ifndef ROOT_MANAGER_SRC_JSON_JSON_PARSER_H_
-#define ROOT_MANAGER_SRC_JSON_JSON_PARSER_H_
+#ifndef ROOT_MANAGER_SRC_JSON_JSON_H_
+#define ROOT_MANAGER_SRC_JSON_JSON_H_
 
-#include <iostream>
+#include <istream>
+#include <ostream>
 #include <map>
 #include <string>
 #include <variant>
@@ -66,6 +67,21 @@ class Node final : std::variant<std::monostate,
   inline const std::string &AsString() const {
     return std::get<std::string>(*this);
   }
+  inline std::string ReleaseString() {
+    std::string res = std::move(std::get<std::string>(*this));
+    *this = std::monostate{};
+    return res;
+  }
+  inline Dict ReleaseMap() {
+    Dict res = std::move(std::get<Dict>(*this));
+    *this = std::monostate{};
+    return res;
+  }
+  inline List ReleaseArray() {
+    List res = std::move(std::get<List>(*this));
+    *this = std::monostate{};
+    return res;
+  }
   inline friend bool operator==(const Node &l, const Node &r) {
     return l.GetBase() == r.GetBase();
   };
@@ -75,4 +91,4 @@ class Node final : std::variant<std::monostate,
 };
 }
 
-#endif // ROOT_MANAGER_SRC_JSON_JSON_PARSER_H_
+#endif // ROOT_MANAGER_SRC_JSON_JSON_H_

@@ -4,13 +4,16 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <map>
 
 namespace rm {
 struct GetBusRequest {
+  int id;
   std::string bus;
 };
 
 struct GetStopRequest {
+  int id;
   std::string stop;
 };
 
@@ -32,7 +35,7 @@ struct PostStopRequest {
   std::string stop;
   Coords coords;
   // Pairs of stop_to and dist from stop to stop_to.
-  std::vector<RoadDistance> stops;
+  std::map<std::string, int> stop_distances;
 };
 
 using PostRequest = std::variant<PostBusRequest, PostStopRequest>;

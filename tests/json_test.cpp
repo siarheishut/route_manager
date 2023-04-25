@@ -89,6 +89,39 @@ TEST(TestLoadFunctions, TestLoadArray) {
                    {"long  stop    namestop 4"}, {"stop1"}}},
       },
       TestCase{
+          .name = "Redefinition in road_distances",
+          .input = "{\n"
+                   "\"type\": \"Stop\",\n"
+                   "\"road_distances\": {\n"
+                   "\"stop 2\": 750,\n"
+                   "\"stop 2\": 1000\n"
+                   "},\n"
+                   "\"longitude\": 37.64839,\n"
+                   "\"name\": \"stop 1\",\n"
+                   "\"latitude\": 55.581065\n"
+                   "},",
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Fixed \"Redefinition in road_distances\"",
+          .input = "{\n"
+                   "\"type\": \"Stop\",\n"
+                   "\"road_distances\": {\n"
+                   "\"stop 2\": 750,\n"
+                   "\"stop 3\": 1000\n"
+                   "},\n"
+                   "\"longitude\": 37.64839,\n"
+                   "\"name\": \"stop 1\",\n"
+                   "\"latitude\": 55.581065\n"
+                   "},",
+          .want = Node{
+              Dict{{"type", "Stop"},
+                   {"road_distances", Dict{{"stop 2", 750}, {"stop 3", 1000}}},
+                   {"latitude", 55.581065},
+                   {"longitude", 37.64839},
+                   {"name", "stop 1"}}},
+      },
+      TestCase{
           .name = "Array of strings",
           .input = "\t[\n"
                    "\t\"stop1\",\n"
@@ -125,6 +158,11 @@ TEST(TestLoadFunctions, TestLoadArray) {
           .name = "Empty array",
           .input = "[]",
           .want = Node{List{}},
+      },
+      TestCase{
+          .name = "Array with comma before ']'",
+          .input = "[\"stop1\", \"stop2\", \"stop3\",]",
+          .want = Node{List{"stop1", "stop2", "stop3"}},
       },
       TestCase{
           .name = "Array of numbers",
@@ -202,6 +240,11 @@ TEST(TestLoadFunctions, TestLoadMap) {
           .name = "Empty map",
           .input = "{}",
           .want = Node{Dict{}},
+      },
+      TestCase{
+          .name = "Map with comma before }",
+          .input = "{\"stop1\":1000, \"stop2\":2000, \"stop3\":3000,}",
+          .want = Node{Dict{{"stop1", 1000}, {"stop2", 2000}, {"stop3", 3000}}},
       },
       TestCase{
           .name = "Map {string, Dict}",
@@ -312,19 +355,34 @@ TEST(TestLoadFunctions, TestLoadInt) {
           .want = std::nullopt,
       },
       TestCase{
+          .name = "Int",
+          .input = "123",
+          .want = Node{123},
+      },
+      TestCase{
           .name = "Int – negative",
           .input = "-1234",
           .want = Node{-1234},
       },
       TestCase{
-          .name = "Int – small",
-          .input = "123",
-          .want = Node{123},
+          .name = "Int - INT_MAX",
+          .input = "2147483647",
+          .want = Node{std::numeric_limits<int>::max()},
       },
       TestCase{
-          .name = "Int - huge",
-          .input = "2123456789",
-          .want = Node{2123456789},
+          .name = "Int - INT_MIN",
+          .input = "-2147483648",
+          .want = Node{std::numeric_limits<int>::min()},
+      },
+      TestCase{
+          .name = "Int - INT_MAX+1",
+          .input = "2147483648",
+          .want = Node{2147483648.0},
+      },
+      TestCase{
+          .name = "Int - INT_MIN-1",
+          .input = "-2147483649",
+          .want = Node{-2147483649.0},
       },
   };
 
@@ -386,5 +444,6 @@ TEST(TestLoadFunctions, TestLoadDouble) {
           .want = Node{3429874.234214},
       },
   };
+
   Compare(test_cases);
 }
