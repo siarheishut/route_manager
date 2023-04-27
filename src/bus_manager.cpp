@@ -4,6 +4,7 @@
 #include <cmath>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <variant>
@@ -37,6 +38,32 @@ int ComputeUniqueCount(std::vector<std::string> stops) {
 }
 
 namespace rm {
+std::unique_ptr<BusManager> BusManager::Create(const std::vector<PostRequest> &requests) {
+  std::set<std::string_view> route_stops, road_dists_stops, stop_requests_stops;
+  std::set<std::string_view> buses;
+  for (auto &req : requests) {
+    if (auto ptr_b = std::get_if<PostBusRequest>(&req)) {
+      route_stops.insert(ptr_b->stops.begin(), ptr_b->stops.end());
+      if (!buses.insert(ptr_b->bus).second)
+        return nullptr;
+    } else if (auto ptr_s = std::get_if<PostStopRequest>(&req)) {
+      for (auto &[dst_stop, dist] : ptr_s->stops) {
+        road_dists_stops.insert(dst_stop);
+      }
+      if (!stop_requests_stops.insert(ptr_s->stop).second)
+        return nullptr;
+    }
+  }
+  if (!std::includes(begin(stop_requests_stops), end(stop_requests_stops),
+                     begin(route_stops), end(route_stops)))
+    return nullptr;
+  if (!std::includes(begin(stop_requests_stops), end(stop_requests_stops),
+                     begin(road_dists_stops), end(road_dists_stops)))
+    return nullptr;
+
+  return std::unique_ptr<BusManager>(new BusManager(std::move(requests)));
+}
+
 BusManager::BusManager(std::vector<PostRequest> requests) {
   for (auto &request : requests) {
     if (std::holds_alternative<PostBusRequest>(request)) {

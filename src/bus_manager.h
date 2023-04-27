@@ -30,13 +30,15 @@ struct StopInfo {
 
 class BusManager {
  public:
-  explicit BusManager(std::vector<PostRequest> requests);
+  static std::unique_ptr<BusManager> Create(const std::vector<PostRequest> &requests);
 
   std::optional<BusResponse> GetBusInfo(const std::string &bus) const;
 
   std::optional<StopResponse> GetStopInfo(const std::string &stop) const;
 
  private:
+  explicit BusManager(std::vector<PostRequest> requests);
+
   void AddStop(const std::string &stop, Coords coords,
                std::vector<RoadDistance> stops);
 
