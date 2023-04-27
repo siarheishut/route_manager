@@ -2,7 +2,6 @@
 #include "request_reader.h"
 
 #include <iostream>
-#include <utility>
 
 int main() {
   using namespace rm;
@@ -11,9 +10,10 @@ int main() {
   auto output = ReadOutputRequests(std::cin);
   if (!input || !output) return -1;
 
-  BusManager bm(std::move(*input));
+  auto bm = BusManager::Create(*input);
+  if (!bm) return -1;
 
   for (auto &req : *output)
-    ProcessRequest(bm, std::move(req), std::cout);
+    ProcessRequest(*bm, req, std::cout);
   return 0;
 }
