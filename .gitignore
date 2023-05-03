@@ -37,3 +37,6 @@
 # CLion
 .idea/*
 cmake-build-*/
+
+# Temporary vim files
+*.swp
