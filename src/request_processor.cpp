@@ -4,9 +4,9 @@
 #include <variant>
 
 namespace rm {
-rm::json::Dict ProcessBusRequest(const BusManager &bm,
-                                 const GetBusRequest &request) {
-  rm::json::Dict response;
+json::Dict ProcessBusRequest(const BusManager &bm,
+                             const GetBusRequest &request) {
+  json::Dict response;
 
   auto bm_resp = bm.GetBusInfo(request.bus);
 
@@ -24,9 +24,9 @@ rm::json::Dict ProcessBusRequest(const BusManager &bm,
   return response;
 }
 
-rm::json::Dict ProcessStopRequest(const BusManager &bm,
-                                  const GetStopRequest &request) {
-  rm::json::Dict response;
+json::Dict ProcessStopRequest(const BusManager &bm,
+                              const GetStopRequest &request) {
+  json::Dict response;
 
   auto bm_resp = bm.GetStopInfo(request.stop);
 
@@ -35,16 +35,16 @@ rm::json::Dict ProcessStopRequest(const BusManager &bm,
     response.emplace("error_message", "not found");
   } else {
     response.emplace("buses",
-                     rm::json::List(std::move_iterator(bm_resp->buses.begin()),
-                                    std::move_iterator(bm_resp->buses.end())));
+                     json::List(std::move_iterator(bm_resp->buses.begin()),
+                                std::move_iterator(bm_resp->buses.end())));
   }
 
   return response;
 }
 
-rm::json::List ProcessRequests(const BusManager &bm,
-                               const std::vector<GetRequest> &requests) {
-  rm::json::List node;
+json::List ProcessRequests(const BusManager &bm,
+                           const std::vector<GetRequest> &requests) {
+  json::List node;
 
   for (auto &req : requests) {
     if (auto ptr_b = std::get_if<GetBusRequest>(&req))

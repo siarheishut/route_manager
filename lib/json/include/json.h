@@ -1,5 +1,5 @@
-#ifndef ROOT_MANAGER_SRC_JSON_JSON_H_
-#define ROOT_MANAGER_SRC_JSON_JSON_H_
+#ifndef JSON_JSON_H_
+#define JSON_JSON_H_
 
 #include <istream>
 #include <ostream>
@@ -8,7 +8,7 @@
 #include <variant>
 #include <vector>
 
-namespace rm::json {
+namespace json {
 class Node;
 using Dict = std::map<std::string, Node>;
 using List = std::vector<Node>;
@@ -91,4 +91,4 @@ class Node final : std::variant<std::monostate,
 };
 }
 
-#endif // ROOT_MANAGER_SRC_JSON_JSON_H_
+#endif // JSON_JSON_H_

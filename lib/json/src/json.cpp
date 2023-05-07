@@ -6,7 +6,7 @@
 #include <ios>
 #include <cctype>
 
-namespace rm::json {
+namespace json {
 std::istream &ReadArray(std::istream &input, Node &arr) {
   List result;
   char c;
@@ -166,7 +166,7 @@ void Write(std::ostream &out, const List &list) {
   out << ']';
 }
 
-void Write(std::ostream &out, const rm::json::Dict &list) {
+void Write(std::ostream &out, const json::Dict &list) {
   out << '{';
   bool first = true;
   for (auto &[key, value] : list) {
