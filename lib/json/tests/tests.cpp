@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "src/json/json.h"
+#include "json.h"
 #include <sstream>
 #include <optional>
 #include <string>
@@ -11,10 +11,10 @@ namespace {
 struct TestCase {
   std::string name;
   std::string input;
-  std::optional<rm::json::Node> want;
+  std::optional<json::Node> want;
 };
 
-std::string ToString(const rm::json::Node &node) {
+std::string ToString(const json::Node &node) {
   std::stringstream ss;
   ss << node;
   return ss.str();
@@ -24,7 +24,7 @@ void Compare(const std::vector<TestCase> &test_cases) {
 
   for (auto &[name, input, want_] : test_cases) {
     std::istringstream in(input);
-    rm::json::Node got_;
+    json::Node got_;
     in >> got_;
     if (!in) {
       EXPECT_FALSE(want_) << name;
@@ -38,7 +38,7 @@ void Compare(const std::vector<TestCase> &test_cases) {
 }
 
 TEST(TestLoadFunctions, TestLoadArray) {
-  using namespace rm::json;
+  using namespace json;
 
   std::vector<TestCase> test_cases{
       TestCase{
@@ -149,10 +149,11 @@ TEST(TestLoadFunctions, TestLoadArray) {
                    "}\n"
                    "]",
           .want = Node{
-              List{Dict{{"type", "Bus"}, {"name", 256},
+              List{Dict{{"type", "Bus"}, {"name", "256"},
                         {"id", 1965312327}},
-                   Dict{{"type", "Bus"}, {"name", 750},
+                   Dict{{"type", "Bus"}, {"name", "750"},
                         {"id", 519139350}}}},
+
       },
       TestCase{
           .name = "Empty array",
@@ -194,7 +195,7 @@ TEST(TestLoadFunctions, TestLoadArray) {
 }
 
 TEST(TestLoadFunctions, TestLoadMap) {
-  using namespace rm::json;
+  using namespace json;
 
   std::vector<TestCase> test_cases{
       TestCase{
@@ -293,7 +294,7 @@ TEST(TestLoadFunctions, TestLoadMap) {
 }
 
 TEST(TestLoadFunctions, TestLoadString) {
-  using namespace rm::json;
+  using namespace json;
 
   std::vector<TestCase> test_cases{
       TestCase{
@@ -317,7 +318,7 @@ TEST(TestLoadFunctions, TestLoadString) {
 }
 
 TEST(TestLoadFunctions, TestLoadBool) {
-  using namespace rm::json;
+  using namespace json;
 
   std::vector<TestCase> test_cases{
       TestCase{
@@ -336,7 +337,7 @@ TEST(TestLoadFunctions, TestLoadBool) {
 }
 
 TEST(TestLoadFunctions, TestLoadInt) {
-  using namespace rm::json;
+  using namespace json;
 
   std::vector<TestCase> test_cases{
       TestCase{
@@ -390,7 +391,7 @@ TEST(TestLoadFunctions, TestLoadInt) {
 }
 
 TEST(TestLoadFunctions, TestLoadDouble) {
-  using namespace rm::json;
+  using namespace json;
 
   std::vector<TestCase> test_cases{
       TestCase{
