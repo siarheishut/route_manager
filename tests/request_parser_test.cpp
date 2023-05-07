@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "src/json/json.h"
+#include "json.h"
 #include "src/request_parser.h"
 #include "test_utils.h"
 
@@ -13,7 +13,7 @@ TEST(TestInputRequest, TestPostBusRequest) {
 
   struct TestCase {
     std::string name;
-    rm::json::Dict input;
+    json::Dict input;
     std::optional<PostBusRequest> want;
   };
 
@@ -142,7 +142,7 @@ TEST(TestInputRequest, TestPostStopRequest) {
 
   struct TestCase {
     std::string name;
-    rm::json::Dict input;
+    json::Dict input;
     std::optional<PostStopRequest> want;
   };
   std::vector<TestCase> test_cases{
@@ -247,7 +247,7 @@ TEST(TestOutputRequest, TestGetBusRequest) {
   using namespace rm;
   struct TestCase {
     std::string name;
-    rm::json::Dict input;
+    json::Dict input;
     std::optional<GetBusRequest> want;
   };
 
@@ -286,7 +286,7 @@ TEST(TestOutputRequest, TestGetStopRequest) {
 
   struct TestCase {
     std::string name;
-    rm::json::Dict input;
+    json::Dict input;
     std::optional<GetStopRequest> want;
   };
 
@@ -325,31 +325,31 @@ TEST(TestParseRequests, TestOutput) {
 
   struct TestCase {
     std::string name;
-    rm::json::List input;
+    json::List input;
     std::optional<std::pair<int, int>> want;
   };
   std::vector<TestCase> test_cases{
       TestCase{
           .name = "Not found key \"stat_requests\"",
-          .input = rm::json::List{{"base_requests",
-                                   json::List{json::Dict{{"type", "Bus"},
-                                                         {"name", "Bus 1"},
-                                                         {"id", 5434637}},
-                                              json::Dict{{"type", "Bus"},
-                                                         {"name", "Bus 2"},
-                                                         {"id", 98336215}},
-                                              json::Dict{{"type", "Bus"},
-                                                         {"name", "Bus 3"},
-                                                         {"id", 473829}},
-                                              json::Dict{{"type", "Bus"},
-                                                         {"name", "Bus 4"}},
-                                              json::Dict{{"type", "Bus"},
-                                                         {"name", "Bus 4"}},
-                                              json::Dict{{"type", "Stop"},
-                                                         {"name", "Stop 1"},
-                                                         {"id", 635478}},
-                                              json::Dict{{"type", "Stop"},
-                                                         {"name", "Stop 2"}}}}},
+          .input = json::List{{"base_requests",
+                               json::List{json::Dict{{"type", "Bus"},
+                                                     {"name", "Bus 1"},
+                                                     {"id", 5434637}},
+                                          json::Dict{{"type", "Bus"},
+                                                     {"name", "Bus 2"},
+                                                     {"id", 98336215}},
+                                          json::Dict{{"type", "Bus"},
+                                                     {"name", "Bus 3"},
+                                                     {"id", 473829}},
+                                          json::Dict{{"type", "Bus"},
+                                                     {"name", "Bus 4"}},
+                                          json::Dict{{"type", "Bus"},
+                                                     {"name", "Bus 4"}},
+                                          json::Dict{{"type", "Stop"},
+                                                     {"name", "Stop 1"},
+                                                     {"id", 635478}},
+                                          json::Dict{{"type", "Stop"},
+                                                     {"name", "Stop 2"}}}}},
           .want = std::nullopt,
       },
       TestCase{
@@ -401,56 +401,56 @@ TEST(TestParseRequests, TestInput) {
   using namespace rm;
   struct TestCase {
     std::string name;
-    rm::json::List input;
+    json::List input;
     std::optional<std::pair<int, int>> want;
   };
   std::vector<TestCase> test_cases{
       TestCase{
           .name = "Test requests count",
-          .input = rm::json::List{json::Dict{{"type", "Bus"},
-                                             {"name", "Bus 1"},
-                                             {"stops", json::List{
-                                                 "stop1", "stop3",
-                                                 "stop2", "stop1"}},
-                                             {"is_roundtrip", true}
+          .input = json::List{json::Dict{{"type", "Bus"},
+                                         {"name", "Bus 1"},
+                                         {"stops", json::List{
+                                             "stop1", "stop3",
+                                             "stop2", "stop1"}},
+                                         {"is_roundtrip", true}
           },
-                                  json::Dict{{"type", "Bus"},
-                                             {"name", "Bus 2"},
-                                             {"stops", json::List{
-                                                 "stop2", "stop3"}},
-                                             {"is_roundtrip", false}
-                                  },
-                                  json::Dict{{"type", "Bus"},
-                                             {"name", "Bus 2"},
-                                             {"stops", json::List{}},
-                                             {"is_roundtrip", false}
-                                  },
-                                  json::Dict{{"type", "Bus"},
-                                             {"name", "Bus 3"},
-                                             {"is_roundtrip", false}
-                                  },
-                                  json::Dict{{"type", "Stop"},
-                                             {"name", "Stop 1"},
-                                             {"latitude", 36.637519},
-                                             {"longitude", 138.267031},
-                                             {"road_distances", json::Dict{
-                                                 {"Stop 2", 18470},
-                                                 {"Stop 3", 83690}
-                                             }}},
-                                  json::Dict{{"type", "Stop"},
-                                             {"name", "Stop 2"},
-                                             {"latitude", 36.637519},
-                                             {"road_distances", json::Dict{
-                                                 {"Stop 4", 20570},
-                                                 {"Stop 1", 57192}
-                                             }}},
-                                  json::Dict{{"type", "Stop"},
-                                             {"name", "Stop 2"},
-                                             {"latitude", 36.637519},
-                                             {"road_distances", json::Dict{
-                                                 {"Stop 4", 20570},
-                                                 {"Stop 1", 57192}
-                                             }}}},
+                              json::Dict{{"type", "Bus"},
+                                         {"name", "Bus 2"},
+                                         {"stops", json::List{
+                                             "stop2", "stop3"}},
+                                         {"is_roundtrip", false}
+                              },
+                              json::Dict{{"type", "Bus"},
+                                         {"name", "Bus 2"},
+                                         {"stops", json::List{}},
+                                         {"is_roundtrip", false}
+                              },
+                              json::Dict{{"type", "Bus"},
+                                         {"name", "Bus 3"},
+                                         {"is_roundtrip", false}
+                              },
+                              json::Dict{{"type", "Stop"},
+                                         {"name", "Stop 1"},
+                                         {"latitude", 36.637519},
+                                         {"longitude", 138.267031},
+                                         {"road_distances", json::Dict{
+                                             {"Stop 2", 18470},
+                                             {"Stop 3", 83690}
+                                         }}},
+                              json::Dict{{"type", "Stop"},
+                                         {"name", "Stop 2"},
+                                         {"latitude", 36.637519},
+                                         {"road_distances", json::Dict{
+                                             {"Stop 4", 20570},
+                                             {"Stop 1", 57192}
+                                         }}},
+                              json::Dict{{"type", "Stop"},
+                                         {"name", "Stop 2"},
+                                         {"latitude", 36.637519},
+                                         {"road_distances", json::Dict{
+                                             {"Stop 4", 20570},
+                                             {"Stop 1", 57192}
+                                         }}}},
           .want = std::pair<int, int>{2, 1},
       },
   };

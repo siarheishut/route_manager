@@ -1,7 +1,7 @@
 #ifndef ROOT_MANAGER_SRC_REQUEST_PARSER_H_
 #define ROOT_MANAGER_SRC_REQUEST_PARSER_H_
 
-#include "json/json.h"
+#include "json.h"
 #include "request_types.h"
 
 #include <optional>

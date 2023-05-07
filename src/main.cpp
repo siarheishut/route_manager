@@ -1,14 +1,13 @@
-#include "json/json.h"
+#include "json.h"
 #include "request_processor.h"
 #include "request_parser.h"
 
 #include <iostream>
 
 int main() {
-  using namespace rm::json;
-  Node root;
+  json::Node root;
   std::cin >> root;
-  rm::json::Dict input_map;
+  json::Dict input_map;
   if (!root.IsMap()) return 1;
   input_map = root.ReleaseMap();
 
