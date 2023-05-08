@@ -1,7 +1,8 @@
 #include "bus_manager.h"
+#include "common.h"
+#include "distance_computer.h"
 
 #include <algorithm>
-#include <cmath>
 #include <optional>
 #include <set>
 #include <string>
@@ -13,25 +14,6 @@
 #include <vector>
 
 namespace {
-// Used the solution from https://stackoverflow.com/a/70429229.
-// Uses Haversine formula https://en.wikipedia.org/wiki/Haversine_formula
-// with asin expressed with atan2 for better accuracy.
-double CalculateDistance(rm::Coords lhs, rm::Coords rhs) {
-  constexpr double earth_radius_m = 6371.0 * 1000.0;
-
-  const double d_lat = rhs.latitude - lhs.latitude;
-  const double d_long = rhs.longitude - lhs.longitude;
-
-  double a =
-      std::sin(d_lat / 2) * std::sin(d_lat / 2) + std::sin(d_long / 2) *
-          std::sin(d_long / 2) *
-          std::cos(lhs.latitude) *
-          std::cos(rhs.latitude);
-  double c = earth_radius_m * 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
-
-  return c;
-}
-
 int ComputeUniqueCount(std::vector<std::string> stops) {
   std::sort(begin(stops), end(stops));
   return std::distance(stops.begin(),
@@ -40,7 +22,8 @@ int ComputeUniqueCount(std::vector<std::string> stops) {
 }
 
 namespace rm {
-std::unique_ptr<BusManager> BusManager::Create(const std::vector<PostRequest> &requests) {
+std::unique_ptr<BusManager> BusManager::Create(std::vector<PostRequest> requests,
+                                               const RoutingSettings &settings) {
   std::set<std::string_view> route_stops, road_dists_stops, stop_requests_stops;
   std::set<std::string_view> buses;
   for (auto &req : requests) {
@@ -63,10 +46,12 @@ std::unique_ptr<BusManager> BusManager::Create(const std::vector<PostRequest> &r
                      begin(road_dists_stops), end(road_dists_stops)))
     return nullptr;
 
-  return std::unique_ptr<BusManager>(new BusManager(std::move(requests)));
+  return std::unique_ptr<BusManager>(new BusManager(std::move(requests),
+                                                    settings));
 }
 
-BusManager::BusManager(std::vector<PostRequest> requests) {
+BusManager::BusManager(std::vector<PostRequest> requests,
+                       const RoutingSettings &settings) {
   for (auto &request : requests) {
     if (std::holds_alternative<PostBusRequest>(request)) {
       auto &bus = std::get<PostBusRequest>(request);
@@ -80,8 +65,9 @@ BusManager::BusManager(std::vector<PostRequest> requests) {
   }
 
   for (auto &[bus, bus_info] : bus_info_) {
-    double geo_dist = ComputeGeoDistance(bus_info.stops);
-    bus_info.distance = ComputeRoadDistance(bus_info.stops);
+    double geo_dist = ComputeGeoDistance(bus_info.stops, stop_info_);
+    bus_info.distance =
+        ComputeRoadDistance(bus_info.stops, stop_info_);
     bus_info.unique_stop_count = ComputeUniqueCount(bus_info.stops);
     bus_info.curvature = bus_info.distance / geo_dist;
   }
@@ -91,9 +77,11 @@ BusManager::BusManager(std::vector<PostRequest> requests) {
     buses.erase(std::unique(buses.begin(), buses.end()),
                 buses.end());
   }
+  bus_manager_ =
+      std::make_unique<RouteManager>(stop_info_, bus_info_, settings);
 }
 
-void BusManager::AddStop(const std::string &stop, Coords coords,
+void BusManager::AddStop(const std::string &stop, sphere::Coords coords,
                          std::map<std::string, int> stops) {
   constexpr double k = 3.1415926535 / 180;
   auto &info = stop_info_[stop];
@@ -138,26 +126,8 @@ std::optional<StopResponse> BusManager::GetStopInfo(const std::string &stop) con
   return StopResponse{it->second.buses};
 }
 
-double BusManager::ComputeGeoDistance(const std::vector<std::string> &stops) const {
-  double distance = 0;
-  for (int i = 1; i < stops.size(); ++i) {
-    distance += CalculateDistance(stop_info_.at(stops[i - 1]).coords,
-                                  stop_info_.at(stops[i]).coords);
-  }
-  return distance;
-}
-
-double BusManager::ComputeRoadDistance(const std::vector<std::string> &stops) const {
-  double distance = 0;
-  for (int i = 1; i < stops.size(); ++i) {
-    auto &dists = stop_info_.at(stops[i - 1]).dists;
-
-    if (auto found = dists.find(stops[i]); found != dists.end())
-      distance += found->second;
-    else
-      distance += CalculateDistance(stop_info_.at(stops[i - 1]).coords,
-                                    stop_info_.at(stops[i]).coords);
-  }
-  return distance;
+std::optional<RouteResponse> BusManager::FindRoute(const std::string &from,
+                                                   const std::string &to) const {
+  return bus_manager_->FindRoute(from, to);
 }
 }

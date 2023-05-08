@@ -13,6 +13,12 @@
 #include <vector>
 
 namespace graph {
+// Router requires V^2, where V is the number of vertices
+// (not counting the memory required to store the route cache).
+// Router constructor has complexity O(V^3+E), where
+// V is the number of graph vertices, E is the number of edges.
+// Route::BuildRoute on a constructed router is E, where E is the number of
+// edges in the route.
 template<typename Weight>
 class Router {
  private:

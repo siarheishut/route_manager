@@ -12,6 +12,7 @@ TEST(TestFactoryMethod, TestInitializing) {
   struct TestCase {
     std::string name;
     std::vector<PostRequest> config;
+    RoutingSettings config_settings;
     bool want;
   };
 
@@ -42,6 +43,7 @@ TEST(TestFactoryMethod, TestInitializing) {
                   .coords = {33.333333, 33.333333},
               },
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .want = false,
       },
       TestCase{
@@ -70,6 +72,7 @@ TEST(TestFactoryMethod, TestInitializing) {
                   .coords = {33.333333, 33.333333},
               },
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54.85},
           .want = true,
       },
       TestCase{
@@ -92,6 +95,7 @@ TEST(TestFactoryMethod, TestInitializing) {
                   .coords = {33.333333, 33.333333},
               },
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .want = false,
       },
       TestCase{
@@ -114,6 +118,7 @@ TEST(TestFactoryMethod, TestInitializing) {
                   .coords = {33.333333, 33.333333},
               },
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .want = true,
       },
       TestCase{
@@ -136,6 +141,7 @@ TEST(TestFactoryMethod, TestInitializing) {
                   .coords = {33.333333, 33.333333},
               },
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .want = false,
       },
       TestCase{
@@ -158,6 +164,7 @@ TEST(TestFactoryMethod, TestInitializing) {
                   .coords = {33.333333, 33.333333},
               },
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .want = true,
       },
       TestCase{
@@ -183,6 +190,7 @@ TEST(TestFactoryMethod, TestInitializing) {
                   .stop_distances = {{"stop 1", 4000}},
               },
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .want = false,
       },
       TestCase{
@@ -208,6 +216,7 @@ TEST(TestFactoryMethod, TestInitializing) {
                   .stop_distances = {{"stop 1", 4000}},
               },
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .want = true,
       },
       TestCase{
@@ -238,6 +247,7 @@ TEST(TestFactoryMethod, TestInitializing) {
                   .stop_distances = {{"stop 1", 4000}},
               },
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .want = true,
       },
       TestCase{
@@ -270,12 +280,13 @@ TEST(TestFactoryMethod, TestInitializing) {
                   .coords = {33.333333, 33.333333},
               },
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .want = true,
       },
   };
 
-  for (auto &[name, config, want] : test_cases) {
-    bool got = BusManager::Create(config) != nullptr;
+  for (auto &[name, config, config_settings, want] : test_cases) {
+    bool got = BusManager::Create(config, {}) != nullptr;
     EXPECT_EQ(want, got) << name;
   }
 }
@@ -286,6 +297,7 @@ TEST(TestBusManager, TestGetBusInfo) {
   struct TestCase {
     std::string name;
     std::vector<PostRequest> config;
+    RoutingSettings config_settings;
     std::vector<GetBusRequest> requests;
     std::vector<std::optional<BusResponse>> want;
   };
@@ -294,6 +306,7 @@ TEST(TestBusManager, TestGetBusInfo) {
       TestCase{
           .name = "Requests to an empty database",
           .config = {},
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .requests = {GetBusRequest{.bus = "123"},
                        GetBusRequest{.bus = "some bus"},
                        GetBusRequest{.bus = "s      s"},},
@@ -338,6 +351,7 @@ TEST(TestBusManager, TestGetBusInfo) {
                   .stop = "stop8",
                   .coords = {55.580999, 37.659164}},
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .requests = {GetBusRequest{.bus = "Bus1"},
                        GetBusRequest{.bus = "Bus2"},
                        GetBusRequest{.bus = "none"}},
@@ -347,8 +361,8 @@ TEST(TestBusManager, TestGetBusInfo) {
       },
   };
 
-  for (auto &[name, test_item, requests, want] : test_cases) {
-    auto bm = BusManager::Create(test_item);
+  for (auto &[name, config, config_settings, requests, want] : test_cases) {
+    auto bm = BusManager::Create(config, config_settings);
     EXPECT_TRUE(bm) << name;
     if (!bm) continue;
 
@@ -365,7 +379,7 @@ TEST(TestBusManager, TestGetBusInfo) {
       EXPECT_EQ(p1, p2) << name;
 
       if (want[i] != std::nullopt)
-        EXPECT_TRUE(CompareLength(want[i]->length, got->length, 6))
+        EXPECT_TRUE(CompareDoubles(want[i]->length, got->length, 6))
                   << name << " – " << std::setprecision(6) << "want: "
                   << want[i]->length << ", got: " << got->length;
     }
@@ -378,6 +392,7 @@ TEST(TestBusManager, TestGetStopInfo) {
   struct TestCase {
     std::string name;
     std::vector<PostRequest> config;
+    RoutingSettings config_settings;
     std::vector<GetStopRequest> requests;
     std::vector<std::optional<StopInfo>> want;
   };
@@ -386,6 +401,7 @@ TEST(TestBusManager, TestGetStopInfo) {
       TestCase{
           .name = "Requests to an empty database",
           .config = {},
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .requests = {GetStopRequest{.stop = "123"},
                        GetStopRequest{.stop = "some stop"},
                        GetStopRequest{.stop = "s      s"},},
@@ -428,6 +444,7 @@ TEST(TestBusManager, TestGetStopInfo) {
                   .stop = "stop8",
                   .coords = {55.580999, 37.659164}},
           },
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
           .requests = {GetStopRequest{.stop = "stop1"},
                        GetStopRequest{.stop = "stop3"},
                        GetStopRequest{.stop = "stop8"},
@@ -440,8 +457,8 @@ TEST(TestBusManager, TestGetStopInfo) {
       },
   };
 
-  for (auto &[name, test_item, requests, want] : test_cases) {
-    auto bm = BusManager::Create(test_item);
+  for (auto &[name, config, config_settings, requests, want] : test_cases) {
+    auto bm = BusManager::Create(config, config_settings);
     EXPECT_TRUE(bm) << name;
     if (!bm) continue;
 
@@ -452,6 +469,121 @@ TEST(TestBusManager, TestGetStopInfo) {
       if (!got) continue;
 
       EXPECT_EQ(want[i]->buses, got->buses) << name;
+    }
+  }
+}
+
+TEST(TestBusManager, TestGetRouteInfo) {
+  using WaitItem = rm::RouteInfo::WaitItem;
+  using RoadItem = rm::RouteInfo::RoadItem;
+
+  using namespace rm;
+
+  struct TestCase {
+    std::string name;
+    std::vector<PostRequest> config;
+    RoutingSettings config_settings;
+    std::vector<GetRouteRequest> requests;
+    std::vector<std::optional<RouteResponse>> want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Requests to an empty database",
+          .config = {},
+          .config_settings = {.bus_wait_time = 7, .bus_velocity = 54},
+          .requests = {
+              GetRouteRequest{
+                  .id = 1,
+                  .from = "stop 1",
+                  .to = "stop 2"},
+              GetRouteRequest{
+                  .id = 2,
+                  .from = "stop 2",
+                  .to = "stop 3"},
+              GetRouteRequest{
+                  .id = 3,
+                  .from = "stop 3",
+                  .to = "stop 4"}
+          },
+          .want = {std::nullopt,
+                   std::nullopt,
+                   std::nullopt},
+      },
+      TestCase{
+          .name = "Common requests",
+          .config = {
+              PostBusRequest{
+                  .bus = "Bus1",
+                  .stops = {"stop1", "stop2", "stop3", "stop1"}},
+              PostBusRequest{
+                  .bus = "Bus2",
+                  .stops = {"stop2", "stop3", "stop4", "stop3", "stop2"}},
+              PostStopRequest{
+                  .stop = "stop1",
+                  .coords = {55.574371, 37.6517},
+                  .stop_distances = {{"stop2", 2600}}},
+              PostStopRequest{
+                  .stop = "stop3",
+                  .coords = {55.587655, 37.645687},
+                  .stop_distances = {
+                      {"stop4", 4650},
+                      {"stop2", 1380},
+                      {"stop1", 2500}}},
+              PostStopRequest{
+                  .stop = "stop2",
+                  .coords = {55.592028, 37.653656},
+                  .stop_distances = {{"stop3", 890}}},
+              PostStopRequest{
+                  .stop = "stop4",
+                  .coords = {55.611717, 37.603938},
+                  .stop_distances = {}},
+          },
+          .config_settings = {.bus_wait_time = 6, .bus_velocity = 40},
+          .requests = {
+              GetRouteRequest{
+                  .id = 1,
+                  .from = "stop1",
+                  .to = "stop3"
+              },
+              GetRouteRequest{
+                  .id = 2,
+                  .from = "stop1",
+                  .to = "stop4"
+              }
+          },
+          .want = {
+              RouteResponse{
+                  .time = 11.235,
+                  .items = {
+                      WaitItem{.stop = "stop1", .time = 6},
+                      RoadItem{.bus = "Bus1", .time = 5.235, .span_count = 2}},
+              },
+              RouteResponse{
+                  .time = 24.21,
+                  .items = {
+                      WaitItem{.stop = "stop1", .time = 6},
+                      RoadItem{.bus = "Bus1", .time = 5.235, .span_count = 2},
+                      WaitItem{.stop = "stop3", .time = 6},
+                      RoadItem{.bus = "Bus2", .time = 6.975, .span_count = 1},
+                  },
+              },
+          },
+      },
+  };
+
+  for (auto &[name, config, config_settings, requests, want] : test_cases) {
+    auto bm = BusManager::Create(config, config_settings);
+    EXPECT_TRUE(bm) << name;
+    if (!bm) continue;
+
+    for (int i = 0; i < requests.size(); ++i) {
+      auto got = bm->FindRoute(requests[i].from, requests[i].to);
+
+      EXPECT_EQ(want[i].has_value(), got.has_value()) << name;
+      if (!got || !want[i]) continue;
+
+      EXPECT_EQ(want[i], got) << name;
     }
   }
 }
