@@ -37,7 +37,7 @@ void Compare(const std::vector<TestCase> &test_cases) {
 }
 }
 
-TEST(TestLoadFunctions, TestLoadArray) {
+TEST(TestLoadFunctions, TestArray) {
   using namespace json;
 
   std::vector<TestCase> test_cases{
@@ -194,7 +194,7 @@ TEST(TestLoadFunctions, TestLoadArray) {
   Compare(test_cases);
 }
 
-TEST(TestLoadFunctions, TestLoadMap) {
+TEST(TestLoadFunctions, TestMap) {
   using namespace json;
 
   std::vector<TestCase> test_cases{
@@ -293,7 +293,7 @@ TEST(TestLoadFunctions, TestLoadMap) {
   Compare(test_cases);
 }
 
-TEST(TestLoadFunctions, TestLoadString) {
+TEST(TestLoadFunctions, TestString) {
   using namespace json;
 
   std::vector<TestCase> test_cases{
@@ -317,7 +317,7 @@ TEST(TestLoadFunctions, TestLoadString) {
   Compare(test_cases);
 }
 
-TEST(TestLoadFunctions, TestLoadBool) {
+TEST(TestLoadFunctions, TestBool) {
   using namespace json;
 
   std::vector<TestCase> test_cases{
@@ -336,7 +336,7 @@ TEST(TestLoadFunctions, TestLoadBool) {
   Compare(test_cases);
 }
 
-TEST(TestLoadFunctions, TestLoadInt) {
+TEST(TestLoadFunctions, TestInt) {
   using namespace json;
 
   std::vector<TestCase> test_cases{
@@ -390,7 +390,7 @@ TEST(TestLoadFunctions, TestLoadInt) {
   Compare(test_cases);
 }
 
-TEST(TestLoadFunctions, TestLoadDouble) {
+TEST(TestLoadFunctions, TestDouble) {
   using namespace json;
 
   std::vector<TestCase> test_cases{
@@ -443,6 +443,20 @@ TEST(TestLoadFunctions, TestLoadDouble) {
           .name = "Double - huge",
           .input = "3429874.234214",
           .want = Node{3429874.234214},
+      },
+  };
+
+  Compare(test_cases);
+}
+
+TEST(TestLoadFunctions, TestMonostate) {
+  using namespace json;
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Monostate",
+          .input = "null",
+          .want = std::monostate{},
       },
   };
 

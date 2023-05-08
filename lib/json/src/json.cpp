@@ -1,8 +1,10 @@
 #include "json.h"
 
+#include <cmath>
 #include <vector>
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include <ios>
 #include <cctype>
 
@@ -150,6 +152,10 @@ void Write(std::ostream &out, bool value) {
   out << std::boolalpha << value;
 }
 
+void Write(std::ostream &out, const std::string &value) {
+  out << std::quoted(value);
+}
+
 template<typename T>
 void Write(std::ostream &out, const T &value) {
   out << value;
@@ -172,8 +178,8 @@ void Write(std::ostream &out, const json::Dict &list) {
   for (auto &[key, value] : list) {
     if (!first) out << ",";
     first = false;
-    out << key << ":";
-    Write(out, value);
+    Write(out, key);
+    out << ":" << value;
   }
   out << '}';
 }
