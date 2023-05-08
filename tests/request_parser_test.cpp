@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "json.h"
+#include "lib/json/include/json.h"
 #include "src/request_parser.h"
 #include "test_utils.h"
 
@@ -281,6 +281,57 @@ TEST(TestOutputRequest, TestGetBusRequest) {
   }
 }
 
+TEST(TestOutputRequest, TestGetRouteRequest) {
+  using namespace rm;
+  struct TestCase {
+    std::string name;
+    json::Dict input;
+    std::optional<GetRouteRequest> want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Wrong request: no <from>",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 1},
+                              {"to", "stop 2"},
+          },
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong request: no <to>",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 2},
+                              {"from", "stop 1"},
+          },
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong request: no <id>",
+          .input = json::Dict{{"type", "Bus"},
+                              {"from", "stop 1"},
+                              {"to", "stop 2"}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Common request",
+          .input = json::Dict{{"type", "Route"},
+                              {"from", "stop 1"},
+                              {"to", "stop 2"},
+                              {"id", 4}},
+          .want = GetRouteRequest{
+              .id = 4,
+              .from = "stop 1",
+              .to = "stop 2"}
+      },
+  };
+
+  for (auto &[name, input, want] : test_cases) {
+    auto got = ParseGetRouteRequest(input);
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
 TEST(TestOutputRequest, TestGetStopRequest) {
   using namespace rm;
 
@@ -326,53 +377,32 @@ TEST(TestParseRequests, TestOutput) {
   struct TestCase {
     std::string name;
     json::List input;
-    std::optional<std::pair<int, int>> want;
+    std::optional<std::tuple<int, int, int>> want;
   };
   std::vector<TestCase> test_cases{
-      TestCase{
-          .name = "Not found key \"stat_requests\"",
-          .input = json::List{{"base_requests",
-                               json::List{json::Dict{{"type", "Bus"},
-                                                     {"name", "Bus 1"},
-                                                     {"id", 5434637}},
-                                          json::Dict{{"type", "Bus"},
-                                                     {"name", "Bus 2"},
-                                                     {"id", 98336215}},
-                                          json::Dict{{"type", "Bus"},
-                                                     {"name", "Bus 3"},
-                                                     {"id", 473829}},
-                                          json::Dict{{"type", "Bus"},
-                                                     {"name", "Bus 4"}},
-                                          json::Dict{{"type", "Bus"},
-                                                     {"name", "Bus 4"}},
-                                          json::Dict{{"type", "Stop"},
-                                                     {"name", "Stop 1"},
-                                                     {"id", 635478}},
-                                          json::Dict{{"type", "Stop"},
-                                                     {"name", "Stop 2"}}}}},
-          .want = std::nullopt,
-      },
       TestCase{
           .name = "Test requests count",
           .input = json::List{json::Dict{{"type", "Bus"},
                                          {"name", "Bus 1"},
-                                         {"id", 5434637}},
+                                         {"id", 1}},
                               json::Dict{{"type", "Bus"},
                                          {"name", "Bus 2"},
-                                         {"id", 98336215}},
+                                         {"id", 321}},
                               json::Dict{{"type", "Bus"},
                                          {"name", "Bus 3"},
-                                         {"id", 473829}},
-                              json::Dict{{"type", "Bus"},
-                                         {"name", "Bus 4"}},
-                              json::Dict{{"type", "Bus"},
-                                         {"name", "Bus 4"}},
+                                         {"id", 123}},
                               json::Dict{{"type", "Stop"},
                                          {"name", "Stop 1"},
-                                         {"id", 635478}},
-                              json::Dict{{"type", "Stop"},
-                                         {"name", "Stop 2"}}},
-          .want = {{3, 1}},
+                                         {"id", 4}},
+                              json::Dict{{"type", "Route"},
+                                         {"from", "stop 1"},
+                                         {"to", "stop 2"},
+                                         {"id", 5}},
+                              json::Dict{{"type", "Route"},
+                                         {"from", "stop 3"},
+                                         {"to", "stop 4"},
+                                         {"id", 6}}},
+          .want = {{3, 1, 2}},
       },
   };
 
@@ -392,7 +422,14 @@ TEST(TestParseRequests, TestOutput) {
                                     return std::holds_alternative<GetStopRequest>(
                                         req);
                                   });
-    std::pair<int, int> got = {bus_req_count, stop_req_count};
+    int route_req_count = count_if(got_opt->begin(), got_opt->end(),
+                                   [](const GetRequest &req) {
+                                     return std::holds_alternative<
+                                         GetRouteRequest>(
+                                         req);
+                                   });
+    std::tuple<int, int, int>
+        got = {bus_req_count, stop_req_count, route_req_count};
     EXPECT_EQ(want, got) << name;
   }
 }

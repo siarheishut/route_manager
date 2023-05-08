@@ -1,11 +1,26 @@
 #include "request_parser.h"
-#include "json.h"
+#include "lib/json/include/json.h"
 
 #include <optional>
 #include <vector>
 #include <string_view>
 
 namespace rm {
+std::optional<RoutingSettings> ParseSettings(json::Dict settings) {
+  RoutingSettings rs;
+  auto bus_wait_time = settings.find("bus_wait_time");
+  auto bus_velocity = settings.find("bus_velocity");
+
+  if (bus_wait_time == settings.end() || bus_velocity == settings.end())
+    return std::nullopt;
+  if (!bus_wait_time->second.IsInt() || !bus_velocity->second.IsDouble())
+    return std::nullopt;
+
+  rs.bus_wait_time = bus_wait_time->second.AsInt();
+  rs.bus_velocity = bus_velocity->second.AsDouble();
+  return rs;
+}
+
 std::optional<std::vector<PostRequest>> ParseInput(json::List base_requests) {
   std::vector<rm::PostRequest> input_requests;
   for (auto &req : base_requests) {
@@ -124,9 +139,28 @@ std::optional<GetRequest> ParseOutputRequest(json::Dict dict) {
     return ParseGetStopRequest(std::move(dict));
   } else if (request_type == "Bus") {
     return ParseGetBusRequest(std::move(dict));
+  } else if (request_type == "Route") {
+    return ParseGetRouteRequest(std::move(dict));
   }
 
   return std::nullopt;
+}
+
+std::optional<GetRouteRequest> ParseGetRouteRequest(json::Dict dict) {
+  auto from = dict.find("from");
+  auto to = dict.find("to");
+  auto id = dict.find("id");
+  if (from == dict.end() || to == dict.end() || id == dict.end())
+    return std::nullopt;
+  if (!from->second.IsString() || !to->second.IsString() || !id->second.IsInt())
+    return std::nullopt;
+
+  GetRouteRequest gr;
+  gr.from = from->second.ReleaseString();
+  gr.to = to->second.ReleaseString();
+  gr.id = id->second.AsInt();
+
+  return gr;
 }
 
 std::optional<GetBusRequest> ParseGetBusRequest(json::Dict dict) {

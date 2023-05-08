@@ -275,7 +275,7 @@ TEST(TestFactoryMethod, TestInitializing) {
   };
 
   for (auto &[name, config, want] : test_cases) {
-    bool got = BusManager::Create(config) != nullptr;
+    bool got = BusManager::Create(config, {}) != nullptr;
     EXPECT_EQ(want, got) << name;
   }
 }
@@ -348,7 +348,7 @@ TEST(TestBusManager, TestGetBusInfo) {
   };
 
   for (auto &[name, test_item, requests, want] : test_cases) {
-    auto bm = BusManager::Create(test_item);
+    auto bm = BusManager::Create(test_item, {});
     EXPECT_TRUE(bm) << name;
     if (!bm) continue;
 
@@ -441,7 +441,7 @@ TEST(TestBusManager, TestGetStopInfo) {
   };
 
   for (auto &[name, test_item, requests, want] : test_cases) {
-    auto bm = BusManager::Create(test_item);
+    auto bm = BusManager::Create(test_item, {});
     EXPECT_TRUE(bm) << name;
     if (!bm) continue;
 

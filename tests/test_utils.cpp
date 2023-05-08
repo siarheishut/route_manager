@@ -15,11 +15,17 @@ bool CompareLength(double lhs, double rhs, int precision) {
 }
 
 bool operator==(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs) {
-  return lhs.bus == rhs.bus;
+  return std::tie(lhs.bus, lhs.id) == std::tie(rhs.bus, rhs.id);
 }
 
 bool operator==(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs) {
-  return lhs.stop == rhs.stop;
+  return std::tie(lhs.stop, lhs.id) == std::tie(rhs.stop, rhs.id);
+}
+
+bool operator==(const rm::GetRouteRequest &lhs,
+                const rm::GetRouteRequest &rhs) {
+  return std::tie(lhs.from, lhs.to, lhs.id)
+      == std::tie(rhs.from, rhs.to, rhs.id);
 }
 
 bool operator==(const rm::BusResponse &lhs, const rm::BusResponse &rhs) {
@@ -47,6 +53,11 @@ bool operator!=(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs) {
 }
 
 bool operator!=(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(const rm::GetRouteRequest &lhs,
+                const rm::GetRouteRequest &rhs) {
   return !(lhs == rhs);
 }
 

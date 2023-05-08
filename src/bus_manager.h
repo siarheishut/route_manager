@@ -1,9 +1,11 @@
 #ifndef ROOT_MANAGER_SRC_BUS_MANAGER_H_
 #define ROOT_MANAGER_SRC_BUS_MANAGER_H_
 
+#include "src/route_base/route_base.h"
 #include "request_types.h"
 
 #include <string>
+#include <memory>
 #include <optional>
 #include <unordered_map>
 #include <map>
@@ -21,29 +23,25 @@ struct StopResponse {
   std::vector<std::string> buses;
 };
 
-struct StopInfo {
-  // Distances to other stops.
-  std::unordered_map<std::string, int> dists;
-  Coords coords;
-  std::vector<std::string> buses;
-};
-
 class BusManager {
  public:
-  static std::unique_ptr<BusManager> Create(const std::vector<PostRequest> &requests);
+  static std::unique_ptr<BusManager> Create(const std::vector<PostRequest> &requests,
+                                            const RoutingSettings &settings);
 
   std::optional<BusResponse> GetBusInfo(const std::string &bus) const;
 
   std::optional<StopResponse> GetStopInfo(const std::string &stop) const;
 
+  std::optional<RouteBase::RouteInfo> FindRoute(const std::string &from,
+                                                const std::string &to) const;
  private:
-  explicit BusManager(std::vector<PostRequest> requests);
+  explicit BusManager(std::vector<PostRequest> requests,
+                      const RoutingSettings &settings);
 
   void AddStop(const std::string &stop, Coords coords,
                std::map<std::string, int> stops);
 
   void AddBus(std::string bus, std::vector<std::string> stops);
-
  private:
   struct BusInfo {
     std::vector<std::string> stops;
@@ -51,11 +49,10 @@ class BusManager {
     double distance;
     double curvature;
   };
-  double ComputeGeoDistance(const std::vector<std::string> &stops) const;
-  double ComputeRoadDistance(const std::vector<std::string> &stops) const;
 
-  std::unordered_map<std::string, StopInfo> stop_info_;
-  std::unordered_map<std::string, BusInfo> bus_info_;
+  StopDict stop_info_;
+  BusDict bus_info_;
+  std::unique_ptr<RouteBase> route_base_;
 };
 }
 

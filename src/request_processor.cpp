@@ -4,6 +4,39 @@
 #include <variant>
 
 namespace rm {
+json::Dict ProcessRouteRequest(const BusManager &bm,
+                               const GetRouteRequest &request) {
+  json::Dict response;
+
+  auto route_resp = bm.FindRoute(request.from, request.to);
+
+  if (!route_resp) {
+    response.emplace("request_id", request.id);
+    response.emplace("error_message", std::string("not found"));
+    return response;
+  }
+
+  response.emplace("total_time", route_resp->time);
+  response.emplace("request_id", request.id);
+  json::List items;
+  for (auto &item : route_resp->items) {
+    if (auto ptr_w = std::get_if<RouteBase::RouteInfo::WaitItem>(&item)) {
+      items.emplace_back(json::Dict{
+          {"time", ptr_w->time},
+          {"type", std::string("Wait")},
+          {"stop_name", std::move(ptr_w->stop)}
+      });
+    } else if (auto ptr_r = std::get_if<RouteBase::RouteInfo::RoadItem>(&item))
+      items.emplace_back(json::Dict{
+          {"time", ptr_r->time},
+          {"bus", std::move(ptr_r->bus)},
+          {"type", std::string("Bus")},
+          {"span_count", ptr_r->span_count}});
+  }
+  response.emplace("items", std::move(items));
+  return response;
+}
+
 json::Dict ProcessBusRequest(const BusManager &bm,
                              const GetBusRequest &request) {
   json::Dict response;
@@ -12,7 +45,7 @@ json::Dict ProcessBusRequest(const BusManager &bm,
 
   if (!bm_resp) {
     response.emplace("request_id", request.id);
-    response.emplace("error_message", "not found");
+    response.emplace("error_message", std::string("not found"));
     return response;
   }
   response.emplace("route_length", bm_resp->length);
@@ -32,7 +65,7 @@ json::Dict ProcessStopRequest(const BusManager &bm,
 
   response.emplace("request_id", request.id);
   if (!bm_resp) {
-    response.emplace("error_message", "not found");
+    response.emplace("error_message", std::string("not found"));
   } else {
     response.emplace("buses",
                      json::List(std::move_iterator(bm_resp->buses.begin()),
@@ -43,7 +76,7 @@ json::Dict ProcessStopRequest(const BusManager &bm,
 }
 
 json::List ProcessRequests(const BusManager &bm,
-                           const std::vector<GetRequest> &requests) {
+                           std::vector<GetRequest> requests) {
   json::List node;
 
   for (auto &req : requests) {
@@ -51,6 +84,8 @@ json::List ProcessRequests(const BusManager &bm,
       node.emplace_back(ProcessBusRequest(bm, *ptr_b));
     else if (auto ptr_s = std::get_if<GetStopRequest>(&req))
       node.emplace_back(ProcessStopRequest(bm, *ptr_s));
+    else if (auto ptr_r = std::get_if<GetRouteRequest>(&req))
+      node.emplace_back(ProcessRouteRequest(bm, *ptr_r));
   }
 
   return node;
