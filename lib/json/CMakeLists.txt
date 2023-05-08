@@ -21,7 +21,8 @@ FetchContent_MakeAvailable(googletest)
 
 add_executable(json_tests
         src/json.cpp
-        tests/tests.cpp)
+        tests/load_test.cpp
+        tests/write_test.cpp)
 
 target_link_libraries(json_tests GTest::gtest_main)
 target_include_directories(json_tests PUBLIC . include)
