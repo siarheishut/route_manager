@@ -4,55 +4,54 @@
 #include <variant>
 
 namespace rm {
-json::Dict ProcessBusRequest(const BusManager &bm,
-                             const GetBusRequest &request) {
-  json::Dict response;
+json::Dict ToJson(std::optional<BusResponse> response, int id) {
+  json::Dict result;
 
-  auto bm_resp = bm.GetBusInfo(request.bus);
-
-  if (!bm_resp) {
-    response.emplace("request_id", request.id);
-    response.emplace("error_message", "not found");
-    return response;
+  result.emplace("request_id", id);
+  if (!response) {
+    result.emplace("error_message", std::string("not found"));
+    return result;
   }
-  response.emplace("route_length", bm_resp->length);
-  response.emplace("request_id", request.id);
-  response.emplace("curvature", bm_resp->curvature);
-  response.emplace("stop_count", bm_resp->stop_count);
-  response.emplace("unique_stop_count", bm_resp->unique_stop_count);
-
-  return response;
+  result.emplace("route_length", response->length);
+  result.emplace("curvature", response->curvature);
+  result.emplace("stop_count", response->stop_count);
+  result.emplace("unique_stop_count", response->unique_stop_count);
+  return result;
 }
 
-json::Dict ProcessStopRequest(const BusManager &bm,
-                              const GetStopRequest &request) {
-  json::Dict response;
+json::Dict ToJson(std::optional<StopResponse> response, int id) {
+  json::Dict result;
 
-  auto bm_resp = bm.GetStopInfo(request.stop);
-
-  response.emplace("request_id", request.id);
-  if (!bm_resp) {
-    response.emplace("error_message", "not found");
+  result.emplace("request_id", id);
+  if (!response) {
+    result.emplace("error_message", std::string("not found"));
   } else {
-    response.emplace("buses",
-                     json::List(std::move_iterator(bm_resp->buses.begin()),
-                                std::move_iterator(bm_resp->buses.end())));
+    result.emplace("buses",
+                   json::List(std::move_iterator(response->buses.begin()),
+                              std::move_iterator(response->buses.end())));
   }
 
-  return response;
+  return result;
+}
+
+json::Dict Process(const BusManager &bm, const GetBusRequest &request) {
+  return ToJson(bm.GetBusInfo(request.bus), request.id);
+}
+
+json::Dict Process(const BusManager &bm, const GetStopRequest &request) {
+  return ToJson(bm.GetStopInfo(request.stop), request.id);
 }
 
 json::List ProcessRequests(const BusManager &bm,
-                           const std::vector<GetRequest> &requests) {
-  json::List node;
+                           std::vector<GetRequest> requests) {
+  json::List responses;
 
-  for (auto &req : requests) {
-    if (auto ptr_b = std::get_if<GetBusRequest>(&req))
-      node.emplace_back(ProcessBusRequest(bm, *ptr_b));
-    else if (auto ptr_s = std::get_if<GetStopRequest>(&req))
-      node.emplace_back(ProcessStopRequest(bm, *ptr_s));
+  for (auto &request : requests) {
+    std::visit([&](auto &&var) {
+      responses.emplace_back(Process(bm, var));
+    }, request);
   }
 
-  return node;
+  return responses;
 }
 }
