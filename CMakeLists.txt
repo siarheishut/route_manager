@@ -33,7 +33,8 @@ add_executable(route_manager_tests
         src/bus_manager.cpp
         tests/request_parser_test.cpp
         tests/bus_manager_test.cpp
-        tests/test_utils.cpp)
+        tests/test_utils.cpp
+        tests/request_processor_test.cpp)
 
 target_link_libraries(route_manager_tests GTest::gtest_main json graph)
 target_include_directories(route_manager_tests PUBLIC . tests)

@@ -8,14 +8,14 @@
 #include <ostream>
 
 namespace rm {
-json::Dict ProcessBusRequest(const BusManager &bm,
-                             const GetBusRequest &request);
+json::Dict ToJson(std::optional<BusResponse> resp, int id);
+json::Dict ToJson(std::optional<StopResponse> resp, int id);
 
-json::Dict ProcessStopRequest(const BusManager &bm,
-                              const GetStopRequest &request);
+json::Dict Process(const BusManager &bm, const GetBusRequest &request);
+json::Dict Process(const BusManager &bm, const GetStopRequest &request);
 
 json::List ProcessRequests(const BusManager &bm,
-                           const std::vector<GetRequest> &request);
+                           std::vector<GetRequest> requests);
 }
 
 #endif // ROOT_MANAGER_SRC_REQUEST_PROCESSOR_H_
