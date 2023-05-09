@@ -1,64 +1,115 @@
 ## Route manager
 
-### How to use
-
 Bus Route Manager allows you to record information about various buses with their routes and stops, and later receive
-information about it. Input format:
+information about it.
 
-**1.**  A line with a non-negative integer number N - the number of base requests.  
-**2.**  N lines with base requests. One request per line.  
-**3.**  A line with a non-negative integer number K - the number of stat requests.  
-**4.**  K lines with stat requests. One request per line. Each line must end on '\n'.
+### Input
 
-##
+Input is represented as a JSON map with the following fields:
 
-### Base requests:
+| Field         | Type  | Optional | Description                           |  
+|---------------|-------|----------|---------------------------------------|  
+| base_requests | array | No       | Requests for initializing a database. |   
+| stat_requests | array | No       | Requests to the database.             |           
 
-1. Bus {**bus**}: {**stop1**} - {**stop2**} - ... - {**stopn**}  
-   Adds a bus with a non-circular route to the database. The route will be expanded to the following form: **{stop1},
-   {stop2}, ..., {stopn}, {stopn-1}, ... ,{stop1}.**
+#### base_requests:
 
-2. Bus {**bus**}: {**stop1**} > {**stop2**} > ... > {**stopn**} > {**stop1**}  
-   Adds a bus with a circular route to the database. The first and the last stops on the road must be identical.
+Each base_request in the array is a JSON map of one of the following types:
 
-3. Stop {**stop**}: {**latitude**}, {**longitude**}, {**dist1**}m to {**stop1**}, {**dist2**}m to {**stop2**}, ...  
-   Adds a stop, its coordinates and road lengths from {**stop**} to {**stopX**}.
+1. Bus request.
 
-   > Distance from {stopX} to {stop} = distance from {stop} to {stopX}, if road_length from {stopX} to {stop} wasn’t set
-   explicitly.
-   >
-   > If neither {stopX}-{stopY} nor {stopY}-{stopX} road_lengths were provided, the geo_distance (computed by
-   coordinates) will be considered the distance between the stops.
+   Adds a bus with its route to the database.
 
-##
+| Field        | Type   | Optional | Description                                              |  
+|--------------|--------|----------|----------------------------------------------------------|  
+| type         | string | No       | Must be equal to "Bus".                                  |  
+| name         | string | No       | The name of the bus. Must be unique.                     |  
+| stops        | array  | No       | The route of the bus represented as an array of strings. | 
+| is_roundtrip | bool   | No       | Indicates a circular route.                              |  
 
-### Stat requests:
+> if `is_roundtrip` is set to `true`, than `"stops" : ["stop1", "stop2", "stop3", "stop1"]` describes the route, that
+> starts at `stop1`, then goes to `stop2`, `stop3`, and then returns back directly to `stop1`. Then this route
+> repeats: `stop1 -> stop2 -> stop3 -> stop1`.
+>
+> if `is_roundtrip` is set to `false`, then `"stops" : ["stop1", "stop2", "stop3"]` describes the route, that starts
+> at `stop1`, then goes to `stop2`, `stop3`, then back to `stop2` and finally returns to `stop1`. Then this route
+> repeats: `stop1 -> stop2 -> stop3 -> stop2 -> stop1`.
+>
+> Note: if `is_roundtrip` is set to `true`, the first stop must be the last stop.
 
-**1.**  Bus {**bus**}.  
-**2.**  Stop {**stop**}.
+2. Stop request.
 
-Responses to stat requests:
+   Adds a stop with its coordinates and road lengths to the database.
 
-1.
-    - `If the bus was successfully found:`  
-      Bus {**bus**}: {**stop_count**} stops on route, {**unique_stop_count**} unique stops, {**route_length**} route
-      length, {**curvature**} curvature.
+| Field          | Type   | Optional | Description                                                                                             |  
+|----------------|--------|----------|---------------------------------------------------------------------------------------------------------|  
+| type           | string | No       | Must be equal to "Stop".                                                                                |  
+| name           | string | No       | The name of the stop. Must be unique.                                                                   |  
+| latitude       | float  | No       | The latitude of the stop.                                                                               | 
+| longitude      | float  | No       | The longitude of the stop.                                                                              |  
+| road_distances | map    | No       | Pairs {`stopX`, `distX`}, where integer `distX` is a road length in meters from stop `name` to `stopX`. |  
 
-      > curvature = route_length / geo_route_length.  
-      > geo_route_length is an ideal route length: distance between any stopX and stopY is computed by their
-      coordinates.
+> The distance from `A` to `B` is considered to be equal to the distance from `B` to `A`, if road length
+> from `A` to `B` is not provided explicitly.
+>
+> If neither `A`->`B` nor `B`->`A` road lengths are provided, the distance between the stops is computed by coordinates.
 
-    - `If the bus wasn't found:`  
-      Bus {**bus**}: not found.
+#### stat_requests:
 
-2.
-    - `If this stop is in the database, and it’s included in at least one route:`  
-      Stop {**stop**}: buses {**bus1**} {**bus2**} ... {**busn**}
-      > The buses are listed in lexicographical order.
+Each stat_request in the array is a JSON map of one of the following types:
 
-    - `If the stop is in the database, but it’s not included in any route:`  
-      Stop {**stop**}: no buses
+1. Bus request.
 
-    - `If the stop is not in the database:`  
-      Stop {**stop**}: not found
+| Field | Type   | Optional | Description                                         |  
+|-------|--------|----------|-----------------------------------------------------|  
+| id    | int    | No       | Request ID. Must be unique.                         |  
+| type  | string | No       | Must be equal to "Bus".                             | 
+| name  | string | No       | The name of the bus for which you want to get info. |
 
+2. Stop request.
+
+| Field | Type   | Optional | Description                                          |  
+|-------|--------|----------|------------------------------------------------------|  
+| id    | int    | No       | Request ID. Must be unique.                          |  
+| type  | string | No       | Must be equal to "Stop".                             |  
+| name  | string | No       | The name of the stop for which you want to get info. |
+
+### Output:
+
+The output is represented as a JSON array, where each element is a response to a related stat_request. Each response is
+a JSON map of one of the following types:
+
+1. Response to Bus Request.
+
+- `If the bus was successfully found:`
+
+| Field             | Type  | Description                                                                                                                                              |  
+|-------------------|-------|----------------------------------------------------------------------------------------------------------------------------------------------------------|  
+| route_length      | float | The length of the bus route in meters.                                                                                                                   |  
+| request_id        | int   | An ID of the corresponding request.                                                                                                                      |  
+| stop_count        | int   | A number of stops on the bus route.                                                                                                                      |  
+| unique_stop_count | int   | A number of unique stops on the bus route.                                                                                                               |  
+| curvature         | float | `route_length` / `geo_route_length`. `geo_route_length` is an ideal route length: distance between any stopX and stopY is computed by their coordinates. |
+
+- `If the bus wasn't found:`
+
+| Field         | Type   | Description                                      |  
+|---------------|--------|--------------------------------------------------| 
+| request_id    | int    | An ID of the corresponding request.              | 
+| error_message | string | An error message, which is equal to "not found". | 
+
+2. Response to Stop Request.
+
+- `If the stop is present in the database:`
+
+| Field      | Type  | Description                                                                    |  
+|------------|-------|--------------------------------------------------------------------------------|  
+| buses      | array | All the buses that stop at the provided stop, listed in lexicographical order. |  
+| request_id | int   | An ID of the corresponding request.                                            |
+
+- `If the stop is not in the database:`
+
+| Field         | Type   | Description                                      |  
+|---------------|--------|--------------------------------------------------|  
+| request_id    | int    | An ID of the corresponding request.              |  
+| error_message | string | An error message, which is equal to "not found". |  
