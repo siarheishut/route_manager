@@ -102,7 +102,7 @@ void BusManager::AddBus(std::string bus,
 
   BusInfo bus_info;
   bus_info.stops = std::move(stops);
-  bus_info_[std::move(bus)] = bus_info;
+  bus_info_[std::move(bus)] = std::move(bus_info);
 }
 
 std::optional<BusResponse> BusManager::GetBusInfo(const std::string &bus) const {
