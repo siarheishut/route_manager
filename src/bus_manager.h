@@ -36,6 +36,7 @@ class BusManager {
 
   std::optional<RouteResponse> FindRoute(const std::string &from,
                                          const std::string &to) const;
+
  private:
   BusManager(std::vector<PostRequest> requests,
              const RoutingSettings &settings);
@@ -44,8 +45,8 @@ class BusManager {
                std::map<std::string, int> stops);
 
   void AddBus(std::string bus, std::vector<std::string> stops);
- private:
 
+ private:
   StopDict stop_info_;
   BusDict bus_info_;
   std::unique_ptr<RouteManager> bus_manager_;
