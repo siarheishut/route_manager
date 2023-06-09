@@ -13,18 +13,16 @@
 #include <vector>
 
 namespace graph {
-// Router requires V^2, where V is the number of vertices
+// Router requires O(V^2) memory, where V is the number of vertices
 // (not counting the memory required to store the route cache).
-// Router constructor has complexity O(V^3+E), where
-// V is the number of graph vertices, E is the number of edges.
-// Route::BuildRoute on a constructed router is E, where E is the number of
-// edges in the route.
 template<typename Weight>
 class Router {
  private:
   using Graph = DirectedWeightedGraph<Weight>;
 
  public:
+  // Constructor has complexity O(V^3+E), where
+  // V is the number of graph vertices, E is the number of edges.
   Router(const Graph &graph);
 
   using RouteId = uint64_t;
@@ -35,6 +33,8 @@ class Router {
     size_t edge_count;
   };
 
+  // Route::BuildRoute on a constructed router is O(E), where E is the number of
+  // edges in the route.
   std::optional<RouteInfo> BuildRoute(VertexId from, VertexId to) const;
   EdgeId GetRouteEdge(RouteId route_id, size_t edge_idx) const;
   void ReleaseRoute(RouteId route_id);
