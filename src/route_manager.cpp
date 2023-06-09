@@ -24,7 +24,8 @@ void RouteManager::ReadStops(const rm::StopDict &stop_dict) {
     depart = vertex_id++;
     vertices_[arrive] = Vertex{stop};
     vertices_[depart] = Vertex{stop};
-    graph_.AddEdge({.from = arrive,
+    graph_.AddEdge({
+                       .from = arrive,
                        .to = depart,
                        .weight = static_cast<double>(settings_.bus_wait_time)});
     edges_.emplace_back(WaitEdge{});
@@ -90,5 +91,4 @@ std::optional<RouteInfo> RouteManager::FindRoute(const std::string &from,
   router_->ReleaseRoute(route->id);
   return route_info;
 }
-
 }

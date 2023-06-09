@@ -1,5 +1,5 @@
-#ifndef ROOT_MANAGER_SRC_BUS_CATALOG_BUS_CATALOG_H_
-#define ROOT_MANAGER_SRC_BUS_CATALOG_BUS_CATALOG_H_
+#ifndef ROOT_MANAGER_SRC_ROUTE_MANAGER_H_
+#define ROOT_MANAGER_SRC_ROUTE_MANAGER_H_
 
 #include "src/request_types.h"
 #include "router.h"
@@ -18,6 +18,7 @@ class RouteManager {
  private:
   using Graph = graph::DirectedWeightedGraph<double>;
   using Router = graph::Router<double>;
+
  public:
   RouteManager(const rm::StopDict &stop_info,
                const rm::BusDict &bus_info,
@@ -29,7 +30,7 @@ class RouteManager {
  private:
   void ReadStops(const rm::StopDict &stop_dict);
   void ReadBuses(const rm::BusDict &stop_dict, const rm::StopDict &bus_dict);
- private:
+
   using Vertex = std::string;
 
   struct StopIds {
@@ -54,4 +55,4 @@ class RouteManager {
 };
 }
 
-#endif // ROOT_MANAGER_SRC_BUS_CATALOG_BUS_CATALOG_H_
+#endif // ROOT_MANAGER_SRC_ROUTE_MANAGER_H_
