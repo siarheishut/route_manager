@@ -13,6 +13,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 add_subdirectory(lib/json)
+add_subdirectory(lib/graph)
 
 # root_manager config start
 add_executable(root_manager
@@ -21,7 +22,7 @@ add_executable(root_manager
         src/request_processor.cpp
         src/request_parser.cpp)
 
-target_link_libraries(root_manager json)
+target_link_libraries(root_manager json graph)
 target_include_directories(root_manager PUBLIC .)
 # root_manager config end
 
@@ -35,7 +36,7 @@ add_executable(route_manager_tests
         tests/test_utils.cpp
         tests/request_processor_test.cpp)
 
-target_link_libraries(route_manager_tests GTest::gtest_main json)
+target_link_libraries(route_manager_tests GTest::gtest_main json graph)
 target_include_directories(route_manager_tests PUBLIC . tests)
 gtest_discover_tests(route_manager_tests)
 # tests end
