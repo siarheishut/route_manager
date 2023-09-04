@@ -1,6 +1,8 @@
 #ifndef ROOT_MANAGER_SRC_REQUEST_TYPES_H_
 #define ROOT_MANAGER_SRC_REQUEST_TYPES_H_
 
+#include "sphere.h"
+
 #include <string>
 #include <variant>
 #include <vector>
@@ -22,13 +24,9 @@ struct PostBusRequest {
   std::vector<std::string> stops;
 };
 
-struct Coords {
-  double latitude, longitude;
-};
-
 struct PostStopRequest {
   std::string stop;
-  Coords coords;
+  sphere::Coords coords;
   // Pairs of stop_to and dist from stop to stop_to.
   std::map<std::string, int> stop_distances;
 };

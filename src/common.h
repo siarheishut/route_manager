@@ -13,7 +13,7 @@ struct StopInfo {
   using Dists = std::unordered_map<std::string, int>;
   // Distances to other stops.
   Dists dists;
-  Coords coords;
+  sphere::Coords coords;
   std::vector<std::string> buses;
 };
 

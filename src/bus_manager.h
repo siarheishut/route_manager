@@ -33,15 +33,12 @@ class BusManager {
  private:
   explicit BusManager(std::vector<PostRequest> requests);
 
-  void AddStop(const std::string &stop, Coords coords,
+  void AddStop(const std::string &stop, sphere::Coords coords,
                const std::map<std::string, int> &stops);
 
   void AddBus(std::string bus, std::vector<std::string> stops);
 
  private:
-  double ComputeGeoDistance(const std::vector<std::string> &stops) const;
-  double ComputeRoadDistance(const std::vector<std::string> &stops) const;
-
   StopDict stop_info_;
   BusDict bus_info_;
 };
