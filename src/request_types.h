@@ -8,34 +8,29 @@
 
 namespace rm {
 struct GetBusRequest {
-  int id;
-  std::string bus;
+	int id;
+	std::string bus;
 };
 
 struct GetStopRequest {
-  int id;
-  std::string stop;
+	int id;
+	std::string stop;
 };
 
 struct PostBusRequest {
-  std::string bus;
-  std::vector<std::string> stops;
+	std::string bus;
+	std::vector<std::string> stops;
 };
 
 struct Coords {
-  double latitude, longitude;
-};
-
-struct RoadDistance {
-  std::string destination;
-  int distance;
+	double latitude, longitude;
 };
 
 struct PostStopRequest {
-  std::string stop;
-  Coords coords;
-  // Pairs of stop_to and dist from stop to stop_to.
-  std::map<std::string, int> stop_distances;
+	std::string stop;
+	Coords coords;
+	// Pairs of stop_to and dist from stop to stop_to.
+	std::map<std::string, int> stop_distances;
 };
 
 using PostRequest = std::variant<PostBusRequest, PostStopRequest>;
