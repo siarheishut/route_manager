@@ -11,11 +11,6 @@ int main() {
   if (!root.IsMap()) return 1;
   input_map = root.ReleaseMap();
 
-  if (input_map.count("base_requests") == 0 ||
-      input_map.count("stat_requests") == 0) {
-    return 1;
-  }
-
   auto base_requests = input_map.find("base_requests");
   auto stat_requests = input_map.find("stat_requests");
 
