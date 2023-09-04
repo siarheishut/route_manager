@@ -2,6 +2,7 @@
 #define ROOT_MANAGER_SRC_BUS_MANAGER_H_
 
 #include "request_types.h"
+#include "common.h"
 
 #include <string>
 #include <optional>
@@ -18,13 +19,6 @@ struct BusResponse {
 };
 
 struct StopResponse {
-  std::vector<std::string> buses;
-};
-
-struct StopInfo {
-  // Distances to other stops.
-  std::unordered_map<std::string, int> dists;
-  Coords coords;
   std::vector<std::string> buses;
 };
 
@@ -45,17 +39,11 @@ class BusManager {
   void AddBus(std::string bus, std::vector<std::string> stops);
 
  private:
-  struct BusInfo {
-    std::vector<std::string> stops;
-    int unique_stop_count;
-    double distance;
-    double curvature;
-  };
   double ComputeGeoDistance(const std::vector<std::string> &stops) const;
   double ComputeRoadDistance(const std::vector<std::string> &stops) const;
 
-  std::unordered_map<std::string, StopInfo> stop_info_;
-  std::unordered_map<std::string, BusInfo> bus_info_;
+  StopDict stop_info_;
+  BusDict bus_info_;
 };
 }
 
