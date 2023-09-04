@@ -40,7 +40,7 @@ int ComputeUniqueCount(std::vector<std::string> stops) {
 }
 
 namespace rm {
-std::unique_ptr<BusManager> BusManager::Create(const std::vector<PostRequest> &requests) {
+std::unique_ptr<BusManager> BusManager::Create(std::vector<PostRequest> requests) {
   std::set<std::string_view> route_stops, road_dists_stops, stop_requests_stops;
   std::set<std::string_view> buses;
   for (auto &req : requests) {
@@ -94,7 +94,7 @@ BusManager::BusManager(std::vector<PostRequest> requests) {
 }
 
 void BusManager::AddStop(const std::string &stop, Coords coords,
-                         std::map<std::string, int> stops) {
+                         const std::map<std::string, int> &stops) {
   constexpr double k = 3.1415926535 / 180;
   auto &info = stop_info_[stop];
   info.coords = {coords.latitude * k, coords.longitude * k};
@@ -103,7 +103,7 @@ void BusManager::AddStop(const std::string &stop, Coords coords,
     if (auto it = stop_to_dists.find(stop); it == stop_to_dists.end()) {
       stop_to_dists[stop] = dist;
     }
-    info.dists[std::move(stop_to)] = dist;
+    info.dists[stop_to] = dist;
   }
 }
 

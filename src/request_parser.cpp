@@ -94,7 +94,7 @@ std::optional<PostStopRequest> ParsePostStopRequest(json::Dict dict) {
   sr.coords.longitude = longitude->second.AsDouble();
 
   for (auto &[stop, dist] : road_distances->second.ReleaseMap()) {
-    sr.stop_distances.emplace(std::move(stop), dist.AsInt());
+    sr.stop_distances.emplace(stop, dist.AsInt());
   }
 
   return sr;
