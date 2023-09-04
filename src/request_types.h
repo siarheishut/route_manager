@@ -26,11 +26,6 @@ struct Coords {
   double latitude, longitude;
 };
 
-struct RoadDistance {
-  std::string destination;
-  int distance;
-};
-
 struct PostStopRequest {
   std::string stop;
   Coords coords;
