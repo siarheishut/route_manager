@@ -320,6 +320,57 @@ TEST(TestOutputRequest, TestGetStopRequest) {
   }
 }
 
+TEST(TestOutputRequest, TestFindRouteRequest) {
+  using namespace rm;
+  struct TestCase {
+    std::string name;
+    json::Dict input;
+    std::optional<GetRouteRequest> want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Wrong request: no <from>",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 1},
+                              {"to", "stop 2"},
+          },
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong request: no <to>",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 2},
+                              {"from", "stop 1"},
+          },
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong request: no <id>",
+          .input = json::Dict{{"type", "Bus"},
+                              {"from", "stop 1"},
+                              {"to", "stop 2"}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Common request",
+          .input = json::Dict{{"type", "Route"},
+                              {"from", "stop 1"},
+                              {"to", "stop 2"},
+                              {"id", 4}},
+          .want = GetRouteRequest{
+              .id = 4,
+              .from = "stop 1",
+              .to = "stop 2"}
+      },
+  };
+
+  for (auto &[name, input, want] : test_cases) {
+    auto got = ParseFindRouteRequest(input);
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
 TEST(TestParseRequests, TestOutput) {
   using namespace rm;
 

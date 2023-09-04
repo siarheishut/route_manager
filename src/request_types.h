@@ -9,6 +9,11 @@
 #include <map>
 
 namespace rm {
+struct RoutingSettings {
+  int bus_wait_time;
+  double bus_velocity;
+};
+
 struct GetBusRequest {
   int id;
   std::string bus;
@@ -17,6 +22,12 @@ struct GetBusRequest {
 struct GetStopRequest {
   int id;
   std::string stop;
+};
+
+struct GetRouteRequest {
+  int id;
+  std::string from;
+  std::string to;
 };
 
 struct PostBusRequest {
@@ -32,7 +43,7 @@ struct PostStopRequest {
 };
 
 using PostRequest = std::variant<PostBusRequest, PostStopRequest>;
-using GetRequest = std::variant<GetBusRequest, GetStopRequest>;
+using GetRequest = std::variant<GetBusRequest, GetStopRequest, GetRouteRequest>;
 }
 
 #endif // ROOT_MANAGER_SRC_REQUEST_TYPES_H_

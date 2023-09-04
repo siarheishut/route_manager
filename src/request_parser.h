@@ -8,6 +8,7 @@
 #include <vector>
 
 namespace rm {
+std::optional<RoutingSettings> ParseSettings(json::Dict dict);
 std::optional<std::vector<PostRequest>> ParseInput(json::List base_requests);
 std::optional<std::vector<GetRequest>> ParseOutput(json::List stat_requests);
 
@@ -19,6 +20,7 @@ std::optional<PostBusRequest> ParsePostBusRequest(json::Dict request_data);
 
 std::optional<GetStopRequest> ParseGetStopRequest(json::Dict request_data);
 std::optional<GetBusRequest> ParseGetBusRequest(json::Dict request_data);
+std::optional<GetRouteRequest> ParseFindRouteRequest(json::Dict dict);
 }
 
 #endif // ROOT_MANAGER_SRC_REQUEST_PARSER_H_

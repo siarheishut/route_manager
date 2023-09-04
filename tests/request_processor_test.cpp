@@ -86,3 +86,53 @@ TEST(TestProcessRequests, TestBusResponseToJson) {
     EXPECT_EQ(want, got);
   }
 }
+
+TEST(TestProcessRequests, TestRouteResponseToJson) {
+  using ResponseOpt = std::optional<rm::RouteResponse>;
+
+  struct TestCase {
+    std::string name;
+    ResponseOpt response;
+    int id;
+    json::Dict want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "No route",
+          .response = std::nullopt,
+          .id = 1234567,
+          .want = json::Dict{{"request_id", 1234567},
+                             {"error_message", "not found"}},
+      },
+      TestCase{
+          .name = "Bus Found",
+          .response = rm::RouteResponse{
+              .time = 25.135,
+              .items = {
+                  rm::RouteResponse::WaitItem{
+                      .stop = "Stop 1",
+                      .time = 12},
+                  rm::RouteResponse::RoadItem{
+                      .bus = "Bus 1",
+                      .time = 13.135,
+                      .span_count = 3},
+              },
+          },
+          .id = 1407207,
+          .want = json::Dict{{"total_time", 25.135},
+                             {"items", json::List{
+                                 json::Dict{{"time", 12}, {"type", "Wait"},
+                                            {"stop_name", "Stop 1"}},
+                                 json::Dict{{"time", 13.135}, {"type", "Bus"},
+                                            {"bus", "Bus 1"}, {"span_count", 3}}
+                             }},
+                             {"request_id", 1407207}},
+      },
+  };
+
+  for (auto &[name, response, id, want] : test_cases) {
+    json::Dict got = rm::ToJson(response, id);
+    EXPECT_EQ(want, got);
+  }
+}
