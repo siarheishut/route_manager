@@ -26,6 +26,24 @@ struct BusInfo {
 
 using StopDict = std::unordered_map<std::string, StopInfo>;
 using BusDict = std::unordered_map<std::string, BusInfo>;
+
+struct RouteInfo {
+  struct RoadItem {
+    std::string bus;
+    double time;
+    int span_count;
+  };
+  struct WaitItem {
+    std::string stop;
+    int time;
+  };
+
+  using Item = std::variant<RoadItem, WaitItem>;
+
+  double time;
+  std::vector<Item> items;
+};
+
 }
 
 #endif // ROOT_MANAGER_SRC_COMMON_H_
