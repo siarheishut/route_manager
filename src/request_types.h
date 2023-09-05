@@ -45,7 +45,9 @@ struct PostStopRequest {
 };
 
 using PostRequest = std::variant<PostBusRequest, PostStopRequest>;
-using GetRequest = std::variant<GetBusRequest, GetStopRequest>;
+using GetRequest = std::variant<GetBusRequest,
+                                GetStopRequest,
+                                GetRouteRequest>;
 }
 
 #endif // ROOT_MANAGER_SRC_REQUEST_TYPES_H_

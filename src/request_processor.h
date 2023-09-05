@@ -13,6 +13,7 @@ json::Dict ToJson(std::optional<StopResponse> resp, int id);
 
 json::Dict Process(const BusManager &bm, const GetBusRequest &request);
 json::Dict Process(const BusManager &bm, const GetStopRequest &request);
+json::Dict Process(const BusManager &bm, const GetRouteRequest &request);
 
 json::List ProcessRequests(const BusManager &bm,
                            std::vector<GetRequest> requests);

@@ -70,6 +70,14 @@ std::ostream &operator<<(std::ostream &out,
 std::ostream &operator<<(std::ostream &out, const rm::RouteResponse &rr);
 
 std::ostream &operator<<(std::ostream &out, const RouteResponse::Item &item);
+
+struct Occurs {
+  int bus_req_count = 0;
+  int stop_req_count = 0;
+  int route_req_count = 0;
+};
+
+bool operator==(const Occurs lhs, const Occurs rhs);
 }
 
 #endif // ROOT_MANAGER_TESTS_TEST_UTILS_H_

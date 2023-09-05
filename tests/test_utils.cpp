@@ -156,5 +156,9 @@ std::ostream &operator<<(std::ostream &out, const RouteResponse::Item &item) {
   return out;
 }
 
+bool operator==(const Occurs lhs, const Occurs rhs) {
+  return std::tie(lhs.bus_req_count, lhs.stop_req_count, lhs.route_req_count)
+      == std::tie(rhs.bus_req_count, rhs.stop_req_count, rhs.route_req_count);
+}
 }
 

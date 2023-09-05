@@ -320,13 +320,64 @@ TEST(TestOutputRequest, TestGetStopRequest) {
   }
 }
 
-TEST(TestParseRequests, TestOutput) {
+TEST(TestOutputRequest, TestGetRouteRequest) {
+  using namespace rm;
+  struct TestCase {
+    std::string name;
+    json::Dict input;
+    std::optional<GetRouteRequest> want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Wrong request: no <from>",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 1},
+                              {"to", "stop 2"},
+          },
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong request: no <to>",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 2},
+                              {"from", "stop 1"},
+          },
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong request: no <id>",
+          .input = json::Dict{{"type", "Bus"},
+                              {"from", "stop 1"},
+                              {"to", "stop 2"}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Common request",
+          .input = json::Dict{{"type", "Route"},
+                              {"from", "stop 1"},
+                              {"to", "stop 2"},
+                              {"id", 4}},
+          .want = GetRouteRequest{
+              .id = 4,
+              .from = "stop 1",
+              .to = "stop 2"}
+      },
+  };
+
+  for (auto &[name, input, want] : test_cases) {
+    auto got = ParseGetRouteRequest(input);
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
+TEST(TestParseRequest, TestOutput) {
   using namespace rm;
 
   struct TestCase {
     std::string name;
     json::List input;
-    std::optional<std::pair<int, int>> want;
+    std::optional<Occurs> want;
   };
   std::vector<TestCase> test_cases{
       TestCase{
@@ -343,6 +394,13 @@ TEST(TestParseRequests, TestOutput) {
                                                      {"id", 473829}},
                                           json::Dict{{"type", "Bus"},
                                                      {"name", "Bus 4"}},
+                                          json::Dict{{"type", "Route"},
+                                                     {"from", "stop1"},
+                                                     {"to", "stop3"},
+                                                     {"id", 3423626}},
+                                          json::Dict{{"type", "Route"},
+                                                     {"from", "stop4"},
+                                                     {"to", "stop2"}},
                                           json::Dict{{"type", "Bus"},
                                                      {"name", "Bus 4"}},
                                           json::Dict{{"type", "Stop"},
@@ -365,6 +423,17 @@ TEST(TestParseRequests, TestOutput) {
                                          {"id", 473829}},
                               json::Dict{{"type", "Bus"},
                                          {"name", "Bus 4"}},
+                              json::Dict{{"type", "Route"},
+                                         {"from", "stop1"},
+                                         {"to", "stop3"},
+                                         {"id", 3423626}},
+                              json::Dict{{"type", "Route"},
+                                         {"from", "stop2"},
+                                         {"to", "stop7"},
+                                         {"id", 952790}},
+                              json::Dict{{"type", "Route"},
+                                         {"from", "stop4"},
+                                         {"to", "stop2"}},
                               json::Dict{{"type", "Bus"},
                                          {"name", "Bus 4"}},
                               json::Dict{{"type", "Stop"},
@@ -372,7 +441,8 @@ TEST(TestParseRequests, TestOutput) {
                                          {"id", 635478}},
                               json::Dict{{"type", "Stop"},
                                          {"name", "Stop 2"}}},
-          .want = {{3, 1}},
+          .want = {Occurs{.bus_req_count = 3, .stop_req_count = 1,
+              .route_req_count = 2}},
       },
   };
 
@@ -392,8 +462,15 @@ TEST(TestParseRequests, TestOutput) {
                                     return std::holds_alternative<GetStopRequest>(
                                         req);
                                   });
-    std::pair<int, int> got = {bus_req_count, stop_req_count};
-    EXPECT_EQ(want, got) << name;
+    int route_req_count = count_if(
+        got_opt->begin(), got_opt->end(), [](const GetRequest &req) {
+          return std::holds_alternative<GetRouteRequest>(req);
+        });
+
+    Occurs got =
+        Occurs{.bus_req_count = bus_req_count, .stop_req_count = stop_req_count,
+            .route_req_count = route_req_count};
+    EXPECT_EQ(*want, got) << name;
   }
 }
 
