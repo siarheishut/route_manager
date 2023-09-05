@@ -21,7 +21,8 @@ int ComputeUniqueCount(std::vector<std::string> stops) {
 }
 
 namespace rm {
-std::unique_ptr<BusManager> BusManager::Create(std::vector<PostRequest> requests) {
+std::unique_ptr<BusManager> BusManager::Create(std::vector<PostRequest> requests,
+                                               const RoutingSettings &settings) {
   std::set<std::string_view> route_stops, road_dists_stops, stop_requests_stops;
   std::set<std::string_view> buses;
   for (auto &req : requests) {
@@ -44,10 +45,12 @@ std::unique_ptr<BusManager> BusManager::Create(std::vector<PostRequest> requests
                      begin(road_dists_stops), end(road_dists_stops)))
     return nullptr;
 
-  return std::unique_ptr<BusManager>(new BusManager(std::move(requests)));
+  return std::unique_ptr<BusManager>(new BusManager(std::move(requests),
+                                                    settings));
 }
 
-BusManager::BusManager(std::vector<PostRequest> requests) {
+BusManager::BusManager(std::vector<PostRequest> requests,
+                       const RoutingSettings &settings) {
   for (auto &request : requests) {
     if (std::holds_alternative<PostBusRequest>(request)) {
       auto &bus = std::get<PostBusRequest>(request);
@@ -72,6 +75,8 @@ BusManager::BusManager(std::vector<PostRequest> requests) {
     buses.erase(std::unique(buses.begin(), buses.end()),
                 buses.end());
   }
+  route_manager_ =
+      std::make_unique<RouteManager>(stop_info_, bus_info_, settings);
 }
 
 void BusManager::AddStop(const std::string &stop, sphere::Coords coords,
@@ -117,5 +122,10 @@ std::optional<StopResponse> BusManager::GetStopInfo(const std::string &stop) con
     return std::nullopt;
 
   return StopResponse{it->second.buses};
+}
+
+std::optional<RouteResponse> BusManager::FindRoute(const std::string &from,
+                                                   const std::string &to) const {
+  return route_manager_->FindRoute(from, to);
 }
 }
