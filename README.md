@@ -1,16 +1,29 @@
 ## Route manager
 
 Bus Route Manager allows you to record information about various buses with their routes and stops, and later receive
-information about it.
+information about any stop, bus or a route between any two stops.
 
 ### Input
 
 Input is represented as a JSON map with the following fields:
 
-| Field         | Type  | Optional | Description                           |  
-|---------------|-------|----------|---------------------------------------|  
-| base_requests | array | No       | Requests for initializing a database. |   
-| stat_requests | array | No       | Requests to the database.             |           
+| Field            | Type  | Optional | Description                           |  
+|------------------|-------|----------|---------------------------------------|  
+| routing_settings | map   | No       | Config.                               |           
+| base_requests    | array | No       | Requests for initializing a database. |   
+| stat_requests    | array | No       | Requests to the database.             |           
+
+#### routing_settings:
+
+| Field         | Type  | Optional | Description                                            |  
+|---------------|-------|----------|--------------------------------------------------------|  
+| bus_wait_time | int   | No       | Waiting time for the bus at the bus stop (in minutes). |           
+| bus_velocity  | float | No       | The bus speed (in kilometers per hour).                |   
+
+> The algorithm assumes that whenever a person arrives at a stop and whatever that stop is,
+> they will wait for any bus for exactly `bus_wait_time` minutes.
+>
+> The algorithm assumes that the speed of any bus is constant and exactly equal to `bus_velocity`.
 
 #### base_requests:
 
@@ -74,6 +87,15 @@ Each stat_request in the array is a JSON map of one of the following types:
 | type  | string | No       | Must be equal to "Stop".                             |  
 | name  | string | No       | The name of the stop for which you want to get info. |
 
+3. Route request.
+
+| Field | Type   | Optional | Description                    |  
+|-------|--------|----------|--------------------------------|  
+| id    | int    | No       | Request ID. Must be unique.    |  
+| type  | string | No       | Must be equal to "Route".      |  
+| from  | string | No       | The name of the starting stop. |
+| to    | string | No       | The name of the finish stop.   |
+
 ### Output:
 
 The output is represented as a JSON array, where each element is a response to a related stat_request. Each response is
@@ -113,3 +135,39 @@ a JSON map of one of the following types:
 |---------------|--------|--------------------------------------------------|  
 | request_id    | int    | An ID of the corresponding request.              |  
 | error_message | string | An error message, which is equal to "not found". |  
+
+3. Response to Route Request.
+
+- `If there is no route between such two stops:`
+
+| Field         | Type   | Description                                      |  
+|---------------|--------|--------------------------------------------------| 
+| request_id    | int    | An ID of the corresponding request.              | 
+| error_message | string | An error message, which is equal to "not found". | 
+
+- `If exists at least one route between such two stops:`
+
+| Field      | Type  | Description                                                                               |  
+|------------|-------|-------------------------------------------------------------------------------------------|  
+| request_id | int   | An ID of the corresponding request.                                                       |  
+| total_time | float | The minimum time required to travel from stop from to stop to.                            | 
+| items      | array | List of route elements, each of which describes the continuous activity of the passenger. | 
+
+There are 2 types of items:
+
+Wait(Wait at the stop):
+
+| Fields    | Type   | Description                                  |
+|-----------|--------|----------------------------------------------|
+| type      | string | Equal to "Wait".                             |
+| stop_name | string | The stop to wait at.                         |
+| time      | int    | The waiting time (equal to `bus_wait_time`). |
+
+Bus(Take a bus at the stop):
+
+| Fields     | Type   | Description                    |
+|------------|--------|--------------------------------|
+| type       | string | Equal to "Bus".                |
+| bus        | string | The bus to get on.             |
+| span_count | int    | The number of stops to travel. |
+| time       | double | The travel time.               |
