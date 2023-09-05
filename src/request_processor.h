@@ -8,6 +8,8 @@
 #include <ostream>
 
 namespace rm {
+json::List ToJson(std::vector<RouteResponse::Item> response_items);
+json::Dict ToJson(std::optional<RouteInfo> resp, int id);
 json::Dict ToJson(std::optional<BusResponse> resp, int id);
 json::Dict ToJson(std::optional<StopResponse> resp, int id);
 

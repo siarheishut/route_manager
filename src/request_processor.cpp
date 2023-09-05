@@ -4,6 +4,40 @@
 #include <variant>
 
 namespace rm {
+json::List ToJson(std::vector<RouteResponse::Item> response_items) {
+  json::List items;
+  for (auto &item : response_items) {
+    if (std::holds_alternative<RouteResponse::WaitItem>(item)) {
+      auto w = std::get<RouteResponse::WaitItem>(item);
+      items.emplace_back(json::Dict{
+          {"time", w.time},
+          {"type", "Wait"},
+          {"stop_name", std::move(w.stop)}});
+    } else if (std::holds_alternative<RouteResponse::RoadItem>(item)) {
+      auto r = std::get<RouteResponse::RoadItem>(item);
+      items.emplace_back(json::Dict{
+          {"time", r.time},
+          {"bus", std::move(r.bus)},
+          {"type", "Bus"},
+          {"span_count", r.span_count}});
+    };
+  }
+  return items;
+}
+
+json::Dict ToJson(std::optional<RouteResponse> response, int id) {
+  json::Dict result;
+
+  result.emplace("request_id", id);
+  if (!response) {
+    result.emplace("error_message", "not found");
+    return result;
+  }
+  result.emplace("total_time", response->time);
+  result.emplace("items", ToJson(std::move(response->items)));
+  return result;
+}
+
 json::Dict ToJson(std::optional<BusResponse> response, int id) {
   json::Dict result;
 
@@ -43,8 +77,7 @@ json::Dict Process(const BusManager &bm, const GetStopRequest &request) {
 }
 
 json::Dict Process(const BusManager &bm, const GetRouteRequest &request) {
-  // TODO(siarheishut): implement.
-  throw std::runtime_error("not implemented");
+  return ToJson(bm.FindRoute(request.from, request.to), request.id);
 }
 
 json::List ProcessRequests(const BusManager &bm,
