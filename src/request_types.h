@@ -26,6 +26,12 @@ struct GetStopRequest {
   std::string stop;
 };
 
+struct GetRouteRequest {
+  int id;
+  std::string from;
+  std::string to;
+};
+
 struct PostBusRequest {
   std::string bus;
   std::vector<std::string> stops;
