@@ -22,6 +22,12 @@ bool operator==(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs) {
   return lhs.stop == rhs.stop;
 }
 
+bool operator==(const rm::GetRouteRequest &lhs,
+                const rm::GetRouteRequest &rhs) {
+  return std::tie(lhs.from, lhs.to, lhs.id)
+      == std::tie(rhs.from, rhs.to, rhs.id);
+}
+
 bool operator==(const rm::BusResponse &lhs, const rm::BusResponse &rhs) {
   return std::tie(lhs.stop_count, lhs.unique_stop_count, lhs.length)
       == std::tie(rhs.stop_count, rhs.unique_stop_count, rhs.length);
@@ -68,6 +74,11 @@ bool operator!=(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs) {
 }
 
 bool operator!=(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(const rm::GetRouteRequest &lhs,
+                const rm::GetRouteRequest &rhs) {
   return !(lhs == rhs);
 }
 

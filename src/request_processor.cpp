@@ -73,6 +73,11 @@ json::Dict Process(const BusManager &bm, const GetStopRequest &request) {
   return ToJson(bm.GetStopInfo(request.stop), request.id);
 }
 
+json::Dict Process(const BusManager &bm, const GetRouteRequest &request) {
+  // TODO(siarheishut): implement.
+  return json::Dict{};
+}
+
 json::List ProcessRequests(const BusManager &bm,
                            std::vector<GetRequest> requests) {
   json::List responses;
