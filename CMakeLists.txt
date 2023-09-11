@@ -23,6 +23,7 @@ add_executable(root_manager
         src/request_parser.cpp
         src/distance_computer.cpp
         src/sphere.cpp
+        src/route_manager.cpp
 )
 
 target_link_libraries(root_manager json graph)
@@ -36,6 +37,7 @@ add_executable(route_manager_tests
         src/bus_manager.cpp
         src/distance_computer.cpp
         src/sphere.cpp
+        src/route_manager.cpp
         tests/request_parser_test.cpp
         tests/bus_manager_test.cpp
         tests/test_utils.cpp
