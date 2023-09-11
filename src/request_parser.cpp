@@ -139,6 +139,8 @@ std::optional<GetRequest> ParseOutputRequest(json::Dict dict) {
     return ParseGetStopRequest(std::move(dict));
   } else if (request_type == "Bus") {
     return ParseGetBusRequest(std::move(dict));
+  } else if (request_type == "Route") {
+    return ParseGetRouteRequest(std::move(dict));
   }
 
   return std::nullopt;
@@ -172,5 +174,22 @@ std::optional<GetStopRequest> ParseGetStopRequest(json::Dict dict) {
   sr.id = id->second.AsInt();
 
   return sr;
+}
+
+std::optional<GetRouteRequest> ParseGetRouteRequest(json::Dict dict) {
+  auto from = dict.find("from");
+  auto to = dict.find("to");
+  auto id = dict.find("id");
+  if (from == dict.end() || to == dict.end() || id == dict.end())
+    return std::nullopt;
+  if (!from->second.IsString() || !to->second.IsString() || !id->second.IsInt())
+    return std::nullopt;
+
+  GetRouteRequest gr;
+  gr.from = from->second.ReleaseString();
+  gr.to = to->second.ReleaseString();
+  gr.id = id->second.AsInt();
+
+  return gr;
 }
 }
