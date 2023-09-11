@@ -34,6 +34,37 @@ json::Dict ToJson(std::optional<StopResponse> response, int id) {
   return result;
 }
 
+json::Dict ToJson(std::optional<RouteResponse> response, int id) {
+  json::Dict result;
+
+  result.emplace("request_id", id);
+  if (!response) {
+    result.emplace("error_message", "not found");
+    return result;
+  }
+  result.emplace("total_time", response->time);
+
+  json::List items;
+  for (auto &item : response->items) {
+    if (std::holds_alternative<RouteResponse::WaitItem>(item)) {
+      auto w = std::get<RouteResponse::WaitItem>(item);
+      items.emplace_back(json::Dict{
+          {"time", w.time},
+          {"type", "Wait"},
+          {"stop_name", std::move(w.stop)}});
+    } else if (std::holds_alternative<RouteResponse::RoadItem>(item)) {
+      auto r = std::get<RouteResponse::RoadItem>(item);
+      items.emplace_back(json::Dict{
+          {"time", r.time},
+          {"bus", std::move(r.bus)},
+          {"type", "Bus"},
+          {"span_count", r.span_count}});
+    };
+  }
+  result.emplace("items", std::move(items));
+  return result;
+}
+
 json::Dict Process(const BusManager &bm, const GetBusRequest &request) {
   return ToJson(bm.GetBusInfo(request.bus), request.id);
 }
