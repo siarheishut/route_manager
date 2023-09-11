@@ -22,6 +22,8 @@ struct StopResponse {
   std::vector<std::string> buses;
 };
 
+using RouteResponse = RouteInfo;
+
 class BusManager {
  public:
   static std::unique_ptr<BusManager> Create(std::vector<PostRequest> requests);
