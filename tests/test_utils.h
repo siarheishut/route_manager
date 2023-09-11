@@ -35,6 +35,22 @@ bool operator==(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs);
 
 bool operator!=(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs);
 
+bool operator==(const RouteResponse::WaitItem &lhs,
+                const RouteResponse::WaitItem &rhs);
+
+bool operator!=(const RouteResponse::WaitItem &lhs,
+                const RouteResponse::WaitItem &rhs);
+
+bool operator==(const RouteResponse::RoadItem &lhs,
+                const RouteResponse::RoadItem &rhs);
+
+bool operator!=(const RouteResponse::RoadItem &lhs,
+                const RouteResponse::RoadItem &rhs);
+
+bool operator==(const rm::RouteResponse &lhs, const rm::RouteResponse &rhs);
+
+bool operator!=(const rm::RouteResponse &lhs, const rm::RouteResponse &rhs);
+
 std::ostream &operator<<(std::ostream &out, const rm::PostBusRequest &br);
 
 std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr);
@@ -44,6 +60,16 @@ std::ostream &operator<<(std::ostream &out, const rm::GetBusRequest &br);
 std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br);
 
 std::ostream &operator<<(std::ostream &out, const rm::RoutingSettings settings);
+
+std::ostream &operator<<(std::ostream &out,
+                         const rm::RouteResponse::RoadItem &ri);
+
+std::ostream &operator<<(std::ostream &out,
+                         const rm::RouteResponse::WaitItem &ri);
+
+std::ostream &operator<<(std::ostream &out, const rm::RouteResponse &rr);
+
+std::ostream &operator<<(std::ostream &out, const RouteResponse::Item &item);
 }
 
 #endif // ROOT_MANAGER_TESTS_TEST_UTILS_H_

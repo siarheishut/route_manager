@@ -86,3 +86,71 @@ TEST(TestProcessRequests, TestBusResponseToJson) {
     EXPECT_EQ(want, got);
   }
 }
+
+TEST(TestProcessRequests, TestRouteResponseToJson) {
+  using ResponseOpt = std::optional<rm::RouteResponse>;
+
+  struct TestCase {
+    std::string name;
+    ResponseOpt response;
+    int id;
+    json::Dict want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Missing route",
+          .response = std::nullopt,
+          .id = 1234567,
+          .want = json::Dict{{"request_id", 1234567},
+                             {"error_message", "not found"}},
+      },
+      TestCase{
+          .name = "Route Found",
+          .response = rm::RouteResponse{
+              .time = 69.543,
+              .items = {
+                  rm::RouteResponse::WaitItem{.stop = "stop 1", .time = 5},
+                  rm::RouteResponse::RoadItem{
+                      .bus = "bus 1", .time = 10.43, .span_count = 4},
+                  rm::RouteResponse::WaitItem{.stop = "stop 2", .time = 5},
+                  rm::RouteResponse::RoadItem{
+                      .bus = "bus 2", .time = 49.113, .span_count = 7}}
+          },
+          .id = 7421097,
+          .want = json::Dict{
+              {"total_time", 69.543},
+              {"items", json::List{
+                  json::Dict{
+                      {"type", "Wait"},
+                      {"stop_name", "stop 1"},
+                      {"time", 5}
+                  },
+                  json::Dict{
+                      {"type", "Bus"},
+                      {"bus", "bus 1"},
+                      {"time", 10.43},
+                      {"span_count", 4}
+                  },
+                  json::Dict{
+                      {"type", "Wait"},
+                      {"stop_name", "stop 2"},
+                      {"time", 5}
+                  },
+                  json::Dict{
+                      {"type", "Bus"},
+                      {"bus", "bus 2"},
+                      {"time", 49.113},
+                      {"span_count", 7}
+                  },
+              }},
+              {"request_id", 7421097}
+          }
+      },
+  };
+
+  for (auto &[name, response, id, want] : test_cases) {
+    json::Dict got = rm::ToJson(response, id);
+    EXPECT_EQ(want, got);
+  }
+}
