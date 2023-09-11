@@ -31,6 +31,10 @@ bool operator==(const rm::PostStopRequest &lhs, const rm::PostStopRequest &rhs);
 
 bool operator!=(const rm::PostStopRequest &lhs, const rm::PostStopRequest &rhs);
 
+bool operator==(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs);
+
+bool operator!=(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs);
+
 std::ostream &operator<<(std::ostream &out, const rm::PostBusRequest &br);
 
 std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr);
@@ -38,6 +42,8 @@ std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr);
 std::ostream &operator<<(std::ostream &out, const rm::GetBusRequest &br);
 
 std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br);
+
+std::ostream &operator<<(std::ostream &out, const rm::RoutingSettings settings);
 }
 
 #endif // ROOT_MANAGER_TESTS_TEST_UTILS_H_

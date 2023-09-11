@@ -6,6 +6,21 @@
 #include <string_view>
 
 namespace rm {
+std::optional<RoutingSettings> ParseSettings(json::Dict settings) {
+  auto bus_wait_time = settings.find("bus_wait_time");
+  auto bus_velocity = settings.find("bus_velocity");
+
+  if (bus_wait_time == settings.end() || bus_velocity == settings.end())
+    return std::nullopt;
+  if (!bus_wait_time->second.IsInt() || !bus_velocity->second.IsDouble())
+    return std::nullopt;
+
+  RoutingSettings rs;
+  rs.bus_wait_time = bus_wait_time->second.AsInt();
+  rs.bus_velocity = bus_velocity->second.AsDouble();
+  return rs;
+}
+
 std::optional<std::vector<PostRequest>> ParseInput(json::List base_requests) {
   std::vector<rm::PostRequest> input_requests;
   for (auto &req : base_requests) {
