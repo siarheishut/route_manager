@@ -21,6 +21,7 @@ std::optional<PostBusRequest> ParsePostBusRequest(json::Dict request_data);
 
 std::optional<GetStopRequest> ParseGetStopRequest(json::Dict request_data);
 std::optional<GetBusRequest> ParseGetBusRequest(json::Dict request_data);
+std::optional<GetRouteRequest> ParseGetRouteRequest(json::Dict request_data);
 }
 
 #endif // ROOT_MANAGER_SRC_REQUEST_PARSER_H_
