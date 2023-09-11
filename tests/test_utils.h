@@ -23,6 +23,10 @@ bool operator==(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs);
 
 bool operator!=(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs);
 
+bool operator==(const rm::GetRouteRequest &lhs, const rm::GetRouteRequest &rhs);
+
+bool operator!=(const rm::GetRouteRequest &lhs, const rm::GetRouteRequest &rhs);
+
 bool operator==(const rm::PostBusRequest &lhs, const rm::PostBusRequest &rhs);
 
 bool operator!=(const rm::PostBusRequest &lhs, const rm::PostBusRequest &rhs);
