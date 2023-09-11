@@ -42,6 +42,11 @@ bool operator==(const rm::PostStopRequest &lhs,
                       rhs.stop_distances);
 }
 
+bool operator==(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs) {
+  return std::tie(lhs.bus_wait_time, lhs.bus_velocity)
+      == std::tie(rhs.bus_wait_time, rhs.bus_velocity);
+}
+
 bool operator!=(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs) {
   return !(lhs == rhs);
 }
@@ -59,6 +64,10 @@ bool operator!=(const rm::PostBusRequest &lhs,
 
 bool operator!=(const rm::PostStopRequest &lhs,
                 const rm::PostStopRequest &rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs) {
   return !(lhs == rhs);
 }
 
@@ -94,5 +103,10 @@ std::ostream &operator<<(std::ostream &out, const rm::GetStopRequest &br) {
 std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br) {
   return out << br.stop_count << ' ' << br.unique_stop_count << ' '
              << br.length;
+}
+
+std::ostream &operator<<(std::ostream &out,
+                         const rm::RoutingSettings settings) {
+  return out << settings.bus_wait_time << ' ' << settings.bus_velocity;
 }
 }

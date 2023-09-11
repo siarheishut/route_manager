@@ -8,6 +8,8 @@
 #include <vector>
 
 namespace rm {
+std::optional<RoutingSettings> ParseSettings(json::Dict settings);
+
 std::optional<std::vector<PostRequest>> ParseInput(json::List base_requests);
 std::optional<std::vector<GetRequest>> ParseOutput(json::List stat_requests);
 

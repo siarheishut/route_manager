@@ -9,6 +9,13 @@
 #include <map>
 
 namespace rm {
+struct RoutingSettings {
+  // measured in minutes.
+  int bus_wait_time;
+  // measured in km/h.
+  double bus_velocity;
+};
+
 struct GetBusRequest {
   int id;
   std::string bus;
