@@ -74,8 +74,7 @@ json::Dict Process(const BusManager &bm, const GetStopRequest &request) {
 }
 
 json::Dict Process(const BusManager &bm, const GetRouteRequest &request) {
-  // TODO(siarheishut): implement.
-  return json::Dict{};
+  return ToJson(bm.GetRoute(request.from, request.to), request.id);
 }
 
 json::List ProcessRequests(const BusManager &bm,
