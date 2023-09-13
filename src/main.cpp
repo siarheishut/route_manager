@@ -1,8 +1,9 @@
-#include "json.h"
-#include "request_processor.h"
-#include "request_parser.h"
-
 #include <iostream>
+
+#include "json.h"
+
+#include "request_parser.h"
+#include "request_processor.h"
 
 int main() {
   json::Node root;

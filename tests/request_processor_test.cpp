@@ -1,10 +1,10 @@
-#include <gtest/gtest.h>
-
 #include "src/request_processor.h"
 
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
+
+#include "gtest/gtest.h"
 
 TEST(TestProcessRequests, TestStopResponseToJson) {
   using ResponseOpt = std::optional<rm::StopResponse>;

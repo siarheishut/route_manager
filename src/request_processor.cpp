@@ -1,7 +1,8 @@
 #include "request_processor.h"
-#include "bus_manager.h"
 
 #include <variant>
+
+#include "bus_manager.h"
 
 namespace rm {
 json::Dict ToJson(std::optional<BusResponse> response, int id) {

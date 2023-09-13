@@ -1,12 +1,12 @@
 #ifndef ROOT_MANAGER_SRC_COMMON_H_
 #define ROOT_MANAGER_SRC_COMMON_H_
 
-#include "request_types.h"
-
-#include <vector>
 #include <string>
 #include <variant>
+#include <vector>
 #include <unordered_map>
+
+#include "request_types.h"
 
 namespace rm {
 struct StopInfo {

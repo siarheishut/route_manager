@@ -1,10 +1,12 @@
-#include <gtest/gtest.h>
-
-#include "test_utils.h"
+#include "src/bus_manager.h"
 
 #include <optional>
 #include <string>
 #include <vector>
+
+#include "gtest/gtest.h"
+
+#include "test_utils.h"
 
 const rm::RoutingSettings kTestRoutingSettings{
     .bus_wait_time = 7,
