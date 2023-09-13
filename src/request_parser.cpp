@@ -142,6 +142,8 @@ std::optional<GetRequest> ParseOutputRequest(json::Dict dict) {
     return ParseGetBusRequest(std::move(dict));
   } else if (request_type == "Route") {
     return ParseGetRouteRequest(std::move(dict));
+  } else if (request_type == "Map") {
+    return ParseGetMapRequest(std::move(dict));
   }
 
   return std::nullopt;
@@ -192,5 +194,13 @@ std::optional<GetRouteRequest> ParseGetRouteRequest(json::Dict dict) {
   gr.id = id->second.AsInt();
 
   return gr;
+}
+
+std::optional<GetMapRequest> ParseGetMapRequest(json::Dict dict) {
+  auto id = dict.find("id");
+  if (id == dict.end() || !id->second.IsInt())
+    return std::nullopt;
+
+  return GetMapRequest{.id = id->second.AsInt()};
 }
 }
