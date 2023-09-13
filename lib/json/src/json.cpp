@@ -1,12 +1,12 @@
 #include "json.h"
 
+#include <cctype>
 #include <cmath>
-#include <vector>
-#include <string>
-#include <iostream>
 #include <iomanip>
 #include <ios>
-#include <cctype>
+#include <iostream>
+#include <string>
+#include <vector>
 
 namespace json {
 Node::Node(const char *str) {

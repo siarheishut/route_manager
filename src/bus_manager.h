@@ -1,15 +1,15 @@
 #ifndef ROOT_MANAGER_SRC_BUS_MANAGER_H_
 #define ROOT_MANAGER_SRC_BUS_MANAGER_H_
 
-#include "request_types.h"
-#include "common.h"
-#include "route_manager.h"
-
-#include <string>
-#include <optional>
-#include <unordered_map>
 #include <map>
+#include <optional>
+#include <string>
+#include <unordered_map>
 #include <vector>
+
+#include "common.h"
+#include "request_types.h"
+#include "route_manager.h"
 
 namespace rm {
 struct BusResponse {

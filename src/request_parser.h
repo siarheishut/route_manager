@@ -1,11 +1,12 @@
 #ifndef ROOT_MANAGER_SRC_REQUEST_PARSER_H_
 #define ROOT_MANAGER_SRC_REQUEST_PARSER_H_
 
-#include "json.h"
-#include "request_types.h"
-
 #include <optional>
 #include <vector>
+
+#include "json.h"
+
+#include "request_types.h"
 
 namespace rm {
 std::optional<RoutingSettings> ParseSettings(json::Dict settings);
