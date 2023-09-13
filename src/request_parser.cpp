@@ -1,9 +1,10 @@
 #include "request_parser.h"
-#include "json.h"
 
 #include <optional>
-#include <vector>
 #include <string_view>
+#include <vector>
+
+#include "json.h"
 
 namespace rm {
 std::optional<RoutingSettings> ParseSettings(json::Dict settings) {

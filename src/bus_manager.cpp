@@ -1,16 +1,17 @@
 #include "bus_manager.h"
-#include "distance_computer.h"
 
 #include <algorithm>
+#include <map>
 #include <optional>
 #include <set>
 #include <string>
 #include <string_view>
-#include <map>
 #include <unordered_map>
 #include <utility>
 #include <variant>
 #include <vector>
+
+#include "distance_computer.h"
 
 namespace {
 int ComputeUniqueCount(std::vector<std::string> stops) {

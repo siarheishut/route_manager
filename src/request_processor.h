@@ -1,11 +1,12 @@
 #ifndef ROOT_MANAGER_SRC_REQUEST_PROCESSOR_H_
 #define ROOT_MANAGER_SRC_REQUEST_PROCESSOR_H_
 
-#include "bus_manager.h"
-#include "request_types.h"
+#include <ostream>
+
 #include "json.h"
 
-#include <ostream>
+#include "bus_manager.h"
+#include "request_types.h"
 
 namespace rm {
 json::Dict ToJson(std::optional<BusResponse> resp, int id);

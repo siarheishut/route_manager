@@ -1,12 +1,12 @@
 #ifndef ROOT_MANAGER_SRC_REQUEST_TYPES_H_
 #define ROOT_MANAGER_SRC_REQUEST_TYPES_H_
 
-#include "sphere.h"
-
+#include <map>
 #include <string>
 #include <variant>
 #include <vector>
-#include <map>
+
+#include "sphere.h"
 
 namespace rm {
 struct RoutingSettings {

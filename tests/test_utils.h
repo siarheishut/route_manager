@@ -1,12 +1,12 @@
 #ifndef ROOT_MANAGER_TESTS_TEST_UTILS_H_
 #define ROOT_MANAGER_TESTS_TEST_UTILS_H_
 
-#include "src/bus_manager.h"
-#include "src/request_types.h"
-
 #include <ostream>
 #include <string>
 #include <vector>
+
+#include "src/bus_manager.h"
+#include "src/request_types.h"
 
 namespace rm {
 bool CompareLength(double lhs, double rhs, int precision);

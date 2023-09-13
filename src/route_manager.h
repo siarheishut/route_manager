@@ -1,16 +1,17 @@
 #ifndef ROOT_MANAGER_SRC_ROUTE_MANAGER_H_
 #define ROOT_MANAGER_SRC_ROUTE_MANAGER_H_
 
-#include <optional>
 #include <memory>
+#include <optional>
+#include <string>
 #include <unordered_map>
 #include <variant>
 #include <vector>
-#include <string>
 
-#include "request_types.h"
 #include "router.h"
+
 #include "common.h"
+#include "request_types.h"
 
 namespace rm {
 class RouteManager {

@@ -1,10 +1,11 @@
-#include <gtest/gtest.h>
-
 #include "json.h"
-#include <sstream>
+
 #include <optional>
+#include <sstream>
 #include <string>
 #include <vector>
+
+#include "gtest/gtest.h"
 
 namespace {
 
