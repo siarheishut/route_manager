@@ -5,6 +5,39 @@
 #include <vector>
 
 #include "json.h"
+#include "svg/common.h"
+
+#include "color_parser.h"
+
+namespace {
+bool IsOffset(const json::Node &node) {
+  return node.IsArray() &&
+      node.AsArray().size() == 2 &&
+      node.AsArray()[0].IsDouble() &&
+      node.AsArray()[1].IsDouble();
+}
+
+svg::Point AsOffset(json::Node node) {
+  return svg::Point{
+      .x = node.AsArray()[0].AsDouble(), .y = node.AsArray()[1].AsDouble()};
+}
+
+bool IsPalette(const json::Node &node) {
+  return node.IsArray() && std::all_of(
+      node.AsArray().begin(), node.AsArray().end(), [](auto &item) {
+        return rm::IsColor(item);
+      });
+}
+
+std::vector<svg::Color> AsPalette(json::Node node) {
+  std::vector<svg::Color> palette;
+  palette.reserve(node.AsArray().size());
+  for (auto &item : node.ReleaseArray()) {
+    palette.push_back(rm::AsColor(std::move(item)));
+  }
+  return palette;
+}
+}
 
 namespace rm {
 std::optional<RoutingSettings> ParseRoutingSettings(json::Dict settings) {
@@ -19,6 +52,50 @@ std::optional<RoutingSettings> ParseRoutingSettings(json::Dict settings) {
   RoutingSettings rs;
   rs.bus_wait_time = bus_wait_time->second.AsInt();
   rs.bus_velocity = bus_velocity->second.AsDouble();
+  return rs;
+}
+
+std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
+  auto width = settings.find("width");
+  auto height = settings.find("height");
+  auto padding = settings.find("padding");
+  auto stop_radius = settings.find("stop_radius");
+  auto line_width = settings.find("line_width");
+  auto stop_label_font_size = settings.find("stop_label_font_size");
+  auto stop_label_offset = settings.find("stop_label_offset");
+  auto underlayer_color = settings.find("underlayer_color");
+  auto underlayer_width = settings.find("underlayer_width");
+  auto color_palette = settings.find("color_palette");
+
+  if (width == settings.end() || height == settings.end() ||
+      padding == settings.end() || stop_radius == settings.end() ||
+      line_width == settings.end() || stop_label_font_size == settings.end() ||
+      stop_label_offset == settings.end() ||
+      underlayer_color == settings.end() ||
+      underlayer_width == settings.end() || color_palette == settings.end()) {
+    return std::nullopt;
+  }
+
+  if (!width->second.IsDouble() || !height->second.IsDouble() ||
+      !padding->second.IsDouble() || !stop_radius->second.IsDouble() ||
+      !line_width->second.IsDouble() || !stop_label_font_size->second.IsInt() ||
+      !IsOffset(stop_label_offset->second) ||
+      !IsColor(underlayer_color->second) ||
+      !underlayer_width->second.IsDouble() || !IsPalette(color_palette->second))
+    return std::nullopt;
+
+  RenderingSettings rs;
+  rs.width = width->second.AsDouble();
+  rs.height = height->second.AsDouble();
+  rs.padding = padding->second.AsDouble();
+  rs.stop_radius = stop_radius->second.AsDouble();
+  rs.line_width = line_width->second.AsDouble();
+  rs.stop_label_font_size = stop_label_font_size->second.AsInt();
+  rs.stop_label_offset = AsOffset(std::move(stop_label_offset->second));
+  rs.underlayer_color = AsColor(std::move(underlayer_color->second));
+  rs.underlayer_width = underlayer_width->second.AsDouble();
+  rs.color_palette = AsPalette(std::move(color_palette->second));
+
   return rs;
 }
 

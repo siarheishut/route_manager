@@ -5,11 +5,13 @@
 #include <vector>
 
 #include "json.h"
+#include "svg/common.h"
 
 #include "request_types.h"
 
 namespace rm {
 std::optional<RoutingSettings> ParseRoutingSettings(json::Dict settings);
+std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings);
 
 std::optional<std::vector<PostRequest>> ParseInput(json::List base_requests);
 std::optional<std::vector<GetRequest>> ParseOutput(json::List stat_requests);
