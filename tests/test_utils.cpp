@@ -28,6 +28,10 @@ bool operator==(const rm::GetRouteRequest &lhs,
       == std::tie(rhs.from, rhs.to, rhs.id);
 }
 
+bool operator==(const rm::GetMapRequest &lhs, const rm::GetMapRequest &rhs) {
+  return lhs.id == rhs.id;
+}
+
 bool operator==(const rm::BusResponse &lhs, const rm::BusResponse &rhs) {
   return std::tie(lhs.stop_count, lhs.unique_stop_count, lhs.length)
       == std::tie(rhs.stop_count, rhs.unique_stop_count, rhs.length);
@@ -79,6 +83,10 @@ bool operator!=(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs) {
 
 bool operator!=(const rm::GetRouteRequest &lhs,
                 const rm::GetRouteRequest &rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(const rm::GetMapRequest &lhs, const rm::GetMapRequest &rhs) {
   return !(lhs == rhs);
 }
 
@@ -138,6 +146,10 @@ std::ostream &operator<<(std::ostream &out, const rm::GetBusRequest &br) {
 
 std::ostream &operator<<(std::ostream &out, const rm::GetStopRequest &br) {
   return out << br.stop << " – " << br.id;
+}
+
+std::ostream &operator<<(std::ostream &out, const rm::GetMapRequest &mr) {
+  return out << mr.id;
 }
 
 std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br) {
