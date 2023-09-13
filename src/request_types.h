@@ -32,6 +32,10 @@ struct GetRouteRequest {
   std::string to;
 };
 
+struct GetMapRequest {
+  int id;
+};
+
 struct PostBusRequest {
   std::string bus;
   std::vector<std::string> stops;
@@ -45,7 +49,8 @@ struct PostStopRequest {
 };
 
 using PostRequest = std::variant<PostBusRequest, PostStopRequest>;
-using GetRequest = std::variant<GetBusRequest, GetStopRequest, GetRouteRequest>;
+using GetRequest = std::variant<GetBusRequest, GetStopRequest, GetRouteRequest,
+                                GetMapRequest>;
 }
 
 #endif // ROOT_MANAGER_SRC_REQUEST_TYPES_H_

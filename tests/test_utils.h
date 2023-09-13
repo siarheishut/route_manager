@@ -27,6 +27,10 @@ bool operator==(const rm::GetRouteRequest &lhs, const rm::GetRouteRequest &rhs);
 
 bool operator!=(const rm::GetRouteRequest &lhs, const rm::GetRouteRequest &rhs);
 
+bool operator==(const rm::GetMapRequest &lhs, const rm::GetMapRequest &rhs);
+
+bool operator!=(const rm::GetMapRequest &lhs, const rm::GetMapRequest &rhs);
+
 bool operator==(const rm::PostBusRequest &lhs, const rm::PostBusRequest &rhs);
 
 bool operator!=(const rm::PostBusRequest &lhs, const rm::PostBusRequest &rhs);
@@ -60,6 +64,8 @@ std::ostream &operator<<(std::ostream &out, const rm::PostBusRequest &br);
 std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr);
 
 std::ostream &operator<<(std::ostream &out, const rm::GetBusRequest &br);
+
+std::ostream &operator<<(std::ostream &out, const rm::GetMapRequest &br);
 
 std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br);
 

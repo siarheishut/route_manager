@@ -445,14 +445,50 @@ TEST(TestOutputRequest, TestGetStopRequest) {
   }
 }
 
+TEST(TestOutputRequest, TestGetMapRequest) {
+  using namespace rm;
+
+  struct TestCase {
+    std::string name;
+    json::Dict input;
+    std::optional<GetMapRequest> want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Wrong request: no <id>",
+          .input = json::Dict{{"type", "Map"}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "Wrong request: <id> isn't int",
+          .input = json::Dict{{"type", "Map"},
+                              {"id", "4251"}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "Common request",
+          .input = json::Dict{{"type", "Map"},
+                              {"id", 83157}},
+          .want = GetMapRequest{.id = 83157}
+      },
+  };
+
+  for (auto &[name, input, want] : test_cases) {
+    auto got = ParseGetMapRequest(input);
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
 struct RequestCount {
   int bus = 0;
   int stop = 0;
   int route = 0;
+  int map = 0;
 
   friend bool operator==(const RequestCount lhs, const RequestCount rhs) {
-    return std::tie(lhs.bus, lhs.stop, lhs.route)
-        == std::tie(rhs.bus, rhs.stop, rhs.route);
+    return std::tie(lhs.bus, lhs.stop, lhs.route, lhs.map)
+        == std::tie(rhs.bus, rhs.stop, rhs.route, rhs.map);
   }
 };
 
@@ -516,6 +552,10 @@ TEST(TestParseRequests, TestOutput) {
                                          {"from", "stop2"},
                                          {"to", "stop7"},
                                          {"id", 952790}},
+                              json::Dict{{"type", "Map"},
+                                         {"id", 3521}},
+                              json::Dict{{"type", "Map"},
+                                         {"id", "3820"}},
                               json::Dict{{"type", "Route"},
                                          {"from", "stop4"},
                                          {"to", "stop2"}},
@@ -526,7 +566,7 @@ TEST(TestParseRequests, TestOutput) {
                                          {"id", 635478}},
                               json::Dict{{"type", "Stop"},
                                          {"name", "Stop 2"}}},
-          .want = {RequestCount{.bus = 3, .stop= 1, .route= 2}},
+          .want = {RequestCount{.bus = 3, .stop= 1, .route= 2, .map = 1}},
       },
   };
 
@@ -550,8 +590,12 @@ TEST(TestParseRequests, TestOutput) {
         got_opt->begin(), got_opt->end(), [](const GetRequest &req) {
           return std::holds_alternative<GetRouteRequest>(req);
         });
+    int map_req_count = count_if(
+        got_opt->begin(), got_opt->end(), [](const GetRequest &req) {
+          return std::holds_alternative<GetMapRequest>(req);
+        });
     auto got = RequestCount{.bus = bus_req_count, .stop = stop_req_count,
-        .route = route_req_count};
+        .route = route_req_count, .map = map_req_count};
     EXPECT_EQ(*want, got) << name;
   }
 }
