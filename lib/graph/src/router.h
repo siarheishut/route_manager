@@ -1,8 +1,6 @@
 #ifndef GRAPH_ROUTE_H_
 #define GRAPH_ROUTE_H_
 
-#include "graph.h"
-
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -11,6 +9,8 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#include "graph.h"
 
 namespace graph {
 template<typename Weight>

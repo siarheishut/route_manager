@@ -2,8 +2,8 @@
 #define JSON_JSON_H_
 
 #include <istream>
-#include <ostream>
 #include <map>
+#include <ostream>
 #include <string>
 #include <variant>
 #include <vector>

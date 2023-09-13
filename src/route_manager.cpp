@@ -1,13 +1,13 @@
 #include "route_manager.h"
 
-#include <variant>
 #include <memory>
-#include <vector>
 #include <string>
+#include <variant>
+#include <vector>
 
+#include "common.h"
 #include "distance_computer.h"
 #include "request_types.h"
-#include "common.h"
 
 namespace rm {
 RouteManager::RouteManager(const rm::StopDict &stop_info,

@@ -1,9 +1,10 @@
-#include <gtest/gtest.h>
-
 #include "json.h"
+
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
+
+#include "gtest/gtest.h"
 
 namespace {
 struct TestCase {
