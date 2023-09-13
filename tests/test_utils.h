@@ -9,6 +9,7 @@
 
 #include "src/bus_manager.h"
 #include "src/request_types.h"
+#include "svg/common.h"
 
 namespace rm {
 bool CompareLength(double lhs, double rhs, int precision);
@@ -44,6 +45,28 @@ bool operator!=(const rm::PostStopRequest &lhs, const rm::PostStopRequest &rhs);
 bool operator==(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs);
 
 bool operator!=(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs);
+
+bool operator==(svg::Point lhs, svg::Point rhs);
+
+bool operator!=(svg::Point lhs, svg::Point rhs);
+
+bool operator==(svg::Rgb lhs, svg::Rgb rhs);
+
+bool operator!=(svg::Rgb lhs, svg::Rgb rhs);
+
+bool operator==(svg::Rgba lhs, svg::Rgba rhs);
+
+bool operator!=(svg::Rgba lhs, svg::Rgba rhs);
+
+bool operator==(const svg::Color &lhs, const svg::Color &rhs);
+
+bool operator!=(const svg::Color &lhs, const svg::Color &rhs);
+
+bool operator==(const rm::RenderingSettings &lhs,
+                const rm::RenderingSettings &rhs);
+
+bool operator!=(const rm::RenderingSettings &lhs,
+                const rm::RenderingSettings &rhs);
 
 bool operator==(svg::Rgb lhs, svg::Rgb rhs);
 
@@ -84,6 +107,11 @@ std::ostream &operator<<(std::ostream &out, const rm::GetMapRequest &br);
 std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br);
 
 std::ostream &operator<<(std::ostream &out, const rm::RoutingSettings settings);
+
+std::ostream &operator<<(std::ostream &out, svg::Point point);
+
+std::ostream &operator<<(std::ostream &out,
+                         const rm::RenderingSettings &settings);
 
 std::ostream &operator<<(std::ostream &out,
                          const rm::RouteResponse::RoadItem &ri);

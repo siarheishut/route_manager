@@ -59,6 +59,10 @@ bool operator==(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs) {
       == std::tie(rhs.bus_wait_time, rhs.bus_velocity);
 }
 
+bool operator==(svg::Point lhs, svg::Point rhs) {
+  return std::tie(lhs.x, lhs.y) == std::tie(rhs.x, rhs.y);
+}
+
 bool operator==(svg::Rgb lhs, svg::Rgb rhs) {
   return std::tuple<int, int, int>(lhs.red, lhs.green, lhs.blue)
       == std::tuple<int, int, int>(rhs.red, rhs.green, rhs.blue);
@@ -88,6 +92,22 @@ bool operator==(const svg::Color &lhs, const svg::Color &rhs) {
   }
   return std::holds_alternative<std::monostate>(lhs) &&
       std::holds_alternative<std::monostate>(rhs);
+}
+
+bool operator==(const rm::RenderingSettings &lhs,
+                const rm::RenderingSettings &rhs) {
+  if (std::tuple(lhs.width, lhs.height, lhs.padding, lhs.stop_radius,
+                 lhs.line_width, lhs.underlayer_width, lhs.stop_label_font_size,
+                 lhs.color_palette.size()) !=
+      std::tuple(rhs.width, rhs.height, rhs.padding, rhs.stop_radius,
+                 rhs.line_width, rhs.underlayer_width, rhs.stop_label_font_size,
+                 rhs.color_palette.size()))
+    return false;
+  if (lhs.underlayer_color != rhs.underlayer_color) return false;
+  for (int i = 0; i < lhs.color_palette.size(); ++i) {
+    if (lhs.color_palette[i] != rhs.color_palette[i]) return false;
+  }
+  return true;
 }
 
 bool operator==(const RouteResponse::WaitItem &lhs,
@@ -139,6 +159,10 @@ bool operator!=(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs) {
   return !(lhs == rhs);
 }
 
+bool operator!=(svg::Point lhs, svg::Point rhs) {
+  return !(lhs == rhs);
+}
+
 bool operator!=(svg::Rgb lhs, svg::Rgb rhs) {
   return !(lhs == rhs);
 }
@@ -148,6 +172,11 @@ bool operator!=(svg::Rgba lhs, svg::Rgba rhs) {
 }
 
 bool operator!=(const svg::Color &lhs, const svg::Color &rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(const rm::RenderingSettings lhs,
+                const rm::RenderingSettings rhs) {
   return !(lhs == rhs);
 }
 
@@ -205,6 +234,20 @@ std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br) {
 std::ostream &operator<<(std::ostream &out,
                          const rm::RoutingSettings settings) {
   return out << settings.bus_wait_time << ' ' << settings.bus_velocity;
+}
+
+std::ostream &operator<<(std::ostream &out, const svg::Point point) {
+  return out << '{' << point.x << ',' << point.y << '}';
+}
+
+std::ostream &operator<<(std::ostream &out,
+                         const rm::RenderingSettings &settings) {
+  return out << settings.width << ' ' << settings.height << ' ' <<
+             settings.padding << ' ' << settings.stop_radius << ' ' <<
+             settings.line_width << ' ' << settings.stop_label_font_size
+             << ' ' << settings.stop_label_offset << ' ' <<
+             settings.underlayer_color << ' ' << settings.underlayer_width
+             << ' ' << settings.color_palette;
 }
 
 std::ostream &operator<<(std::ostream &out,
