@@ -4,12 +4,17 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <variant>
 #include <vector>
+
+#include "svg/common.h"
+#include "svg/document.h"
+#include "svg/figures.h"
 
 #include "distance_computer.h"
 
@@ -21,10 +26,15 @@ int ComputeUniqueCount(std::vector<std::string> stops) {
 }
 }
 
+static constexpr int kMin = std::numeric_limits<int>::min();
+static constexpr int kMax = std::numeric_limits<int>::max();
+
 namespace rm {
 std::unique_ptr<BusManager> BusManager::Create(
     std::vector<PostRequest> requests,
-    const RoutingSettings &routing_settings) {
+    RoutingSettings routing_settings,
+    RenderingSettings rendering_settings) {
+  double min_lon = kMax, max_lon = kMin, min_lat = kMax, max_lat = kMin;
   std::set<std::string_view> route_stops, road_dists_stops, stop_requests_stops;
   std::set<std::string_view> buses;
   for (auto &req : requests) {
@@ -33,6 +43,13 @@ std::unique_ptr<BusManager> BusManager::Create(
       if (!buses.insert(ptr_b->bus).second)
         return nullptr;
     } else if (auto ptr_s = std::get_if<PostStopRequest>(&req)) {
+      auto lat = ptr_s->coords.latitude;
+      auto lon = ptr_s->coords.longitude;
+      max_lat = std::max(max_lat, lat);
+      max_lon = std::max(max_lon, lon);
+      min_lat = std::min(min_lat, lat);
+      min_lon = std::min(min_lon, lon);
+
       for (auto &[dst_stop, dist] : ptr_s->stop_distances) {
         road_dists_stops.insert(dst_stop);
       }
@@ -47,21 +64,39 @@ std::unique_ptr<BusManager> BusManager::Create(
                      begin(road_dists_stops), end(road_dists_stops)))
     return nullptr;
 
+  CoordsConverter::Config list{.min_lon = min_lon, .max_lon = max_lon,
+      .min_lat = min_lat, .max_lat = max_lat,
+      .width = rendering_settings.width,
+      .height = rendering_settings.height,
+      .padding = rendering_settings.padding
+  };
   return std::unique_ptr<BusManager>(new BusManager(std::move(requests),
-                                                    routing_settings));
+                                                    std::move(routing_settings),
+                                                    std::move(rendering_settings),
+                                                    list));
 }
 
 BusManager::BusManager(std::vector<PostRequest> requests,
-                       const RoutingSettings &routing_settings) {
+                       RoutingSettings routing_settings,
+                       RenderingSettings rendering_settings,
+                       CoordsConverter::Config config)
+    : converter_(CoordsConverter(std::move(config))) {
+  std::map<std::string_view, std::vector<std::string_view>> routes;
+  std::map<std::string_view, svg::Point> stops;
   for (auto &request : requests) {
     if (std::holds_alternative<PostBusRequest>(request)) {
       auto &bus = std::get<PostBusRequest>(request);
-      AddBus(std::move(bus.bus), std::move(bus.stops));
+      AddBus(bus.bus, bus.stops);
+      routes[bus.bus];
+      for (auto &stop : bus.stops) {
+        routes[bus.bus].push_back(stop);
+      }
     } else if (std::holds_alternative<PostStopRequest>(request)) {
       auto &stop = std::get<PostStopRequest>(request);
       AddStop(stop.stop,
               stop.coords,
               stop.stop_distances);
+      stops[stop.stop] = converter_.Convert(stop.coords);
     }
   }
 
@@ -78,7 +113,11 @@ BusManager::BusManager(std::vector<PostRequest> requests,
                 buses.end());
   }
   route_manager_ =
-      std::make_unique<RouteManager>(stop_info_, bus_info_, routing_settings);
+      std::make_unique<RouteManager>(stop_info_,
+                                     bus_info_,
+                                     std::move(routing_settings));
+
+  RenderMap(std::move(routes), std::move(stops), std::move(rendering_settings));
 }
 
 void BusManager::AddStop(const std::string &stop, sphere::Coords coords,
@@ -129,5 +168,64 @@ std::optional<StopResponse> BusManager::GetStopInfo(const std::string &stop) con
 std::optional<RouteResponse> BusManager::GetRoute(const std::string &from,
                                                   const std::string &to) const {
   return route_manager_->FindRoute(from, to);
+}
+
+Map BusManager::GetMap() const {
+  return map_;
+}
+
+void BusManager::RenderMap(std::map<std::string_view,
+                                    std::vector<std::string_view>> routes,
+                           std::map<std::string_view, svg::Point> stops,
+                           RenderingSettings settings) {
+  svg::Document doc;
+  int counter = 0;
+  for (auto &[_, route_points] : routes) {
+    svg::Polyline bus_route{};
+    bus_route.SetStrokeColor(
+        settings.color_palette[counter++ % settings.color_palette.size()]);
+    bus_route.SetStrokeLineCap("round");
+    bus_route.SetStrokeLineJoin("round");
+    bus_route.SetStrokeWidth(settings.line_width);
+    for (auto point : route_points) {
+      bus_route.AddPoint(stops[point]);
+    }
+    doc.Add(std::move(bus_route));
+  }
+
+  for (auto [_, stop_point] : stops) {
+    svg::Circle stop{};
+    stop.SetFillColor("white");
+    stop.SetCenter(stop_point);
+    stop.SetRadius(settings.stop_radius);
+    doc.Add(std::move(stop));
+  }
+
+  for (auto [stop_name, stop_point] : stops) {
+    svg::Text underlayer;
+    underlayer.SetPoint(stop_point);
+    underlayer.SetOffset(settings.stop_label_offset);
+    underlayer.SetFontSize(settings.stop_label_font_size);
+    underlayer.SetFontFamily("Verdana");
+    underlayer.SetData(std::string(stop_name));
+    underlayer.SetFillColor(settings.underlayer_color);
+    underlayer.SetStrokeColor(settings.underlayer_color);
+    underlayer.SetStrokeWidth(settings.underlayer_width);
+    underlayer.SetStrokeLineCap("round");
+    underlayer.SetStrokeLineJoin("round");
+    doc.Add(std::move(underlayer));
+    svg::Text text;
+    text.SetPoint(stop_point);
+    text.SetOffset(settings.stop_label_offset);
+    text.SetFontSize(settings.stop_label_font_size);
+    text.SetFontFamily("Verdana");
+    text.SetData(std::string(stop_name));
+    text.SetFillColor("black");
+    doc.Add(std::move(text));
+  }
+
+  std::ostringstream ss;
+  doc.Render(ss);
+  map_ = ss.str();
 }
 }

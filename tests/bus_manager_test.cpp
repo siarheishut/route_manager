@@ -13,6 +13,18 @@ const rm::RoutingSettings kTestRoutingSettings{
     .bus_velocity = 54.0
 };
 
+const rm::RenderingSettings kTestRenderingSettings{
+    .width = 412.1, .height = 395.7, .padding = 210, .stop_radius = 4.2,
+    .line_width = 11, .stop_label_font_size = 10,
+    .stop_label_offset = svg::Point{.x = -5, .y = 2},
+    .underlayer_color = svg::Color(
+        svg::Rgba{.red = 1, .green = 100, .blue = 20, .alpha = 0.1}),
+    .underlayer_width = 5,
+    .color_palette = {
+        "purple", svg::Rgb{.red = 15, .green = 23, .blue = 41},
+        svg::Rgba{.red = 210, .green = 81, .blue = 14, .alpha = 0.94}}
+};
+
 TEST(TestFactoryMethod, TestInitializing) {
   using namespace rm;
 
@@ -20,6 +32,7 @@ TEST(TestFactoryMethod, TestInitializing) {
     std::string name;
     std::vector<PostRequest> config;
     RoutingSettings routing_settings;
+    RenderingSettings rendering_settings;
     bool want;
   };
 
@@ -51,6 +64,7 @@ TEST(TestFactoryMethod, TestInitializing) {
               },
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .want = false,
       },
       TestCase{
@@ -80,6 +94,7 @@ TEST(TestFactoryMethod, TestInitializing) {
               },
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .want = true,
       },
       TestCase{
@@ -103,6 +118,7 @@ TEST(TestFactoryMethod, TestInitializing) {
               },
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .want = false,
       },
       TestCase{
@@ -126,6 +142,7 @@ TEST(TestFactoryMethod, TestInitializing) {
               },
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .want = true,
       },
       TestCase{
@@ -149,6 +166,7 @@ TEST(TestFactoryMethod, TestInitializing) {
               },
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .want = false,
       },
       TestCase{
@@ -172,6 +190,7 @@ TEST(TestFactoryMethod, TestInitializing) {
               },
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .want = true,
       },
       TestCase{
@@ -198,6 +217,7 @@ TEST(TestFactoryMethod, TestInitializing) {
               },
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .want = false,
       },
       TestCase{
@@ -224,6 +244,7 @@ TEST(TestFactoryMethod, TestInitializing) {
               },
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .want = true,
       },
       TestCase{
@@ -255,6 +276,7 @@ TEST(TestFactoryMethod, TestInitializing) {
               },
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .want = true,
       },
       TestCase{
@@ -288,12 +310,15 @@ TEST(TestFactoryMethod, TestInitializing) {
               },
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .want = true,
       },
   };
 
-  for (auto &[name, config, routing_settings, want] : test_cases) {
-    bool got = BusManager::Create(config, routing_settings) != nullptr;
+  for (auto &
+        [name, config, routing_settings, rendering_settings, want] : test_cases) {
+    bool got = BusManager::Create(config, routing_settings, rendering_settings)
+        != nullptr;
     EXPECT_EQ(want, got) << name;
   }
 }
@@ -305,6 +330,7 @@ TEST(TestBusManager, TestGetBusInfo) {
     std::string name;
     std::vector<PostRequest> config;
     RoutingSettings routing_settings;
+    RenderingSettings rendering_settings;
     std::vector<GetBusRequest> requests;
     std::vector<std::optional<BusResponse>> want;
   };
@@ -359,6 +385,7 @@ TEST(TestBusManager, TestGetBusInfo) {
                   .coords = {55.580999, 37.659164}},
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .requests = {GetBusRequest{.bus = "Bus1"},
                        GetBusRequest{.bus = "Bus2"},
                        GetBusRequest{.bus = "none"}},
@@ -368,8 +395,10 @@ TEST(TestBusManager, TestGetBusInfo) {
       },
   };
 
-  for (auto &[name, test_item, routing_settings, requests, want] : test_cases) {
-    auto bm = BusManager::Create(test_item, routing_settings);
+  for (auto &
+        [name, test_item, routing_settings, rendering_settings, requests, want] : test_cases) {
+    auto bm =
+        BusManager::Create(test_item, routing_settings, rendering_settings);
     EXPECT_TRUE(bm) << name;
     if (!bm) continue;
 
@@ -400,6 +429,7 @@ TEST(TestBusManager, TestGetStopInfo) {
     std::string name;
     std::vector<PostRequest> config;
     RoutingSettings routing_settings;
+    RenderingSettings rendering_settings;
     std::vector<GetStopRequest> requests;
     std::vector<std::optional<StopInfo>> want;
   };
@@ -409,6 +439,7 @@ TEST(TestBusManager, TestGetStopInfo) {
           .name = "Requests to an empty database",
           .config = {},
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .requests = {GetStopRequest{.stop = "123"},
                        GetStopRequest{.stop = "some stop"},
                        GetStopRequest{.stop = "s      s"},},
@@ -452,6 +483,7 @@ TEST(TestBusManager, TestGetStopInfo) {
                   .coords = {55.580999, 37.659164}},
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .requests = {GetStopRequest{.stop = "stop1"},
                        GetStopRequest{.stop = "stop3"},
                        GetStopRequest{.stop = "stop8"},
@@ -464,8 +496,10 @@ TEST(TestBusManager, TestGetStopInfo) {
       },
   };
 
-  for (auto &[name, test_item, routing_settings, requests, want] : test_cases) {
-    auto bm = BusManager::Create(test_item, routing_settings);
+  for (auto &
+        [name, test_item, routing_settings, rendering_settings, requests, want] : test_cases) {
+    auto bm =
+        BusManager::Create(test_item, routing_settings, rendering_settings);
     EXPECT_TRUE(bm) << name;
     if (!bm) continue;
 
@@ -490,6 +524,7 @@ TEST(TestBusManager, TestFindRouteInfo) {
     std::string name;
     std::vector<PostRequest> config;
     RoutingSettings routing_settings;
+    RenderingSettings rendering_settings;
     std::vector<GetRouteRequest> requests;
     std::vector<std::optional<RouteResponse>> want;
   };
@@ -499,6 +534,7 @@ TEST(TestBusManager, TestFindRouteInfo) {
           .name = "Requests to an empty database",
           .config = {},
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .requests = {
               GetRouteRequest{
                   .id = 1,
@@ -544,6 +580,7 @@ TEST(TestBusManager, TestFindRouteInfo) {
                   .stop_distances = {}},
           },
           .routing_settings = {.bus_wait_time = 6, .bus_velocity = 40},
+          .rendering_settings = kTestRenderingSettings,
           .requests = {
               GetRouteRequest{
                   .id = 1,
@@ -612,6 +649,7 @@ TEST(TestBusManager, TestFindRouteInfo) {
                   .stop_distances = {}},
           },
           .routing_settings = kTestRoutingSettings,
+          .rendering_settings = kTestRenderingSettings,
           .requests = {
               GetRouteRequest{
                   .id = 1,
@@ -655,6 +693,7 @@ TEST(TestBusManager, TestFindRouteInfo) {
                   .stop_distances = {}},
           },
           .routing_settings = {.bus_wait_time = 6, .bus_velocity = 40},
+          .rendering_settings = kTestRenderingSettings,
           .requests = {
               GetRouteRequest{
                   .id = 1,
@@ -672,8 +711,11 @@ TEST(TestBusManager, TestFindRouteInfo) {
       },
   };
 
-  for (auto &[name, config, routing_settings, requests, want] : test_cases) {
-    auto bm = BusManager::Create(std::move(config), routing_settings);
+  for (auto &
+        [name, config, routing_settings, rendering_settings, requests, want] : test_cases) {
+    auto bm = BusManager::Create(std::move(config),
+                                 routing_settings,
+                                 rendering_settings);
     EXPECT_TRUE(bm) << name;
     if (!bm) continue;
 
@@ -682,6 +724,116 @@ TEST(TestBusManager, TestFindRouteInfo) {
 
       EXPECT_EQ(want[i].has_value(), got.has_value()) << name;
       if (!got || !want[i]) continue;
+
+      EXPECT_EQ(want[i], got) << name;
+    }
+  }
+}
+
+TEST(TestBusManager, TestGetMap) {
+  using namespace rm;
+
+  struct TestCase {
+    std::string name;
+    std::vector<PostRequest> config;
+    RoutingSettings routing_settings;
+    RenderingSettings rendering_settings;
+    std::vector<GetMapRequest> requests;
+    std::vector<MapResponse> want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Empty database",
+          .config = {},
+          .routing_settings = {.bus_wait_time = 6, .bus_velocity = 40},
+          .rendering_settings = kTestRenderingSettings,
+          .requests = {
+              GetMapRequest{
+                  .id = 1,
+              },
+              GetMapRequest{
+                  .id = 2,
+              }
+          },
+          .want = {
+              "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><svg xmlns=\""
+              "http://www.w3.org/2000/svg\" version=\"1.1\"></svg>",
+              "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><svg xmlns=\""
+              "http://www.w3.org/2000/svg\" version=\"1.1\"></svg>"
+          },
+      },
+      TestCase{
+          .name = "Non-empty map",
+          .config = {
+              PostBusRequest{
+                  .bus = "Bus1",
+                  .stops = {"stop1", "stop2", "stop3", "stop1"}},
+              PostBusRequest{
+                  .bus = "Bus2",
+                  .stops = {"stop2", "stop3", "stop4", "stop3", "stop2"}},
+              PostStopRequest{
+                  .stop = "stop1",
+                  .coords = {55.574371, 37.6517},
+                  .stop_distances = {{"stop2", 2600}}},
+              PostStopRequest{
+                  .stop = "stop3",
+                  .coords = {55.587655, 37.645687},
+                  .stop_distances = {
+                      {"stop4", 4650},
+                      {"stop2", 1380},
+                      {"stop1", 2500}}},
+              PostStopRequest{
+                  .stop = "stop2",
+                  .coords = {55.592028, 37.653656},
+                  .stop_distances = {{"stop3", 890}}},
+              PostStopRequest{
+                  .stop = "stop4",
+                  .coords = {55.611717, 37.603938},
+                  .stop_distances = {}}},
+          .routing_settings = {.bus_wait_time = 6, .bus_velocity = 40},
+          .rendering_settings = kTestRenderingSettings,
+          .requests = {
+              GetMapRequest{
+                  .id = 1,
+              },
+              GetMapRequest{
+                  .id = 2,
+              }
+          },
+          .want = {
+              "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><svg xmlns=\""
+              "http://www.w3.org/2000/svg\" version=\"1.1\">"
+              "<polyline fill=\"none\" stroke=\"none\""
+              "<polyline fill=\"red\" stroke=\"green\" "
+              "stroke-width=\"11\" stroke-linecap=\"rount\" "
+              "stroke-linejoin=\"round\" points=\"-131.101,91.73\""
+              "/></svg>"
+          },
+      }
+//      const rm::RenderingSettings kTestRenderingSettings{
+//        .width = 412.1, .height = 395.7, .padding = 210, .stop_radius = 4.2,
+//        .line_width = 11, .stop_label_font_size = 10,
+//        .stop_label_offset = svg::Point{.x = -5, .y = 2},
+//        .underlayer_color = svg::Color(
+//            svg::Rgba{.red = 1, .green = 100, .blue = 20, .alpha = 0.1}),
+//        .underlayer_width = 5,
+//        .color_palette = {
+//            "purple", svg::Rgb{.red = 15, .green = 23, .blue = 41},
+//            svg::Rgba{.red = 210, .green = 81, .blue = 14, .alpha = 0.94}}
+//      };
+  };
+
+  for (auto &
+        [name, config, routing_settings, rendering_settings, requests, want] : test_cases) {
+    auto bm = BusManager::Create(std::move(config),
+                                 routing_settings,
+                                 rendering_settings);
+    EXPECT_TRUE(bm) << name;
+    if (!bm) continue;
+
+    for (int i = 0; i < requests.size(); ++i) {
+      auto got = bm->GetMap();
 
       EXPECT_EQ(want[i], got) << name;
     }

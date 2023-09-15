@@ -41,6 +41,8 @@ struct RouteInfo {
   std::vector<Item> items;
 };
 
+using Map = std::string;
+
 using StopDict = std::unordered_map<std::string, StopInfo>;
 using BusDict = std::unordered_map<std::string, BusInfo>;
 }
