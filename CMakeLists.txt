@@ -31,6 +31,7 @@ add_executable(root_manager
         src/distance_computer.cpp
         src/sphere.cpp
         src/route_manager.cpp
+        src/color_parser.cpp
 )
 
 target_link_libraries(root_manager json graph svg)
@@ -45,11 +46,14 @@ add_executable(route_manager_tests
         src/distance_computer.cpp
         src/sphere.cpp
         src/route_manager.cpp
+        src/color_parser.cpp
         tests/request_parser_test.cpp
         tests/bus_manager_test.cpp
         tests/test_utils.cpp
         tests/request_processor_test.cpp
-        tests/settings_parser_test.cpp)
+        tests/settings_parser_test.cpp
+        tests/color_parser_test.cpp
+)
 
 target_link_libraries(route_manager_tests GTest::gtest_main json graph svg)
 target_include_directories(route_manager_tests PUBLIC . tests)

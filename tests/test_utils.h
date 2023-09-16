@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "svg/common.h"
+
 #include "src/bus_manager.h"
 #include "src/request_types.h"
 
@@ -42,6 +44,18 @@ bool operator!=(const rm::PostStopRequest &lhs, const rm::PostStopRequest &rhs);
 bool operator==(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs);
 
 bool operator!=(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs);
+
+bool operator==(svg::Rgb lhs, svg::Rgb rhs);
+
+bool operator!=(svg::Rgb lhs, svg::Rgb rhs);
+
+bool operator==(svg::Rgba lhs, svg::Rgba rhs);
+
+bool operator!=(svg::Rgba lhs, svg::Rgba rhs);
+
+bool operator==(const svg::Color &lhs, const svg::Color &rhs);
+
+bool operator!=(const svg::Color &lhs, const svg::Color &rhs);
 
 bool operator==(const RouteResponse::WaitItem &lhs,
                 const RouteResponse::WaitItem &rhs);
