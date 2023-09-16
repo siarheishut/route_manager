@@ -26,6 +26,10 @@ class Node final : std::variant<std::monostate,
  public:
   using variant::variant;
 
+  // Fix the bug when `const char*` gets interpreted as bool. Fixed in C++20.
+  explicit Node(const char *str);
+  Node &operator=(const char *str);
+
   inline const variant &GetBase() const { return *this; }
 
   inline bool IsArray() const {
