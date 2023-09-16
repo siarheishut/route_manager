@@ -6,6 +6,8 @@
 #include <tuple>
 #include <vector>
 
+#include "svg/common.h"
+
 namespace rm {
 bool CompareLength(double lhs, double rhs, int precision) {
   std::stringstream ssl, ssr;
@@ -57,6 +59,37 @@ bool operator==(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs) {
       == std::tie(rhs.bus_wait_time, rhs.bus_velocity);
 }
 
+bool operator==(svg::Rgb lhs, svg::Rgb rhs) {
+  return std::tuple<int, int, int>(lhs.red, lhs.green, lhs.blue)
+      == std::tuple<int, int, int>(rhs.red, rhs.green, rhs.blue);
+}
+
+bool operator==(svg::Rgba lhs, svg::Rgba rhs) {
+  return
+      std::tuple<int, int, int, double>(lhs.red, lhs.green, lhs.blue, lhs.alpha)
+          == std::tuple<int, int, int, double>(rhs.red,
+                                               rhs.green,
+                                               rhs.blue,
+                                               rhs.alpha);
+}
+
+bool operator==(const svg::Color &lhs, const svg::Color &rhs) {
+  if (std::holds_alternative<std::string>(lhs) &&
+      std::holds_alternative<std::string>(rhs)) {
+    return std::get<std::string>(lhs) == std::get<std::string>(rhs);
+  }
+  if (std::holds_alternative<svg::Rgb>(lhs) &&
+      std::holds_alternative<svg::Rgb>(rhs)) {
+    return std::get<svg::Rgb>(lhs) == std::get<svg::Rgb>(rhs);
+  }
+  if (std::holds_alternative<svg::Rgba>(lhs) &&
+      std::holds_alternative<svg::Rgba>(rhs)) {
+    return std::get<svg::Rgba>(lhs) == std::get<svg::Rgba>(rhs);
+  }
+  return std::holds_alternative<std::monostate>(lhs) &&
+      std::holds_alternative<std::monostate>(rhs);
+}
+
 bool operator==(const RouteResponse::WaitItem &lhs,
                 const RouteResponse::WaitItem &rhs) {
   return std::tie(lhs.stop, lhs.time) == std::tie(rhs.stop, rhs.time);
@@ -103,6 +136,18 @@ bool operator!=(const rm::PostStopRequest &lhs,
 }
 
 bool operator!=(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(svg::Rgb lhs, svg::Rgb rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(svg::Rgba lhs, svg::Rgba rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(const svg::Color &lhs, const svg::Color &rhs) {
   return !(lhs == rhs);
 }
 
