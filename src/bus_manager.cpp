@@ -22,8 +22,9 @@ int ComputeUniqueCount(std::vector<std::string> stops) {
 }
 
 namespace rm {
-std::unique_ptr<BusManager> BusManager::Create(std::vector<PostRequest> requests,
-                                               const RoutingSettings settings) {
+std::unique_ptr<BusManager> BusManager::Create(
+    std::vector<PostRequest> requests,
+    const RoutingSettings &routing_settings) {
   std::set<std::string_view> route_stops, road_dists_stops, stop_requests_stops;
   std::set<std::string_view> buses;
   for (auto &req : requests) {
@@ -47,11 +48,11 @@ std::unique_ptr<BusManager> BusManager::Create(std::vector<PostRequest> requests
     return nullptr;
 
   return std::unique_ptr<BusManager>(new BusManager(std::move(requests),
-                                                    settings));
+                                                    routing_settings));
 }
 
 BusManager::BusManager(std::vector<PostRequest> requests,
-                       const RoutingSettings settings) {
+                       const RoutingSettings &routing_settings) {
   for (auto &request : requests) {
     if (std::holds_alternative<PostBusRequest>(request)) {
       auto &bus = std::get<PostBusRequest>(request);
@@ -77,7 +78,7 @@ BusManager::BusManager(std::vector<PostRequest> requests,
                 buses.end());
   }
   route_manager_ =
-      std::make_unique<RouteManager>(stop_info_, bus_info_, settings);
+      std::make_unique<RouteManager>(stop_info_, bus_info_, routing_settings);
 }
 
 void BusManager::AddStop(const std::string &stop, sphere::Coords coords,
