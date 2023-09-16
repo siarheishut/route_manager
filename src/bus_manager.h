@@ -27,8 +27,9 @@ using RouteResponse = RouteInfo;
 
 class BusManager {
  public:
-  static std::unique_ptr<BusManager> Create(std::vector<PostRequest> requests,
-                                            const RoutingSettings settings);
+  static std::unique_ptr<BusManager> Create(
+      std::vector<PostRequest> requests,
+      const RoutingSettings &routing_setting);
 
   std::optional<BusResponse> GetBusInfo(const std::string &bus) const;
 
@@ -39,7 +40,7 @@ class BusManager {
 
  private:
   explicit BusManager(std::vector<PostRequest> requests,
-                      const RoutingSettings settings);
+                      const RoutingSettings &routing_settings);
 
   void AddStop(const std::string &stop, sphere::Coords coords,
                const std::map<std::string, int> &stops);
