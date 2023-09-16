@@ -7,7 +7,7 @@
 #include "json.h"
 
 namespace rm {
-std::optional<RoutingSettings> ParseSettings(json::Dict settings) {
+std::optional<RoutingSettings> ParseRoutingSettings(json::Dict settings) {
   auto bus_wait_time = settings.find("bus_wait_time");
   auto bus_velocity = settings.find("bus_velocity");
 
