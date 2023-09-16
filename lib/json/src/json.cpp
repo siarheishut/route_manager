@@ -9,6 +9,14 @@
 #include <cctype>
 
 namespace json {
+Node::Node(const char *str) {
+  *this = str;
+}
+
+Node &Node::operator=(const char *str) {
+  return *this = std::string(str);
+}
+
 std::istream &ReadArray(std::istream &input, Node &arr) {
   List result;
   char c;
