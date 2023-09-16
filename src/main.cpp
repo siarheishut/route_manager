@@ -14,24 +14,25 @@ int main() {
 
   auto base_requests = input_map.find("base_requests");
   auto stat_requests = input_map.find("stat_requests");
-  auto routing_settings = input_map.find("routing_settings");
+  auto routing_settings_it = input_map.find("routing_settings");
 
   if (base_requests == input_map.end() ||
       stat_requests == input_map.end() ||
-      routing_settings == input_map.end())
+      routing_settings_it == input_map.end())
     return -1;
   if (!base_requests->second.IsArray() ||
       !stat_requests->second.IsArray() ||
-      !routing_settings->second.IsMap())
+      !routing_settings_it->second.IsMap())
     return -1;
 
   auto input = rm::ParseInput(base_requests->second.ReleaseArray());
   auto
       output = rm::ParseOutput(stat_requests->second.ReleaseArray());
-  auto settings = rm::ParseSettings(routing_settings->second.ReleaseMap());
-  if (!input || !output || !settings) return 1;
+  auto routing_settings =
+      rm::ParseRoutingSettings(routing_settings_it->second.ReleaseMap());
+  if (!input || !output || !routing_settings) return 1;
 
-  auto bm = rm::BusManager::Create(std::move(*input), *settings);
+  auto bm = rm::BusManager::Create(std::move(*input), *routing_settings);
   if (!bm) return -1;
   std::cout << rm::ProcessRequests(*bm, std::move(*output));
 
