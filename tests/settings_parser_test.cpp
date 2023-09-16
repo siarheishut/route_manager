@@ -7,7 +7,7 @@
 
 #include "src/request_parser.h"
 #include "src/request_types.h"
-#include "tests/test_utils.h"
+#include "test_utils.h"
 
 TEST(TestParseSettings, TestRoutingSettings) {
   using namespace rm;
