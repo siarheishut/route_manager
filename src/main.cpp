@@ -12,29 +12,30 @@ int main() {
   if (!root.IsMap()) return 1;
   input_map = root.ReleaseMap();
 
-  auto base_requests = input_map.find("base_requests");
-  auto stat_requests = input_map.find("stat_requests");
+  auto base_requests_it = input_map.find("base_requests");
+  auto stat_requests_it = input_map.find("stat_requests");
   auto routing_settings_it = input_map.find("routing_settings");
 
-  if (base_requests == input_map.end() ||
-      stat_requests == input_map.end() ||
+  if (base_requests_it == input_map.end() ||
+      stat_requests_it == input_map.end() ||
       routing_settings_it == input_map.end())
     return -1;
-  if (!base_requests->second.IsArray() ||
-      !stat_requests->second.IsArray() ||
+  if (!base_requests_it->second.IsArray() ||
+      !stat_requests_it->second.IsArray() ||
       !routing_settings_it->second.IsMap())
     return -1;
 
-  auto input = rm::ParseInput(base_requests->second.ReleaseArray());
+  auto base_requests = rm::ParseInput(base_requests_it->second.ReleaseArray());
   auto
-      output = rm::ParseOutput(stat_requests->second.ReleaseArray());
+      stat_requests = rm::ParseOutput(stat_requests_it->second.ReleaseArray());
   auto routing_settings =
       rm::ParseRoutingSettings(routing_settings_it->second.ReleaseMap());
-  if (!input || !output || !routing_settings) return 1;
+  if (!base_requests || !stat_requests || !routing_settings) return 1;
 
-  auto bm = rm::BusManager::Create(std::move(*input), *routing_settings);
+  auto bm = rm::BusManager::Create(
+      std::move(*base_requests), *routing_settings);
   if (!bm) return -1;
-  std::cout << rm::ProcessRequests(*bm, std::move(*output));
+  std::cout << rm::ProcessRequests(*bm, std::move(*stat_requests));
 
   return 0;
 }
