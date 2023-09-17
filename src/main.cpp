@@ -32,10 +32,10 @@ int main() {
       rm::ParseRoutingSettings(routing_settings_it->second.ReleaseMap());
   if (!base_requests || !stat_requests || !routing_settings) return 1;
 
-  auto bm = rm::BusManager::Create(
+  auto processor = rm::Processor::Create(
       std::move(*base_requests), *routing_settings);
-  if (!bm) return -1;
-  std::cout << rm::ProcessRequests(*bm, std::move(*stat_requests));
+  if (!processor) return -1;
+  std::cout << processor->Process(*stat_requests);
 
   return 0;
 }
