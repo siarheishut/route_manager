@@ -32,6 +32,7 @@ add_executable(root_manager
         src/sphere.cpp
         src/route_manager.cpp
         src/color_parser.cpp
+        src/coords_converter.cpp
 )
 
 target_link_libraries(root_manager json graph svg)
@@ -47,6 +48,7 @@ add_executable(route_manager_tests
         src/sphere.cpp
         src/route_manager.cpp
         src/color_parser.cpp
+        src/coords_converter.cpp
         tests/request_parser_test.cpp
         tests/bus_manager_test.cpp
         tests/test_utils.cpp
