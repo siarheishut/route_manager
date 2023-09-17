@@ -1,5 +1,7 @@
 #include "request_processor.h"
 
+#include <memory>
+#include <string>
 #include <variant>
 
 #include "bus_manager.h"
@@ -66,33 +68,44 @@ json::Dict ToJson(std::optional<RouteResponse> response, int id) {
   return result;
 }
 
-json::Dict Process(const BusManager &bm, const GetBusRequest &request) {
-  return ToJson(bm.GetBusInfo(request.bus), request.id);
+std::unique_ptr<Processor> Processor::Create(
+    std::vector<PostRequest> requests,
+    const rm::RoutingSettings &routing_settings) {
+  auto bus_manager = BusManager::Create(requests, routing_settings);
+  if (!bus_manager) return nullptr;
+
+  return std::unique_ptr<Processor>(new Processor(std::move(bus_manager)));
 }
 
-json::Dict Process(const BusManager &bm, const GetStopRequest &request) {
-  return ToJson(bm.GetStopInfo(request.stop), request.id);
-}
-
-json::Dict Process(const BusManager &bm, const GetRouteRequest &request) {
-  return ToJson(bm.GetRoute(request.from, request.to), request.id);
-}
-
-json::Dict Process(const BusManager &bm, const GetMapRequest &request) {
-  // TODO(siarheishut): implement.
-  return json::Dict{};
-}
-
-json::List ProcessRequests(const BusManager &bm,
-                           std::vector<GetRequest> requests) {
+json::List Processor::Process(const std::vector<GetRequest> &requests) const {
   json::List responses;
 
   for (auto &request : requests) {
     std::visit([&](auto &&var) {
-      responses.emplace_back(Process(bm, var));
+      responses.emplace_back(Process(var));
     }, request);
   }
 
   return responses;
+}
+
+Processor::Processor(std::unique_ptr<BusManager> bus_manager)
+    : bus_manager_(std::move(bus_manager)) {}
+
+json::Dict Processor::Process(const GetBusRequest &request) const {
+  return ToJson(bus_manager_->GetBusInfo(request.bus), request.id);
+}
+
+json::Dict Processor::Process(const GetStopRequest &request) const {
+  return ToJson(bus_manager_->GetStopInfo(request.stop), request.id);
+}
+
+json::Dict Processor::Process(const GetRouteRequest &request) const {
+  return ToJson(bus_manager_->GetRoute(request.from, request.to), request.id);
+}
+
+json::Dict Processor::Process(const GetMapRequest &request) const {
+  // TODO(siarheishut): implement.
+  return json::Dict{};
 }
 }
