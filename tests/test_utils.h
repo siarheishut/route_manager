@@ -42,9 +42,9 @@ bool operator==(const rm::PostStopRequest &lhs, const rm::PostStopRequest &rhs);
 
 bool operator!=(const rm::PostStopRequest &lhs, const rm::PostStopRequest &rhs);
 
-bool operator==(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs);
+bool operator==(const rm::RoutingSettings &lhs, const rm::RoutingSettings &rhs);
 
-bool operator!=(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs);
+bool operator!=(const rm::RoutingSettings &lhs, const rm::RoutingSettings &rhs);
 
 bool operator==(svg::Point lhs, svg::Point rhs);
 
@@ -67,14 +67,6 @@ bool operator==(const rm::RenderingSettings &lhs,
 
 bool operator!=(const rm::RenderingSettings &lhs,
                 const rm::RenderingSettings &rhs);
-
-bool operator==(svg::Rgb lhs, svg::Rgb rhs);
-
-bool operator!=(svg::Rgb lhs, svg::Rgb rhs);
-
-bool operator==(svg::Rgba lhs, svg::Rgba rhs);
-
-bool operator!=(svg::Rgba lhs, svg::Rgba rhs);
 
 bool operator==(const svg::Color &lhs, const svg::Color &rhs);
 
@@ -106,7 +98,8 @@ std::ostream &operator<<(std::ostream &out, const rm::GetMapRequest &br);
 
 std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br);
 
-std::ostream &operator<<(std::ostream &out, const rm::RoutingSettings settings);
+std::ostream &operator<<(std::ostream &out,
+                         const rm::RoutingSettings &settings);
 
 std::ostream &operator<<(std::ostream &out, svg::Point point);
 
