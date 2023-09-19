@@ -2,9 +2,14 @@
 
 #include <map>
 #include <memory>
+#include <sstream>
+#include <string>
 #include <string_view>
 #include <vector>
 
+#include "svg/figures.h"
+
+#include "coords_converter.h"
 #include "request_types.h"
 #include "sphere.h"
 
@@ -45,5 +50,69 @@ std::unique_ptr<MapRenderer> MapRenderer::Create(
 MapRenderer::MapRenderer(
     std::map<std::string_view, std::vector<std::string_view>> buses,
     std::map<std::string_view, sphere::Coords> stops,
-    const RenderingSettings &settings) {}
+    const RenderingSettings &settings) {
+  double min_lat = kMaxLatitude, max_lat = kMinLatitude;
+  double min_lon = kMaxLongitude, max_lon = kMinLongitude;
+  for (auto [stop, stop_point] : stops) {
+    min_lon = std::min(min_lon, stop_point.longitude);
+    max_lon = std::max(max_lon, stop_point.longitude);
+    min_lat = std::min(min_lat, stop_point.latitude);
+    max_lat = std::max(max_lat, stop_point.latitude);
+  }
+
+  auto converter = CoordsConverter(CoordsConverter::Config{
+      .min_lon = min_lon, .max_lon = max_lon,
+      .min_lat = min_lat, .max_lat = max_lat,
+      .width = settings.width, .height = settings.height,
+      .padding = settings.padding});
+
+  int i = 0;
+  for (auto &[_, route] : buses) {
+    auto color = settings.color_palette[i];
+    i = (i + 1) % settings.color_palette.size();
+    svg::Polyline bus_route;
+    bus_route.SetStrokeColor(color)
+        .SetStrokeLineCap("round")
+        .SetStrokeLineJoin("round")
+        .SetStrokeWidth(settings.line_width);
+    for (auto stop : route) {
+      bus_route.AddPoint(converter.Convert(stops[stop]));
+    }
+    map_.Add(std::move(bus_route));
+  }
+
+  for (auto [_, coords] : stops) {
+    map_.Add(std::move(svg::Circle{}
+                           .SetFillColor("white")
+                           .SetCenter(converter.Convert(coords))
+                           .SetRadius(settings.stop_radius)));
+  }
+
+  for (auto [stop, coords] : stops) {
+    map_.Add(std::move(svg::Text{}
+                           .SetPoint(converter.Convert(coords))
+                           .SetOffset(settings.stop_label_offset)
+                           .SetFontSize(settings.stop_label_font_size)
+                           .SetFontFamily("Verdana")
+                           .SetData(std::string(stop))
+                           .SetFillColor(settings.underlayer_color)
+                           .SetStrokeColor(settings.underlayer_color)
+                           .SetStrokeWidth(settings.underlayer_width)
+                           .SetStrokeLineCap("round")
+                           .SetStrokeLineJoin("round")));
+    map_.Add(std::move(svg::Text{}
+                           .SetPoint(converter.Convert(coords))
+                           .SetOffset(settings.stop_label_offset)
+                           .SetFontSize(settings.stop_label_font_size)
+                           .SetFontFamily("Verdana")
+                           .SetData(std::string(stop))
+                           .SetFillColor("black")));
+  }
+}
+
+std::string MapRenderer::GetMap() const {
+  std::ostringstream out;
+  map_.Render(out);
+  return out.str();
+}
 }
