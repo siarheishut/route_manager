@@ -154,3 +154,9 @@ TEST(TestProcessRequests, TestRouteResponseToJson) {
     EXPECT_EQ(want, got);
   }
 }
+
+TEST(TestProcessRequests, TestMapResponseToJson) {
+  auto want = json::Dict{{"map", "My map"}, {"request_id", 12}};
+  json::Dict got = rm::ToJson(rm::MapResponse{.map = "My map"}, 12);
+  EXPECT_EQ(want, got);
+}
