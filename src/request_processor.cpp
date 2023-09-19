@@ -2,9 +2,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <variant>
+#include <vector>
 
 #include "bus_manager.h"
+#include "map_renderer.h"
 
 namespace rm {
 json::Dict ToJson(std::optional<BusResponse> response, int id) {
@@ -68,13 +71,35 @@ json::Dict ToJson(std::optional<RouteResponse> response, int id) {
   return result;
 }
 
+json::Dict ToJson(MapResponse resp, int id) {
+  return json::Dict{{"request_id", id}, {"map", resp.map}};
+}
+
 std::unique_ptr<Processor> Processor::Create(
     std::vector<PostRequest> requests,
-    const rm::RoutingSettings &routing_settings) {
+    const RoutingSettings &routing_settings,
+    const RenderingSettings &rendering_settings) {
+  using namespace std;
+
   auto bus_manager = BusManager::Create(requests, routing_settings);
   if (!bus_manager) return nullptr;
 
-  return std::unique_ptr<Processor>(new Processor(std::move(bus_manager)));
+  map<string_view, vector<string_view>> buses;
+  map<string_view, sphere::Coords> stops;
+  for (auto &request : requests) {
+    if (auto bus = get_if<PostBusRequest>(&request); bus) {
+      buses.emplace(bus->bus, vector<string_view>{begin(bus->stops),
+                                                  end(bus->stops)});
+    } else if (auto stop = get_if<PostStopRequest>(&request)) {
+      stops[stop->stop] = stop->coords;
+    }
+  }
+  auto map_renderer = MapRenderer::Create(move(buses), move(stops),
+                                          rendering_settings);
+  if (!map_renderer) return nullptr;
+
+  return unique_ptr<Processor>(new Processor(move(bus_manager),
+                                             move(map_renderer)));
 }
 
 json::List Processor::Process(const std::vector<GetRequest> &requests) const {
@@ -89,8 +114,10 @@ json::List Processor::Process(const std::vector<GetRequest> &requests) const {
   return responses;
 }
 
-Processor::Processor(std::unique_ptr<BusManager> bus_manager)
-    : bus_manager_(std::move(bus_manager)) {}
+Processor::Processor(std::unique_ptr<BusManager> bus_manager,
+                     std::unique_ptr<MapRenderer> map_renderer)
+    : bus_manager_(std::move(bus_manager)),
+      map_renderer_(std::move(map_renderer)) {}
 
 json::Dict Processor::Process(const GetBusRequest &request) const {
   return ToJson(bus_manager_->GetBusInfo(request.bus), request.id);
@@ -105,7 +132,6 @@ json::Dict Processor::Process(const GetRouteRequest &request) const {
 }
 
 json::Dict Processor::Process(const GetMapRequest &request) const {
-  // TODO(siarheishut): implement.
-  return json::Dict{};
+  return ToJson(MapResponse{.map = map_renderer_->GetMap()}, request.id);
 }
 }
