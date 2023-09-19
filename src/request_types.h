@@ -25,7 +25,7 @@ struct RenderingSettings {
   double padding;
   double stop_radius;
   double line_width;
-  int16_t stop_label_font_size;
+  int stop_label_font_size;
   svg::Point stop_label_offset;
   svg::Color underlayer_color;
   double underlayer_width;
