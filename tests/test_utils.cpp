@@ -54,7 +54,8 @@ bool operator==(const rm::PostStopRequest &lhs,
                       rhs.stop_distances);
 }
 
-bool operator==(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs) {
+bool operator==(const rm::RoutingSettings &lhs,
+                const rm::RoutingSettings &rhs) {
   return std::tie(lhs.bus_wait_time, lhs.bus_velocity)
       == std::tie(rhs.bus_wait_time, rhs.bus_velocity);
 }
@@ -96,13 +97,24 @@ bool operator==(const svg::Color &lhs, const svg::Color &rhs) {
 
 bool operator==(const rm::RenderingSettings &lhs,
                 const rm::RenderingSettings &rhs) {
-  if (std::tuple(lhs.width, lhs.height, lhs.padding, lhs.stop_radius,
-                 lhs.line_width, lhs.underlayer_width, lhs.stop_label_font_size,
+  if (std::tuple(lhs.width,
+                 lhs.height,
+                 lhs.padding,
+                 lhs.stop_radius,
+                 lhs.line_width,
+                 lhs.underlayer_width,
+                 lhs.stop_label_font_size,
                  lhs.color_palette.size()) !=
-      std::tuple(rhs.width, rhs.height, rhs.padding, rhs.stop_radius,
-                 rhs.line_width, rhs.underlayer_width, rhs.stop_label_font_size,
+      std::tuple(rhs.width,
+                 rhs.height,
+                 rhs.padding,
+                 rhs.stop_radius,
+                 rhs.line_width,
+                 rhs.underlayer_width,
+                 rhs.stop_label_font_size,
                  rhs.color_palette.size()))
     return false;
+  if (lhs.stop_label_offset != rhs.stop_label_offset) return false;
   if (lhs.underlayer_color != rhs.underlayer_color) return false;
   for (int i = 0; i < lhs.color_palette.size(); ++i) {
     if (lhs.color_palette[i] != rhs.color_palette[i]) return false;
@@ -155,7 +167,8 @@ bool operator!=(const rm::PostStopRequest &lhs,
   return !(lhs == rhs);
 }
 
-bool operator!=(const rm::RoutingSettings lhs, const rm::RoutingSettings rhs) {
+bool operator!=(const rm::RoutingSettings &lhs,
+                const rm::RoutingSettings &rhs) {
   return !(lhs == rhs);
 }
 
@@ -232,7 +245,7 @@ std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br) {
 }
 
 std::ostream &operator<<(std::ostream &out,
-                         const rm::RoutingSettings settings) {
+                         const rm::RoutingSettings &settings) {
   return out << settings.bus_wait_time << ' ' << settings.bus_velocity;
 }
 
