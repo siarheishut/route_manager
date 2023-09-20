@@ -258,6 +258,27 @@ TEST(TestFactoryMethod, TestInitializing) {
           .want = true,
       },
       TestCase{
+          .name = "Empty route",
+          .config = {
+              PostBusRequest{
+                  .bus = "Bus 1",
+                  .stops = {},
+              },
+              PostStopRequest{
+                  .stop = "stop 1",
+                  .coords = {11.111111, 11.111111},
+                  .stop_distances = {{"stop 2", 2000},},
+              },
+              PostStopRequest{
+                  .stop = "stop 2",
+                  .coords = {22.222222, 22.222222},
+                  .stop_distances = {{"stop 3", 2000},},
+              },
+          },
+          .routing_settings = kTestRoutingSettings,
+          .want = false,
+      },
+      TestCase{
           .name = "Correct data",
           .config = {
               PostBusRequest{

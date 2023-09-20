@@ -29,6 +29,7 @@ std::unique_ptr<BusManager> BusManager::Create(
   std::set<std::string_view> buses;
   for (auto &req : requests) {
     if (auto ptr_b = std::get_if<PostBusRequest>(&req)) {
+      if (ptr_b->stops.empty()) return nullptr;
       route_stops.insert(ptr_b->stops.begin(), ptr_b->stops.end());
       if (!buses.insert(ptr_b->bus).second)
         return nullptr;
