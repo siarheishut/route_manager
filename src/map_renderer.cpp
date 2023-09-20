@@ -37,6 +37,7 @@ std::unique_ptr<MapRenderer> MapRenderer::Create(
   }
 
   for (auto &[bus, route] : buses) {
+    if (route.empty()) return nullptr;
     for (auto stop : route) {
       if (stops.find(stop) == stops.end())
         return nullptr;

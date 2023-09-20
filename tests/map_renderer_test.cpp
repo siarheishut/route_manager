@@ -152,14 +152,6 @@ TEST(TestMapRenderer, TestGetMap) {
           .want =  SVG_DOC("")
       },
       TestCase{
-          .name = "Empty routes",
-          .buses = {{"bus1", {}}, {"bus2", {}}},
-          .rendering_settings = kTestRenderingSettings,
-          .want = SVG_DOC(
-                      ROUTE("purple")ROUTE_END()
-                      ROUTE("rgb(15,23,41)")ROUTE_END())
-      },
-      TestCase{
           .name = "No routes",
           .stops = {kAirport, kShop, kHighStreet},
           .rendering_settings = kTestRenderingSettings,
@@ -197,15 +189,18 @@ TEST(TestMapRenderer, TestGetMap) {
       },
       TestCase{
           .name = "Route number is greater than palette size",
-          .buses = {{"Bus 1", {}}, {"Bus 2", {}}, {"Bus 3", {}}, {"Bus 4", {}},
-                    {"Bus 5", {}}},
+          .buses = {{"Bus 1", {"Shop"}}, {"Bus 2", {"Shop"}},
+                    {"Bus 3", {"Shop"}}, {"Bus 4", {"Shop"}},
+                    {"Bus 5", {"Shop"}}},
+          .stops = {kShop},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
-                      ROUTE("purple")ROUTE_END()
-                      ROUTE("rgb(15,23,41)")ROUTE_END()
-                      ROUTE("rgba(210,81,14,0.94)")ROUTE_END()
-                      ROUTE("purple")ROUTE_END()
-                      ROUTE("rgb(15,23,41)")ROUTE_END())
+                      ROUTE("purple")POINT(170, 170)ROUTE_END()
+                      ROUTE("rgb(15,23,41)")POINT(170, 170)ROUTE_END()
+                      ROUTE("rgba(210,81,14,0.94)")POINT(170, 170)ROUTE_END()
+                      ROUTE("purple")POINT(170, 170)ROUTE_END()
+                      ROUTE("rgb(15,23,41)")POINT(170, 170)ROUTE_END()
+                      STOP(170, 170)TEXT(Shop, 170, 170))
       },
       TestCase{
           .name = "Empty stop name",
