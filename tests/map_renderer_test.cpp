@@ -26,7 +26,16 @@
 
 #define ROUTE_END() "\"/>"
 
-#define TEXT(stop, x, y)                                                       \
+#define BUS_NAME(bus, x, y, color)                                             \
+ "<text fill=\"rgba(1,100,20,0.1)\" stroke=\"rgba(1,100,20,0.1)\" "            \
+ "stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" "      \
+ "x=\"" #x "\" y=\"" #y "\" dx=\"5\" dy=\"-7\" font-size=\"6\" "               \
+ "font-family=\"Verdana\" font-weight=\"bold\">" #bus "</text><text fill=\""   \
+ color "\" stroke=\"none\" stroke-width=\"1\" x=\""#x"\" y=\"" #y "\" "        \
+ "dx=\"5\" dy=\"-7\" font-size=\"6\" font-family=\"Verdana\" "                 \
+ "font-weight=\"bold\">" #bus "</text>"
+
+#define STOP_NAME(stop, x, y)                                                  \
  "<text fill=\"rgba(1,100,20,0.1)\" stroke=\"rgba(1,100,"                      \
  "20,0.1)\" stroke-width=\"5\" stroke-linecap=\"round\" "                      \
  "stroke-linejoin=\"round\" x=\"" #x "\" y=\"" #y "\" dx=\"-5\" dy=\"2\" "     \
@@ -51,7 +60,9 @@ const rm::RenderingSettings kTestRenderingSettings{
     .underlayer_width = 5,
     .color_palette = {
         "purple", svg::Rgb{.red = 15, .green = 23, .blue = 41},
-        svg::Rgba{.red = 210, .green = 81, .blue = 14, .alpha = 0.94}}
+        svg::Rgba{.red = 210, .green = 81, .blue = 14, .alpha = 0.94}},
+    .bus_label_font_size = 6,
+    .bus_label_offset = svg::Point{.x = 5, .y = -7}
 };
 
 const std::pair<std::string_view, rm::sphere::Coords> kAirport =
@@ -161,6 +172,50 @@ TEST(TestMapRenderer, TestGetMap) {
 
   std::vector<TestCase> test_cases{
       TestCase{
+          .name = "Roundtrip",
+          .buses = {{"1", {{"Shop", "Airport", "Shop"}, true}}},
+          .stops = {kAirport, kShop},
+          .rendering_settings = kTestRenderingSettings,
+          .want = SVG_DOC(
+                      ROUTE("purple")
+                      POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      NEXT_POINT(170, 170) ROUTE_END()
+                      BUS_NAME(1, 170, 170, "purple")
+                      STOP(242.1, 214.631)STOP(170, 170)
+                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Shop, 170, 170))
+      },
+      TestCase{
+          .name = "Non-roundrip with difference start and end stops",
+          .buses = {{"1", {{"Shop", "Airport"}, false}}},
+          .stops = {kAirport, kShop},
+          .rendering_settings = kTestRenderingSettings,
+          .want = SVG_DOC(
+                      ROUTE("purple")
+                      POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      NEXT_POINT(170, 170) ROUTE_END()
+                      BUS_NAME(1, 170, 170, "purple")
+                      BUS_NAME(1, 242.1, 214.631, "purple")
+                      STOP(242.1, 214.631)STOP(170, 170)
+                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Shop, 170, 170))
+      },
+      TestCase{
+          .name = "Non-roundrip with the same start and end stops",
+          .buses = {{"1", {{"Shop", "Airport", "Shop"}, false}}},
+          .stops = {kAirport, kShop},
+          .rendering_settings = kTestRenderingSettings,
+          .want = SVG_DOC(
+                      ROUTE("purple")
+                      POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      NEXT_POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      NEXT_POINT(170, 170)ROUTE_END()
+                      BUS_NAME(1, 170, 170, "purple")
+                      STOP(242.1, 214.631)STOP(170, 170)
+                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Shop, 170, 170))
+      },
+      TestCase{
           .name = "Empty map",
           .rendering_settings = kTestRenderingSettings,
           .want =  SVG_DOC("")
@@ -171,9 +226,9 @@ TEST(TestMapRenderer, TestGetMap) {
           .rendering_settings = kTestRenderingSettings,
           .want =  SVG_DOC(
                        STOP(242.1, 214.631)STOP(218.01, 192.764)STOP(170, 170)
-                       TEXT(Airport, 242.1, 214.631)
-                       TEXT(High Street, 218.01, 192.764)
-                       TEXT(Shop, 170, 170))
+                       STOP_NAME(Airport, 242.1, 214.631)
+                       STOP_NAME(High Street, 218.01, 192.764)
+                       STOP_NAME(Shop, 170, 170))
       },
       TestCase{
           .name = "All stops are used",
@@ -195,12 +250,14 @@ TEST(TestMapRenderer, TestGetMap) {
                       NEXT_POINT(177.713, 177.424) NEXT_POINT(170, 170)
                       NEXT_POINT(242.1, 214.631) NEXT_POINT(218.01, 192.764)
                       ROUTE_END()
+                      BUS_NAME(bus 1, 242.1, 214.631, "purple")
+                      BUS_NAME(bus 2, 218.01, 192.764, "rgb(15,23,41)")
                       STOP(242.1, 214.631) STOP(218.01, 192.764)
                       STOP(177.713, 177.424) STOP(170, 170)
-                      TEXT(Airport, 242.1, 214.631)
-                      TEXT(High Street, 218.01, 192.764)
-                      TEXT(RW station, 177.713, 177.424)
-                      TEXT(Shop, 170, 170))
+                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(High Street, 218.01, 192.764)
+                      STOP_NAME(RW station, 177.713, 177.424)
+                      STOP_NAME(Shop, 170, 170))
       },
       TestCase{
           .name = "Route number is greater than palette size",
@@ -222,14 +279,24 @@ TEST(TestMapRenderer, TestGetMap) {
                       NEXT_POINT(170, 170)ROUTE_END()
                       ROUTE("rgb(15,23,41)")POINT(170, 170)
                       NEXT_POINT(242.1, 214.631)NEXT_POINT(170, 170) ROUTE_END()
+                      BUS_NAME(Bus 1, 170, 170, "purple")
+                      BUS_NAME(Bus 1, 242.1, 214.631, "purple")
+                      BUS_NAME(Bus 2, 170, 170, "rgb(15,23,41)")
+                      BUS_NAME(Bus 3, 170, 170, "rgba(210,81,14,0.94)")
+                      BUS_NAME(Bus 3, 242.1, 214.631, "rgba(210,81,14,0.94)")
+                      BUS_NAME(Bus 4, 170, 170, "purple")
+                      BUS_NAME(Bus 5, 170, 170, "rgb(15,23,41)")
+                      BUS_NAME(Bus 5, 242.1, 214.631, "rgb(15,23,41)")
                       STOP(242.1, 214.631)STOP(170, 170)
-                      TEXT(Airport, 242.1, 214.631)TEXT(Shop, 170, 170))
+                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Shop, 170, 170))
+
       },
       TestCase{
           .name = "Empty stop name",
           .stops = {{"", {.latitude = 10, .longitude = 10}}},
           .rendering_settings = kTestRenderingSettings,
-          .want = SVG_DOC(STOP(170, 170)TEXT(, 170, 170))
+          .want = SVG_DOC(STOP(170, 170)STOP_NAME(, 170, 170))
       },
       TestCase{
           .name = "Several stops with the same coords",
@@ -238,7 +305,7 @@ TEST(TestMapRenderer, TestGetMap) {
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       STOP(170, 170)STOP(170, 170)
-                      TEXT(RW, 170, 170)TEXT(Stop, 170, 170))
+                      STOP_NAME(RW, 170, 170)STOP_NAME(Stop, 170, 170))
       },
   };
 

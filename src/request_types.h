@@ -30,6 +30,8 @@ struct RenderingSettings {
   svg::Color underlayer_color;
   double underlayer_width;
   std::vector<svg::Color> color_palette;
+  int bus_label_font_size;
+  svg::Point bus_label_offset;
 };
 
 struct GetBusRequest {

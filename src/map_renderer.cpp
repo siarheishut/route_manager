@@ -21,6 +21,35 @@ namespace {
 // https://www.techtarget.com/whatis/definition/latitude-and-longitude.
 const double kMinLatitude = -90.0, kMaxLatitude = 90.0,
     kMinLongitude = -180.0, kMaxLongitude = 180.0;
+
+svg::Text BusNameUnderlayer(std::string name, svg::Point point,
+                            const rm::RenderingSettings &settings) {
+  return std::move(svg::Text{}
+                       .SetPoint(point)
+                       .SetOffset(settings.bus_label_offset)
+                       .SetFontSize(settings.bus_label_font_size)
+                       .SetFontFamily("Verdana")
+                       .SetFontWeight("bold")
+                       .SetData(std::move(name))
+                       .SetFillColor(settings.underlayer_color)
+                       .SetStrokeColor(settings.underlayer_color)
+                       .SetStrokeWidth(settings.underlayer_width)
+                       .SetStrokeLineCap("round")
+                       .SetStrokeLineJoin("round"));
+}
+
+svg::Text BusNameText(std::string name, svg::Point point,
+                      const svg::Color &color,
+                      const rm::RenderingSettings &settings) {
+  return std::move(svg::Text{}
+                       .SetPoint(point)
+                       .SetOffset(settings.bus_label_offset)
+                       .SetFontSize(settings.bus_label_font_size)
+                       .SetFontFamily("Verdana")
+                       .SetFontWeight("bold")
+                       .SetData(std::move(name))
+                       .SetFillColor(color));
+}
 }
 
 namespace rm {
@@ -87,6 +116,23 @@ MapRenderer::MapRenderer(
     }
 
     map_.Add(std::move(bus_route));
+  }
+
+  i = 0;
+  for (auto &[bus, route] : buses) {
+    auto color = settings.color_palette[i];
+    i = (i + 1) % settings.color_palette.size();
+    auto start = route.route.front();
+    auto end = route.route.back();
+    auto start_point = converter.Convert(stops[start]);
+    auto end_point = converter.Convert(stops[end]);
+
+    map_.Add(BusNameUnderlayer(std::string(bus), start_point, settings));
+    map_.Add(BusNameText(std::string(bus), start_point, color, settings));
+
+    if (route.is_roundtrip || start == end) continue;
+    map_.Add(BusNameUnderlayer(std::string(bus), end_point, settings));
+    map_.Add(BusNameText(std::string(bus), end_point, color, settings));
   }
 
   for (auto [_, coords] : stops) {
