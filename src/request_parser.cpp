@@ -67,13 +67,17 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
   auto underlayer_color = settings.find("underlayer_color");
   auto underlayer_width = settings.find("underlayer_width");
   auto color_palette = settings.find("color_palette");
+  auto bus_label_font_size = settings.find("bus_label_font_size");
+  auto bus_label_offset = settings.find("bus_label_offset");
 
   if (width == settings.end() || height == settings.end() ||
       padding == settings.end() || stop_radius == settings.end() ||
       line_width == settings.end() || stop_label_font_size == settings.end() ||
       stop_label_offset == settings.end() ||
       underlayer_color == settings.end() ||
-      underlayer_width == settings.end() || color_palette == settings.end()) {
+      underlayer_width == settings.end() || color_palette == settings.end() ||
+      bus_label_font_size == settings.end() ||
+      bus_label_offset == settings.end()) {
     return std::nullopt;
   }
 
@@ -82,7 +86,10 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
       !line_width->second.IsDouble() || !stop_label_font_size->second.IsInt() ||
       !IsOffset(stop_label_offset->second) ||
       !IsColor(underlayer_color->second) ||
-      !underlayer_width->second.IsDouble() || !IsPalette(color_palette->second))
+      !underlayer_width->second.IsDouble() ||
+      !IsPalette(color_palette->second) ||
+      !bus_label_font_size->second.IsInt() ||
+      !IsOffset(bus_label_offset->second))
     return std::nullopt;
 
   RenderingSettings rs;
@@ -96,6 +103,8 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
   rs.underlayer_color = AsColor(std::move(underlayer_color->second));
   rs.underlayer_width = underlayer_width->second.AsDouble();
   rs.color_palette = AsPalette(std::move(color_palette->second));
+  rs.bus_label_font_size = bus_label_font_size->second.AsInt();
+  rs.bus_label_offset = AsOffset(bus_label_offset->second);
 
   return rs;
 }

@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(googletest)
 FetchContent_Declare(
         svg
         GIT_REPOSITORY https://github.com/siarheishut/svg.git
-        GIT_TAG v1.0
+        GIT_TAG v1.1
 )
 FetchContent_MakeAvailable(svg)
 

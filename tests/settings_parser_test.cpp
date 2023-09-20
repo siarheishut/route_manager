@@ -79,7 +79,9 @@ TEST(TestParseSettings, TestRedneringSettings) {
                                     {"underlayer_width", 5},
                                     {"color_palette", json::List{
                                         "purple", json::List{15, 23, 41},
-                                        json::List{210, 81, 14, 0.94}}}};
+                                        json::List{210, 81, 14, 0.94}}},
+                                    {"bus_label_font_size", 6},
+                                    {"bus_label_offset", json::List{5, -7}}};
   auto test_item_without = [&](std::string field) {
     auto item = test_item;
     item.erase(field);
@@ -139,6 +141,16 @@ TEST(TestParseSettings, TestRedneringSettings) {
       TestCase{
           .name = "Wrong format: no <color_palette>",
           .input = test_item_without("color_palette"),
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "Wrong format: no <bus_label_font_size>",
+          .input = test_item_without("bus_label_font_size"),
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "Wrong format: no <bus_label_offset>",
+          .input = test_item_without("bus_label_offset"),
           .want = std::nullopt
       },
       TestCase{
@@ -204,6 +216,16 @@ TEST(TestParseSettings, TestRedneringSettings) {
           .want = std::nullopt
       },
       TestCase{
+          .name = "Wrong format: <bus_label_font_size> isn't int",
+          .input = test_item_replace("bus_label_font_size", 12.3),
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "Wrong format: <bus_label_offset> isn't array",
+          .input = test_item_replace("bus_label_offset", 14.5),
+          .want = std::nullopt
+      },
+      TestCase{
           .name = "Valid settings",
           .input = test_item,
           .want = RenderingSettings{
@@ -215,7 +237,9 @@ TEST(TestParseSettings, TestRedneringSettings) {
               .underlayer_width = 5,
               .color_palette = {
                   "purple", svg::Rgb{.red = 15, .green = 23, .blue = 41},
-                  svg::Rgba{.red = 210, .green = 81, .blue = 14, .alpha = 0.94}}
+                  svg::Rgba{.red = 210, .green = 81, .blue = 14, .alpha = 0.94}},
+              .bus_label_font_size = 6,
+              .bus_label_offset = {.x = 5, .y = -7}
           }
       }
   };
