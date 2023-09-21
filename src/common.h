@@ -22,6 +22,7 @@ struct BusInfo {
   int unique_stop_count;
   double distance;
   double curvature;
+  bool is_roundtrip;
 };
 
 struct RouteInfo {

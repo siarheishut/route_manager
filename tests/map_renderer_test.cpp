@@ -70,7 +70,7 @@ const std::pair<std::string_view, rm::sphere::Coords> kDostoevsky =
 TEST(TestMapRenderer, TestInitializing) {
   struct TestCase {
     std::string name;
-    std::map<std::string_view, std::vector<std::string_view>> buses;
+    std::map<std::string_view, rm::MapRenderer::Route> buses;
     std::map<std::string_view, rm::sphere::Coords> stops;
     rm::RenderingSettings settings;
     bool want_fail;
@@ -112,16 +112,30 @@ TEST(TestMapRenderer, TestInitializing) {
       },
       TestCase{
           .name = "Bus route has unknown stop",
-          .buses = {{"Bus 1", {"Airport", "Dostoevsky", "Clemens"}}},
+          .buses = {{"Bus 1", {{"Airport", "Dostoevsky", "Clemens"}, false}}},
+          .stops = {kAirport, kClemens, kRWStation},
+          .settings = kTestRenderingSettings,
+          .want_fail = true
+      },
+      TestCase{
+          .name = "Bus route has unknown stop",
+          .buses = {{"Bus 1", {{"Airport", "Dostoevsky", "Clemens"}, true}}},
           .stops = {kAirport, kClemens, kRWStation},
           .settings = kTestRenderingSettings,
           .want_fail = true
       },
       TestCase{
           .name = "Valid config",
-          .buses = {{"Bus 1", {"Airport", "Clemens street", "RW station",
-                               "High Street"}}},
+          .buses = {{"Bus 1", {{"Airport", "Clemens street", "RW station",
+                                "High Street"}, true}}},
           .stops = {kAirport, kClemens, kRWStation, kHighStreet},
+          .settings = kTestRenderingSettings,
+          .want_fail = false
+      },
+      TestCase{
+          .name = "Valid config",
+          .buses = {{"Bus 1", {{"Airport", "RW station"}, false}}},
+          .stops = {kAirport, kRWStation, kClemens},
           .settings = kTestRenderingSettings,
           .want_fail = false
       }
@@ -139,7 +153,7 @@ TEST(TestMapRenderer, TestGetMap) {
 
   struct TestCase {
     std::string name;
-    std::map<std::string_view, std::vector<std::string_view>> buses;
+    std::map<std::string_view, MapRenderer::Route> buses;
     std::map<std::string_view, sphere::Coords> stops;
     RenderingSettings rendering_settings;
     std::string want;
@@ -163,10 +177,11 @@ TEST(TestMapRenderer, TestGetMap) {
       },
       TestCase{
           .name = "All stops are used",
-          .buses = {{"bus 1", {"Airport", "High Street", "Shop", "Airport"}},
-                    {"bus 2", {"High Street", "Airport", "Shop",
-                               "RW station", "Shop", "Airport",
-                               "High Street"}}},
+          .buses = {
+              {"bus 1", {{"Airport", "High Street", "Shop", "Airport"}, true}},
+              {"bus 2", {{"High Street", "Airport", "Shop",
+                          "RW station", "Shop", "Airport",
+                          "High Street"}, true}}},
           .stops = {kAirport, kShop, kHighStreet, kRWStation},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
@@ -189,11 +204,11 @@ TEST(TestMapRenderer, TestGetMap) {
       },
       TestCase{
           .name = "Route number is greater than palette size",
-          .buses = {{"Bus 1", {"Shop", "Airport", "Shop"}},
-                    {"Bus 2", {"Shop", "Airport", "Shop"}},
-                    {"Bus 3", {"Shop", "Airport", "Shop"}},
-                    {"Bus 4", {"Shop", "Airport", "Shop"}},
-                    {"Bus 5", {"Shop", "Airport", "Shop"}}},
+          .buses = {{"Bus 1", {{"Shop", "Airport"}, false}},
+                    {"Bus 2", {{"Shop", "Airport", "Shop"}, true}},
+                    {"Bus 3", {{"Shop", "Airport"}, false}},
+                    {"Bus 4", {{"Shop", "Airport", "Shop"}, true}},
+                    {"Bus 5", {{"Shop", "Airport"}, false}}},
           .stops = {kShop, kAirport},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(

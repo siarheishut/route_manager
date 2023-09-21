@@ -1,5 +1,6 @@
 #include "map_renderer.h"
 
+#include <iostream>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -24,7 +25,7 @@ const double kMinLatitude = -90.0, kMaxLatitude = 90.0,
 
 namespace rm {
 std::unique_ptr<MapRenderer> MapRenderer::Create(
-    std::map<std::string_view, std::vector<std::string_view>> buses,
+    std::map<std::string_view, Route> buses,
     std::map<std::string_view, sphere::Coords> stops,
     const RenderingSettings &settings) {
   if (settings.color_palette.empty()) return nullptr;
@@ -37,8 +38,8 @@ std::unique_ptr<MapRenderer> MapRenderer::Create(
   }
 
   for (auto &[bus, route] : buses) {
-    if (route.empty()) return nullptr;
-    for (auto stop : route) {
+    if (route.route.size() < 2) return nullptr;
+    for (auto stop : route.route) {
       if (stops.find(stop) == stops.end())
         return nullptr;
     }
@@ -49,7 +50,7 @@ std::unique_ptr<MapRenderer> MapRenderer::Create(
 }
 
 MapRenderer::MapRenderer(
-    std::map<std::string_view, std::vector<std::string_view>> buses,
+    std::map<std::string_view, Route> buses,
     std::map<std::string_view, sphere::Coords> stops,
     const RenderingSettings &settings) {
   double min_lat = kMaxLatitude, max_lat = kMinLatitude;
@@ -76,9 +77,15 @@ MapRenderer::MapRenderer(
         .SetStrokeLineCap("round")
         .SetStrokeLineJoin("round")
         .SetStrokeWidth(settings.line_width);
-    for (auto stop : route) {
+    for (auto stop : route.route) {
       bus_route.AddPoint(converter.Convert(stops[stop]));
     }
+    if (!route.is_roundtrip) {
+      for (int j = static_cast<int>(route.route.size()) - 2; j >= 0; --j) {
+        bus_route.AddPoint(converter.Convert(stops[route.route[j]]));
+      }
+    }
+
     map_.Add(std::move(bus_route));
   }
 
