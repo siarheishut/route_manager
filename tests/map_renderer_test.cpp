@@ -189,18 +189,26 @@ TEST(TestMapRenderer, TestGetMap) {
       },
       TestCase{
           .name = "Route number is greater than palette size",
-          .buses = {{"Bus 1", {"Shop"}}, {"Bus 2", {"Shop"}},
-                    {"Bus 3", {"Shop"}}, {"Bus 4", {"Shop"}},
-                    {"Bus 5", {"Shop"}}},
-          .stops = {kShop},
+          .buses = {{"Bus 1", {"Shop", "Airport", "Shop"}},
+                    {"Bus 2", {"Shop", "Airport", "Shop"}},
+                    {"Bus 3", {"Shop", "Airport", "Shop"}},
+                    {"Bus 4", {"Shop", "Airport", "Shop"}},
+                    {"Bus 5", {"Shop", "Airport", "Shop"}}},
+          .stops = {kShop, kAirport},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
-                      ROUTE("purple")POINT(170, 170)ROUTE_END()
-                      ROUTE("rgb(15,23,41)")POINT(170, 170)ROUTE_END()
-                      ROUTE("rgba(210,81,14,0.94)")POINT(170, 170)ROUTE_END()
-                      ROUTE("purple")POINT(170, 170)ROUTE_END()
-                      ROUTE("rgb(15,23,41)")POINT(170, 170)ROUTE_END()
-                      STOP(170, 170)TEXT(Shop, 170, 170))
+                      ROUTE("purple")POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      NEXT_POINT(170, 170)ROUTE_END()
+                      ROUTE("rgb(15,23,41)")POINT(170, 170)
+                      NEXT_POINT(242.1, 214.631)NEXT_POINT(170, 170)ROUTE_END()
+                      ROUTE("rgba(210,81,14,0.94)")POINT(170, 170)
+                      NEXT_POINT(242.1, 214.631) NEXT_POINT(170, 170)ROUTE_END()
+                      ROUTE("purple")POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      NEXT_POINT(170, 170)ROUTE_END()
+                      ROUTE("rgb(15,23,41)")POINT(170, 170)
+                      NEXT_POINT(242.1, 214.631)NEXT_POINT(170, 170) ROUTE_END()
+                      STOP(242.1, 214.631)STOP(170, 170)
+                      TEXT(Airport, 242.1, 214.631)TEXT(Shop, 170, 170))
       },
       TestCase{
           .name = "Empty stop name",
