@@ -55,6 +55,7 @@ struct GetMapRequest {
 struct PostBusRequest {
   std::string bus;
   std::vector<std::string> stops;
+  bool is_roundtrip;
 };
 
 struct PostStopRequest {

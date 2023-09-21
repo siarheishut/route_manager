@@ -17,6 +17,7 @@ struct BusResponse {
   int unique_stop_count;
   double length;
   double curvature;
+  bool is_roundtrip;
 };
 
 struct StopResponse {
@@ -45,7 +46,8 @@ class BusManager {
   void AddStop(const std::string &stop, sphere::Coords coords,
                const std::map<std::string, int> &stops);
 
-  void AddBus(std::string bus, std::vector<std::string> stops);
+  void AddBus(std::string bus, std::vector<std::string> stops,
+              bool is_roundtrip);
 
  private:
   StopDict stop_info_;

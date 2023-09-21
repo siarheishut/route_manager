@@ -9,6 +9,26 @@
 #include "bus_manager.h"
 #include "map_renderer.h"
 
+namespace {
+auto MapRendererParams(const std::vector<rm::PostRequest> &requests) {
+  using namespace std;
+  using namespace rm;
+
+  map<string_view, MapRenderer::Route> buses;
+  map<string_view, sphere::Coords> stops;
+  for (auto &request : requests) {
+    if (auto bus = get_if<PostBusRequest>(&request)) {
+      buses.emplace(bus->bus,
+                    MapRenderer::Route{{begin(bus->stops), end(bus->stops)},
+                                       bus->is_roundtrip});
+    } else if (auto stop = get_if<PostStopRequest>(&request)) {
+      stops[stop->stop] = stop->coords;
+    }
+  }
+  return pair{move(buses), move(stops)};
+}
+}
+
 namespace rm {
 json::Dict ToJson(std::optional<BusResponse> response, int id) {
   json::Dict result;
@@ -79,27 +99,16 @@ std::unique_ptr<Processor> Processor::Create(
     std::vector<PostRequest> requests,
     const RoutingSettings &routing_settings,
     const RenderingSettings &rendering_settings) {
-  using namespace std;
-
   auto bus_manager = BusManager::Create(requests, routing_settings);
   if (!bus_manager) return nullptr;
 
-  map<string_view, vector<string_view>> buses;
-  map<string_view, sphere::Coords> stops;
-  for (auto &request : requests) {
-    if (auto bus = get_if<PostBusRequest>(&request); bus) {
-      buses.emplace(bus->bus, vector<string_view>{begin(bus->stops),
-                                                  end(bus->stops)});
-    } else if (auto stop = get_if<PostStopRequest>(&request)) {
-      stops[stop->stop] = stop->coords;
-    }
-  }
-  auto map_renderer = MapRenderer::Create(move(buses), move(stops),
+  auto [buses, stops] = MapRendererParams(requests);
+  auto map_renderer = MapRenderer::Create(std::move(buses), std::move(stops),
                                           rendering_settings);
   if (!map_renderer) return nullptr;
 
-  return unique_ptr<Processor>(new Processor(move(bus_manager),
-                                             move(map_renderer)));
+  return std::unique_ptr<Processor>(new Processor(std::move(bus_manager),
+                                                  std::move(map_renderer)));
 }
 
 json::List Processor::Process(const std::vector<GetRequest> &requests) const {
