@@ -15,14 +15,19 @@
 namespace rm {
 class MapRenderer {
  public:
+  struct Route {
+    std::vector<std::string_view> route;
+    bool is_roundtrip;
+  };
+
   static std::unique_ptr<MapRenderer> Create(
-      std::map<std::string_view, std::vector<std::string_view>> buses,
+      std::map<std::string_view, Route> buses,
       std::map<std::string_view, sphere::Coords> stops,
       const RenderingSettings &settings);
 
   std::string GetMap() const;
  private:
-  MapRenderer(std::map<std::string_view, std::vector<std::string_view>> buses,
+  MapRenderer(std::map<std::string_view, Route> buses,
               std::map<std::string_view, sphere::Coords> stops,
               const RenderingSettings &settings);
 

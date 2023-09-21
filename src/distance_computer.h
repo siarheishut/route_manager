@@ -8,10 +8,10 @@
 
 namespace rm {
 double ComputeGeoDistance(const std::vector<std::string> &stops,
-                          const StopDict &dict);
+                          const StopDict &dict, bool two_way_bypass);
 
 double ComputeRoadDistance(const std::vector<std::string> &stops,
-                           const StopDict &dict);
+                           const StopDict &dict, bool two_way_bypass);
 }
 
 #endif // ROOT_MANAGER_SRC_DISTANCE_COMPUTER_H_

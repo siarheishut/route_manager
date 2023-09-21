@@ -46,7 +46,8 @@ TEST(TestInputRequest, TestPostBusRequest) {
                               {"is_roundtrip", true}},
           .want = PostBusRequest{
               .bus = "Bus 1",
-              .stops = {"stop1", "stop2", "stop3", "stop1"}
+              .stops = {"stop1", "stop2", "stop3", "stop1"},
+              .is_roundtrip = true
           },
       },
       TestCase{
@@ -66,7 +67,8 @@ TEST(TestInputRequest, TestPostBusRequest) {
                               {"is_roundtrip", false}},
           .want = PostBusRequest{
               .bus = "Bus 1",
-              .stops = {"stop1", "stop2", "stop3", "stop2", "stop1"}
+              .stops = {"stop1", "stop2", "stop3"},
+              .is_roundtrip = false
           },
       },
       TestCase{
@@ -84,7 +86,8 @@ TEST(TestInputRequest, TestPostBusRequest) {
                               {"stops", json::List{"stop1", "stop2", "stop3"}}},
           .want = PostBusRequest{
               .bus = "Bus 1",
-              .stops = {"stop1", "stop2", "stop3", "stop2", "stop1"}
+              .stops = {"stop1", "stop2", "stop3"},
+              .is_roundtrip = false
           },
       },
       TestCase{
@@ -103,7 +106,8 @@ TEST(TestInputRequest, TestPostBusRequest) {
                               {"is_roundtrip", false}},
           .want = PostBusRequest{
               .bus = "Bus 1",
-              .stops = {"stop1", "stop2", "stop1"}
+              .stops = {"stop1", "stop2"},
+              .is_roundtrip = false
           },
       },
       TestCase{
@@ -115,7 +119,8 @@ TEST(TestInputRequest, TestPostBusRequest) {
                               {"is_roundtrip", false}},
           .want = PostBusRequest{
               .bus = "Bus1",
-              .stops = {"stop1", "stop2", "stop3", "stop2", "stop1"},
+              .stops = {"stop1", "stop2", "stop3"},
+              .is_roundtrip = false
           },
       },
       TestCase{
@@ -129,7 +134,8 @@ TEST(TestInputRequest, TestPostBusRequest) {
           .want = PostBusRequest{
               .bus = "Bus1",
               .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
-          },
+              .is_roundtrip = true,
+          }
       },
   };
 

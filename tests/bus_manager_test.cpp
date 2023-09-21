@@ -30,10 +30,12 @@ TEST(TestFactoryMethod, TestInitializing) {
               PostBusRequest{
                   .bus = "Bus 1",
                   .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
+                  .is_roundtrip = true,
               },
               PostBusRequest{
                   .bus = "Bus 1",
-                  .stops = {"stop 2", "stop 3", "stop 1", "stop 2"},
+                  .stops = {"stop 2", "stop 3", "stop 1"},
+                  .is_roundtrip = false,
               },
               PostStopRequest{
                   .stop = "stop 1",
@@ -59,10 +61,12 @@ TEST(TestFactoryMethod, TestInitializing) {
               PostBusRequest{
                   .bus = "Bus 1",
                   .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
+                  .is_roundtrip = true,
               },
               PostBusRequest{
                   .bus = "Bus 2",
-                  .stops = {"stop 2", "stop 3", "stop 1", "stop 2"},
+                  .stops = {"stop 2", "stop 3", "stop 1"},
+                  .is_roundtrip = false,
               },
               PostStopRequest{
                   .stop = "stop 1",
@@ -129,11 +133,12 @@ TEST(TestFactoryMethod, TestInitializing) {
           .want = true,
       },
       TestCase{
-          .name = "Unknown stop along the route",
+          .name = "Unknown stop along the route(roundtrip)",
           .config = {
               PostBusRequest{
                   .bus = "Bus 1",
                   .stops = {"stop 1", "stop 2", "stop 4", "stop 1"},
+                  .is_roundtrip = true,
               },
               PostStopRequest{
                   .stop = "stop 1",
@@ -152,11 +157,60 @@ TEST(TestFactoryMethod, TestInitializing) {
           .want = false,
       },
       TestCase{
-          .name = "Fixed \"Unknown stop along the route\"",
+          .name = "Fixed \"Unknown stop along the route(roundtrip)\"",
           .config = {
               PostBusRequest{
                   .bus = "Bus 1",
                   .stops = {"stop 1", "stop 2", "stop 4", "stop 1"},
+                  .is_roundtrip = false,
+              },
+              PostStopRequest{
+                  .stop = "stop 1",
+                  .coords = {11.111111, 11.111111},
+              },
+              PostStopRequest{
+                  .stop = "stop 2",
+                  .coords = {22.222222, 22.222222},
+              },
+              PostStopRequest{
+                  .stop = "stop 4",
+                  .coords = {33.333333, 33.333333},
+              },
+          },
+          .routing_settings = kTestRoutingSettings,
+          .want = true,
+      },
+      TestCase{
+          .name = "Unknown stop along the route(non-roundtrip)",
+          .config = {
+              PostBusRequest{
+                  .bus = "Bus 1",
+                  .stops = {"stop 1", "stop 2", "stop 4"},
+                  .is_roundtrip = false,
+              },
+              PostStopRequest{
+                  .stop = "stop 1",
+                  .coords = {11.111111, 11.111111},
+              },
+              PostStopRequest{
+                  .stop = "stop 2",
+                  .coords = {22.222222, 22.222222},
+              },
+              PostStopRequest{
+                  .stop = "stop 3",
+                  .coords = {33.333333, 33.333333},
+              },
+          },
+          .routing_settings = kTestRoutingSettings,
+          .want = false,
+      },
+      TestCase{
+          .name = "Fixed \"Unknown stop along the route(non-roundtrip)\"",
+          .config = {
+              PostBusRequest{
+                  .bus = "Bus 1",
+                  .stops = {"stop 1", "stop 2", "stop 4"},
+                  .is_roundtrip = false,
               },
               PostStopRequest{
                   .stop = "stop 1",
@@ -177,10 +231,6 @@ TEST(TestFactoryMethod, TestInitializing) {
       TestCase{
           .name = "Unknown stop among road_distances",
           .config = {
-              PostBusRequest{
-                  .bus = "Bus 1",
-                  .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
-              },
               PostStopRequest{
                   .stop = "stop 1",
                   .coords = {11.111111, 11.111111},
@@ -203,10 +253,6 @@ TEST(TestFactoryMethod, TestInitializing) {
       TestCase{
           .name = "Fixed \"Unknown stop among road_distances\"",
           .config = {
-              PostBusRequest{
-                  .bus = "Bus 1",
-                  .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
-              },
               PostStopRequest{
                   .stop = "stop 1",
                   .coords = {11.111111, 11.111111},
@@ -232,6 +278,12 @@ TEST(TestFactoryMethod, TestInitializing) {
               PostBusRequest{
                   .bus = "Bus 1",
                   .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
+                  .is_roundtrip = true,
+              },
+              PostBusRequest{
+                  .bus = "Bus 2",
+                  .stops = {"stop 2", "stop 1", "stop 3"},
+                  .is_roundtrip = false,
               },
               PostStopRequest{
                   .stop = "stop 1",
@@ -258,11 +310,34 @@ TEST(TestFactoryMethod, TestInitializing) {
           .want = true,
       },
       TestCase{
-          .name = "Empty route",
+          .name = "Empty route(roundtrip)",
           .config = {
               PostBusRequest{
                   .bus = "Bus 1",
                   .stops = {},
+                  .is_roundtrip = true,
+              },
+              PostStopRequest{
+                  .stop = "stop 1",
+                  .coords = {11.111111, 11.111111},
+                  .stop_distances = {{"stop 2", 2000},},
+              },
+              PostStopRequest{
+                  .stop = "stop 2",
+                  .coords = {22.222222, 22.222222},
+                  .stop_distances = {{"stop 3", 2000},},
+              },
+          },
+          .routing_settings = kTestRoutingSettings,
+          .want = false,
+      },
+      TestCase{
+          .name = "Empty route(non-roundtrip)",
+          .config = {
+              PostBusRequest{
+                  .bus = "Bus 1",
+                  .stops = {},
+                  .is_roundtrip = false,
               },
               PostStopRequest{
                   .stop = "stop 1",
@@ -284,14 +359,17 @@ TEST(TestFactoryMethod, TestInitializing) {
               PostBusRequest{
                   .bus = "Bus 1",
                   .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
+                  .is_roundtrip = true,
               },
               PostBusRequest{
                   .bus = "Bus 2",
                   .stops = {"stop 2", "stop 3", "stop 1", "stop 2"},
+                  .is_roundtrip = true,
               },
               PostBusRequest{
                   .bus = "Bus 3",
-                  .stops = {"stop 3", "stop 2", "stop 1", "stop 3"},
+                  .stops = {"stop 3", "stop 2"},
+                  .is_roundtrip = false,
               },
               PostStopRequest{
                   .stop = "stop 1",
@@ -347,11 +425,15 @@ TEST(TestBusManager, TestGetBusInfo) {
           .config = {
               PostBusRequest{
                   .bus = "Bus1",
-                  .stops = {"stop1", "stop2", "stop3", "stop2", "stop1"}},
+                  .stops = {"stop1", "stop2", "stop3"},
+                  .is_roundtrip = false
+              },
               PostBusRequest{
                   .bus = "Bus2",
                   .stops = {"stop4", "stop5", "stop6", "stop7", "stop8",
-                            "stop4"}},
+                            "stop4"},
+                  .is_roundtrip = true
+              },
               PostStopRequest{
                   .stop = "stop1",
                   .coords = {55.611087, 37.20829},
@@ -442,11 +524,14 @@ TEST(TestBusManager, TestGetStopInfo) {
           .config = {
               PostBusRequest{
                   .bus = "Bus1",
-                  .stops = {"stop1", "stop2", "stop3", "stop2", "stop1"}},
+                  .stops = {"stop1", "stop2", "stop3"},
+                  .is_roundtrip = false},
               PostBusRequest{
                   .bus = "Bus2",
                   .stops = {"stop3", "stop4", "stop5", "stop6", "stop7",
-                            "stop3"}},
+                            "stop3"},
+                  .is_roundtrip = true
+              },
               PostStopRequest{
                   .stop = "stop1",
                   .coords = {55.611087, 37.20829}},
@@ -540,10 +625,14 @@ TEST(TestBusManager, TestFindRouteInfo) {
           .config = {
               PostBusRequest{
                   .bus = "Bus1",
-                  .stops = {"stop1", "stop2", "stop3", "stop1"}},
+                  .stops = {"stop1", "stop2", "stop3", "stop1"},
+                  .is_roundtrip = true,
+              },
               PostBusRequest{
                   .bus = "Bus2",
-                  .stops = {"stop2", "stop3", "stop4", "stop3", "stop2"}},
+                  .stops = {"stop2", "stop3", "stop4"},
+                  .is_roundtrip = false,
+              },
               PostStopRequest{
                   .stop = "stop1",
                   .coords = {55.574371, 37.6517},
@@ -601,10 +690,14 @@ TEST(TestBusManager, TestFindRouteInfo) {
           .config = {
               PostBusRequest{
                   .bus = "Bus1",
-                  .stops = {"stop1", "stop2", "stop3", "stop1"}},
+                  .stops = {"stop1", "stop2", "stop3", "stop1"},
+                  .is_roundtrip = true
+              },
               PostBusRequest{
                   .bus = "Bus2",
-                  .stops = {"stop4", "stop5", "stop6", "stop5", "stop4"}},
+                  .stops = {"stop4", "stop5", "stop6"},
+                  .is_roundtrip = false
+              },
               PostStopRequest{
                   .stop = "stop1",
                   .coords = {55.574371, 37.6517},
@@ -654,10 +747,14 @@ TEST(TestBusManager, TestFindRouteInfo) {
           .config = {
               PostBusRequest{
                   .bus = "Bus1",
-                  .stops = {"stop1", "stop2", "stop3", "stop1"}},
+                  .stops = {"stop1", "stop2", "stop3", "stop1"},
+                  .is_roundtrip = true,
+              },
               PostBusRequest{
                   .bus = "Bus2",
-                  .stops = {"stop2", "stop3", "stop4", "stop3", "stop2"}},
+                  .stops = {"stop2", "stop3", "stop4"},
+                  .is_roundtrip = false,
+              },
               PostStopRequest{
                   .stop = "stop1",
                   .coords = {55.574371, 37.6517},

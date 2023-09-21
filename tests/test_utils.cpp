@@ -40,7 +40,8 @@ bool operator==(const rm::BusResponse &lhs, const rm::BusResponse &rhs) {
 }
 
 bool operator==(const rm::PostBusRequest &lhs, const rm::PostBusRequest &rhs) {
-  return std::tie(lhs.bus, lhs.stops) == std::tie(rhs.bus, rhs.stops);
+  return std::tie(lhs.bus, lhs.stops, lhs.is_roundtrip)
+      == std::tie(rhs.bus, rhs.stops, rhs.is_roundtrip);
 }
 
 bool operator==(const rm::PostStopRequest &lhs,
@@ -215,7 +216,7 @@ std::ostream &operator<<(std::ostream &out,
 }
 
 std::ostream &operator<<(std::ostream &out, const rm::PostBusRequest &br) {
-  return out << br.bus << ": " << br.stops;
+  return out << br.bus << ": " << br.stops << ' ' << br.is_roundtrip;
 }
 
 std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr) {
