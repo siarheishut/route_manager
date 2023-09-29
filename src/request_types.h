@@ -19,6 +19,13 @@ struct RoutingSettings {
   double bus_velocity;
 };
 
+enum class MapLayer {
+  kBusLines = 0,
+  kBusLabels = 1,
+  kStopPoints = 2,
+  kStopLabels = 3,
+};
+
 struct RenderingSettings {
   double width;
   double height;
@@ -32,7 +39,7 @@ struct RenderingSettings {
   std::vector<svg::Color> color_palette;
   int bus_label_font_size;
   svg::Point bus_label_offset;
-  std::vector<std::string> layers;
+  std::vector<MapLayer> layers;
 };
 
 struct GetBusRequest {
