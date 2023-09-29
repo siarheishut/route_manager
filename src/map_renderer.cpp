@@ -54,9 +54,7 @@ svg::Text BusNameText(std::string name, svg::Point point,
 
 namespace rm {
 std::unique_ptr<MapRenderer> MapRenderer::Create(
-    std::map<std::string_view, Route> buses,
-    std::map<std::string_view, sphere::Coords> stops,
-    const RenderingSettings &settings) {
+    const Buses &buses, const Stops &stops, const RenderingSettings &settings) {
   if (settings.color_palette.empty()) return nullptr;
 
   for (auto [_, coords] : stops) {
@@ -74,14 +72,11 @@ std::unique_ptr<MapRenderer> MapRenderer::Create(
     }
   }
 
-  return std::unique_ptr<MapRenderer>(
-      new MapRenderer(std::move(buses), std::move(stops), settings));
+  return std::unique_ptr<MapRenderer>(new MapRenderer(buses, stops, settings));
 }
 
 MapRenderer::MapRenderer(
-    std::map<std::string_view, Route> buses,
-    std::map<std::string_view, sphere::Coords> stops,
-    const RenderingSettings &settings) {
+    const Buses &buses, const Stops &stops, const RenderingSettings &settings) {
   double min_lat = kMaxLatitude, max_lat = kMinLatitude;
   double min_lon = kMaxLongitude, max_lon = kMinLongitude;
   for (auto [stop, stop_point] : stops) {
@@ -97,6 +92,38 @@ MapRenderer::MapRenderer(
       .width = settings.width, .height = settings.height,
       .padding = settings.padding});
 
+  for (auto layer : settings.layers) {
+    switch (layer) {
+      case MapLayer::kBusLines:
+        AddBusLinesLayout(buses,
+                          stops,
+                          settings,
+                          converter);
+        break;
+      case MapLayer::kBusLabels:
+        AddBusLabelsLayout(buses,
+                           stops,
+                           settings,
+                           converter);
+        break;
+      case MapLayer::kStopPoints:
+        AddStopPointsLayout(stops,
+                            settings,
+                            converter);
+        break;
+      case MapLayer::kStopLabels:
+        AddStopLabelsLayout(stops,
+                            settings,
+                            converter);
+        break;
+    }
+  }
+}
+
+void MapRenderer::AddBusLinesLayout(
+    const Buses &buses, const Stops &stops,
+    const rm::RenderingSettings &settings,
+    const rm::CoordsConverter &converter) {
   int i = 0;
   for (auto &[_, route] : buses) {
     auto color = settings.color_palette[i];
@@ -107,25 +134,29 @@ MapRenderer::MapRenderer(
         .SetStrokeLineJoin("round")
         .SetStrokeWidth(settings.line_width);
     for (auto stop : route.route) {
-      bus_route.AddPoint(converter.Convert(stops[stop]));
+      bus_route.AddPoint(converter.Convert(stops.at(stop)));
     }
     if (!route.is_roundtrip) {
       for (int j = static_cast<int>(route.route.size()) - 2; j >= 0; --j) {
-        bus_route.AddPoint(converter.Convert(stops[route.route[j]]));
+        bus_route.AddPoint(converter.Convert(stops.at(route.route[j])));
       }
     }
-
     map_.Add(std::move(bus_route));
   }
+}
 
-  i = 0;
+void MapRenderer::AddBusLabelsLayout(
+    const Buses &buses, const Stops &stops,
+    const rm::RenderingSettings &settings,
+    const rm::CoordsConverter &converter) {
+  int i = 0;
   for (auto &[bus, route] : buses) {
     auto color = settings.color_palette[i];
     i = (i + 1) % settings.color_palette.size();
     auto start = route.route.front();
     auto end = route.route.back();
-    auto start_point = converter.Convert(stops[start]);
-    auto end_point = converter.Convert(stops[end]);
+    auto start_point = converter.Convert(stops.at(start));
+    auto end_point = converter.Convert(stops.at(end));
 
     map_.Add(BusNameUnderlayer(std::string(bus), start_point, settings));
     map_.Add(BusNameText(std::string(bus), start_point, color, settings));
@@ -134,14 +165,24 @@ MapRenderer::MapRenderer(
     map_.Add(BusNameUnderlayer(std::string(bus), end_point, settings));
     map_.Add(BusNameText(std::string(bus), end_point, color, settings));
   }
+}
 
+void MapRenderer::AddStopPointsLayout(
+    const Stops &stops,
+    const rm::RenderingSettings &settings,
+    const rm::CoordsConverter &converter) {
   for (auto [_, coords] : stops) {
     map_.Add(std::move(svg::Circle{}
                            .SetFillColor("white")
                            .SetCenter(converter.Convert(coords))
                            .SetRadius(settings.stop_radius)));
   }
+}
 
+void MapRenderer::AddStopLabelsLayout(
+    const Stops &stops,
+    const rm::RenderingSettings &settings,
+    const rm::CoordsConverter &converter) {
   for (auto [stop, coords] : stops) {
     map_.Add(std::move(svg::Text{}
                            .SetPoint(converter.Convert(coords))

@@ -62,7 +62,9 @@ const rm::RenderingSettings kTestRenderingSettings{
         "purple", svg::Rgb{.red = 15, .green = 23, .blue = 41},
         svg::Rgba{.red = 210, .green = 81, .blue = 14, .alpha = 0.94}},
     .bus_label_font_size = 6,
-    .bus_label_offset = svg::Point{.x = 5, .y = -7}
+    .bus_label_offset = svg::Point{.x = 5, .y = -7},
+    .layers = {rm::MapLayer::kBusLines, rm::MapLayer::kBusLabels,
+               rm::MapLayer::kStopPoints, rm::MapLayer::kStopLabels}
 };
 
 const std::pair<std::string_view, rm::sphere::Coords> kAirport =
@@ -162,6 +164,12 @@ TEST(TestMapRenderer, TestInitializing) {
 TEST(TestMapRenderer, TestGetMap) {
   using namespace rm;
 
+  auto layers_replace_with = [&](std::vector<MapLayer> layers) {
+    auto item = kTestRenderingSettings;
+    item.layers = std::move(layers);
+    return item;
+  };
+
   struct TestCase {
     std::string name;
     std::map<std::string_view, MapRenderer::Route> buses;
@@ -171,6 +179,49 @@ TEST(TestMapRenderer, TestGetMap) {
   };
 
   std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Empty layers",
+          .buses = {{"1", {{"Shop", "Airport"}, false}}},
+          .stops = {kAirport, kShop},
+          .rendering_settings = layers_replace_with({}),
+          .want = SVG_DOC()
+      },
+      TestCase{
+          .name = "Repetitive layers",
+          .stops = {kAirport, kShop},
+          .rendering_settings = layers_replace_with({MapLayer::kStopLabels,
+                                                     MapLayer::kStopLabels,
+                                                     MapLayer::kStopPoints,
+                                                     MapLayer::kStopPoints}),
+          .want = SVG_DOC(
+                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Shop, 170, 170)
+                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Shop, 170, 170)
+                      STOP(242.1, 214.631)STOP(170, 170)
+                      STOP(242.1, 214.631)STOP(170, 170))
+      },
+      TestCase{
+          .name = "Random order",
+          .buses = {{"1", {{"Shop", "Airport"}, false}}},
+          .stops = {kAirport, kShop},
+          .rendering_settings =  layers_replace_with({MapLayer::kStopLabels,
+                                                      MapLayer::kBusLines,
+                                                      MapLayer::kStopPoints,
+                                                      MapLayer::kBusLabels,
+                                                      MapLayer::kStopLabels}),
+          .want = SVG_DOC(
+                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Shop, 170, 170)
+                      ROUTE("purple")
+                      POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      NEXT_POINT(170, 170) ROUTE_END()
+                      STOP(242.1, 214.631)STOP(170, 170)
+                      BUS_NAME(1, 170, 170, "purple")
+                      BUS_NAME(1, 242.1, 214.631, "purple")
+                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Shop, 170, 170))
+      },
       TestCase{
           .name = "Roundtrip",
           .buses = {{"1", {{"Shop", "Airport", "Shop"}, true}}},
