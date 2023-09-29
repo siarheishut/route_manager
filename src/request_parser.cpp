@@ -46,11 +46,20 @@ bool IsLayers(const json::Node &node) {
       });
 }
 
-std::vector<std::string> AsLayers(json::Node node) {
-  std::vector<std::string> layers;
+std::vector<rm::MapLayer> AsLayers(const json::Node &node) {
+  std::vector<rm::MapLayer> layers;
   layers.reserve(node.AsArray().size());
-  for (auto &item : node.ReleaseArray()) {
-    layers.push_back(item.ReleaseString());
+  for (auto &item : node.AsArray()) {
+    auto &layer = item.AsString();
+    if (layer == "bus_lines") {
+      layers.push_back(rm::MapLayer::kBusLines);
+    } else if (layer == "bus_labels") {
+      layers.push_back(rm::MapLayer::kBusLabels);
+    } else if (layer == "stop_points") {
+      layers.push_back(rm::MapLayer::kStopPoints);
+    } else if (layer == "stop_labels") {
+      layers.push_back(rm::MapLayer::kStopLabels);
+    }
   }
   return layers;
 }
