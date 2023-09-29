@@ -82,7 +82,10 @@ TEST(TestParseSettings, TestRedneringSettings) {
                                         json::List{210, 81, 14, 0.94}}},
                                     {"bus_label_font_size", 6},
                                     {"bus_label_offset", json::List{5, -7}},
-                                    {"layers", json::List{"1", "2", "3"}}};
+                                    {"layers", json::List{"bus_labels",
+                                                          "stop_points",
+                                                          "bus_lines",
+                                                          "stop_labels"}}};
   auto test_item_without = [&](std::string field) {
     auto item = test_item;
     item.erase(field);
@@ -93,6 +96,31 @@ TEST(TestParseSettings, TestRedneringSettings) {
     item[field] = std::move(node);
     return item;
   };
+
+  const auto settings = RenderingSettings{
+      .width = 412.1, .height = 395.7, .padding = 210, .stop_radius = 4.2,
+      .line_width = 11, .stop_label_font_size = 10,
+      .stop_label_offset = svg::Point{.x = -5, .y = 2},
+      .underlayer_color = svg::Color(
+          svg::Rgba{.red = 1, .green = 100, .blue = 20, .alpha = 0.1}),
+      .underlayer_width = 5,
+      .color_palette = {
+          "purple", svg::Rgb{.red = 15, .green = 23, .blue = 41},
+          svg::Rgba{.red = 210, .green = 81, .blue = 14, .alpha = 0.94}},
+      .bus_label_font_size = 6,
+      .bus_label_offset = {.x = 5, .y = -7},
+      .layers = {MapLayer::kBusLabels,
+                 MapLayer::kStopPoints,
+                 MapLayer::kBusLines,
+                 MapLayer::kStopLabels}
+  };
+
+  auto settings_replace_layers_with = [&](std::vector<MapLayer> layers) {
+    auto item = settings;
+    item.layers = std::move(layers);
+    return item;
+  };
+
   std::vector<TestCase> test_cases{
       TestCase{
           .name = "Wrong format: no <width>",
@@ -242,22 +270,29 @@ TEST(TestParseSettings, TestRedneringSettings) {
           .want = std::nullopt
       },
       TestCase{
+          .name = "Empty layers",
+          .input = test_item_replace("layers", json::List{}),
+          .want = settings_replace_layers_with({})
+      },
+      TestCase{
+          .name = "Invalid layer strings",
+          .input = test_item_replace(
+              "layers", json::List{"1", "2", "3", "2", "bus_labels"}),
+          .want = settings_replace_layers_with({MapLayer::kBusLabels})
+      },
+      TestCase{
+          .name = "Repeated layers",
+          .input = test_item_replace(
+              "layers", json::List{"bus_labels", "stop_labels",
+                                   "bus_labels", "stop_labels"}),
+          .want = settings_replace_layers_with(
+              {MapLayer::kBusLabels, MapLayer::kStopLabels,
+               MapLayer::kBusLabels, MapLayer::kStopLabels})
+      },
+      TestCase{
           .name = "Valid settings",
           .input = test_item,
-          .want = RenderingSettings{
-              .width = 412.1, .height = 395.7, .padding = 210, .stop_radius = 4.2,
-              .line_width = 11, .stop_label_font_size = 10,
-              .stop_label_offset = svg::Point{.x = -5, .y = 2},
-              .underlayer_color = svg::Color(
-                  svg::Rgba{.red = 1, .green = 100, .blue = 20, .alpha = 0.1}),
-              .underlayer_width = 5,
-              .color_palette = {
-                  "purple", svg::Rgb{.red = 15, .green = 23, .blue = 41},
-                  svg::Rgba{.red = 210, .green = 81, .blue = 14, .alpha = 0.94}},
-              .bus_label_font_size = 6,
-              .bus_label_offset = {.x = 5, .y = -7},
-              .layers = {"1", "2", "3"}
-          }
+          .want = settings
       }
   };
 
