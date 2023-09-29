@@ -38,6 +38,22 @@ std::vector<svg::Color> AsPalette(json::Node node) {
   }
   return palette;
 }
+
+bool IsLayers(const json::Node &node) {
+  return node.IsArray() &&
+      std::all_of(node.AsArray().begin(), node.AsArray().end(), [](auto &item) {
+        return item.IsString();
+      });
+}
+
+std::vector<std::string> AsLayers(json::Node node) {
+  std::vector<std::string> layers;
+  layers.reserve(node.AsArray().size());
+  for (auto &item : node.ReleaseArray()) {
+    layers.push_back(item.ReleaseString());
+  }
+  return layers;
+}
 }
 
 namespace rm {
@@ -69,6 +85,7 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
   auto color_palette = settings.find("color_palette");
   auto bus_label_font_size = settings.find("bus_label_font_size");
   auto bus_label_offset = settings.find("bus_label_offset");
+  auto layers = settings.find("layers");
 
   if (width == settings.end() || height == settings.end() ||
       padding == settings.end() || stop_radius == settings.end() ||
@@ -77,7 +94,8 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
       underlayer_color == settings.end() ||
       underlayer_width == settings.end() || color_palette == settings.end() ||
       bus_label_font_size == settings.end() ||
-      bus_label_offset == settings.end()) {
+      bus_label_offset == settings.end() ||
+      layers == settings.end()) {
     return std::nullopt;
   }
 
@@ -89,7 +107,8 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
       !underlayer_width->second.IsDouble() ||
       !IsPalette(color_palette->second) ||
       !bus_label_font_size->second.IsInt() ||
-      !IsOffset(bus_label_offset->second))
+      !IsOffset(bus_label_offset->second) ||
+      !IsLayers(layers->second))
     return std::nullopt;
 
   RenderingSettings rs;
@@ -105,6 +124,7 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
   rs.color_palette = AsPalette(std::move(color_palette->second));
   rs.bus_label_font_size = bus_label_font_size->second.AsInt();
   rs.bus_label_offset = AsOffset(bus_label_offset->second);
+  rs.layers = AsLayers(layers->second);
 
   return rs;
 }
