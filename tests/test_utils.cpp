@@ -105,7 +105,8 @@ bool operator==(const rm::RenderingSettings &lhs,
                  lhs.line_width,
                  lhs.underlayer_width,
                  lhs.stop_label_font_size,
-                 lhs.color_palette.size()) !=
+                 lhs.color_palette.size(),
+                 lhs.layers) !=
       std::tuple(rhs.width,
                  rhs.height,
                  rhs.padding,
@@ -113,7 +114,8 @@ bool operator==(const rm::RenderingSettings &lhs,
                  rhs.line_width,
                  rhs.underlayer_width,
                  rhs.stop_label_font_size,
-                 rhs.color_palette.size()))
+                 rhs.color_palette.size(),
+                 rhs.layers))
     return false;
   if (lhs.stop_label_offset != rhs.stop_label_offset) return false;
   if (lhs.underlayer_color != rhs.underlayer_color) return false;
