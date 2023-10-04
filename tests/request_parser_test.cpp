@@ -258,6 +258,44 @@ TEST(TestInputRequest, TestPostBusRequest) {
               .is_roundtrip = true,
           }
       },
+      TestCase{
+          .name = "<name> isn't string",
+          .input = json::Dict{{"type", "Bus"},
+                              {"name", json::List{"Bus1"}},
+                              {"stops",
+                               json::List{"stop 1", "stop 2", "stop 3",
+                                          "stop 1"}},
+                              {"is_roundtrip", true}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "<stops> isn't array",
+          .input = json::Dict{{"type", "Bus"},
+                              {"name", "Bus1"},
+                              {"stops", "Stop1"},
+                              {"is_roundtrip", true}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "<roundtrip> isn't bool",
+          .input = json::Dict{{"type", "Bus"},
+                              {"name", "Bus1"},
+                              {"stops",
+                               json::List{"stop 1", "stop 2", "stop 3",
+                                          "stop 1"}},
+                              {"is_roundtrip", "true"}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "<stops> contains not string",
+          .input = json::Dict{{"type", "Bus"},
+                              {"name", "Bus1"},
+                              {"stops",
+                               json::List{"stop 1", "stop 2", 3,
+                                          "stop 1"}},
+                              {"is_roundtrip", true}},
+          .want = std::nullopt
+      },
   };
 
   for (auto &[name, input, want] : test_cases) {
@@ -308,6 +346,60 @@ TEST(TestInputRequest, TestPostStopRequest) {
           .input = json::Dict{{"type", "Stop"},
                               {"road_distances",
                                json::Dict{{"stop2", 3900}, {"stop3", 31333},
+                                          {"stop4", 11200}}},
+                              {"latitude", 38.131420},
+                              {"longitude", -95.538143}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "<name> isn't string",
+          .input = json::Dict{{"type", "Stop"},
+                              {"name", 1},
+                              {"road_distances",
+                               json::Dict{{"stop2", 3900}, {"stop3", 31333},
+                                          {"stop4", 11200}}},
+                              {"latitude", 38.131420},
+                              {"longitude", -95.538143}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "<road_distances> isn't map",
+          .input = json::Dict{{"type", "Stop"},
+                              {"name", "stop1"},
+                              {"road_distances",
+                               json::List{"stop2", "stop3"}},
+                              {"latitude", 38.131420},
+                              {"longitude", -95.538143}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "<latitude> isn't double",
+          .input = json::Dict{{"type", "Stop"},
+                              {"name", "stop1"},
+                              {"road_distances",
+                               json::Dict{{"stop2", 3900}, {"stop3", 31333},
+                                          {"stop4", 11200}}},
+                              {"latitude", "3"},
+                              {"longitude", -95.538143}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "<longitude> isn't double",
+          .input = json::Dict{{"type", "Stop"},
+                              {"name", "stop1"},
+                              {"road_distances",
+                               json::Dict{{"stop2", 3900}, {"stop3", 31333},
+                                          {"stop4", 11200}}},
+                              {"latitude", 38.131420},
+                              {"longitude", "5"}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "<road_distances> value isn't int",
+          .input = json::Dict{{"type", "Stop"},
+                              {"name", "stop1"},
+                              {"road_distances",
+                               json::Dict{{"stop2", 3900.4}, {"stop3", 31333},
                                           {"stop4", 11200}}},
                               {"latitude", 38.131420},
                               {"longitude", -95.538143}},
@@ -394,6 +486,20 @@ TEST(TestOutputRequest, TestGetBusRequest) {
           .want = std::nullopt,
       },
       TestCase{
+          .name = "<id> isn't int",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 1.2},
+                              {"name", "Bus1"}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "<name> isn't string",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 1},
+                              {"name", 1}},
+          .want = std::nullopt,
+      },
+      TestCase{
           .name = "Common request",
           .input = json::Dict{{"type", "Bus"},
                               {"name", "Bus1"},
@@ -443,6 +549,30 @@ TEST(TestOutputRequest, TestGetRouteRequest) {
           .want = std::nullopt,
       },
       TestCase{
+          .name = "<to> isn't string",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 1},
+                              {"to", 2},
+                              {"from", "1"}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "<id> isn't int",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 1.2},
+                              {"to", "2"},
+                              {"from", "1"}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "<from> isn't string",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 1},
+                              {"from", 1},
+                              {"to", "2"}},
+          .want = std::nullopt,
+      },
+      TestCase{
           .name = "Common request",
           .input = json::Dict{{"type", "Route"},
                               {"from", "stop 1"},
@@ -484,27 +614,18 @@ TEST(TestOutputRequest, TestGetStopRequest) {
           .want = std::nullopt,
       },
       TestCase{
-          .name = "Wrong request: <from> isn't string",
-          .input = json::Dict{{"type", "Route"},
-                              {"from", 4},
-                              {"to", "stop 2"},
-                              {"id", 913}},
-          .want = std::nullopt,
-      },
-      TestCase{
-          .name = "Wrong request: <to> isn't string",
-          .input = json::Dict{{"type", "Route"},
-                              {"from", "stop 1"},
-                              {"to", 2},
-                              {"id", 241}},
-          .want = std::nullopt,
-      },
-      TestCase{
           .name = "Wrong request: <id> isn't int",
           .input = json::Dict{{"type", "Route"},
                               {"from", "stop 1"},
                               {"to", "stop 2"},
                               {"id", 12551.21}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "<name> isn't string",
+          .input = json::Dict{{"type", "Bus"},
+                              {"id", 1},
+                              {"name", 1}},
           .want = std::nullopt,
       },
       TestCase{
@@ -687,6 +808,29 @@ TEST(TestInput, TestInputRequestsCount) {
     std::optional<std::pair<int, int>> want;
   };
   std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Test requests count",
+          .input = json::List{json::Dict{{"type", "Bus"},
+                                         {"name", "Bus 1"},
+                                         {"stops", json::List{
+                                             "stop1", "stop3",
+                                             "stop2", "stop1"}},
+                                         {"is_roundtrip", true}},
+                              json::Dict{{"type", "Bus"},
+                                         {"name", "Bus 2"},
+                                         {"stops", json::List{
+                                             "stop2", "stop3"}},
+                                         {"is_roundtrip", false}
+                              },
+                              json::Dict{{"type", "Bus"},
+                                         {"name", "Bus 3"},
+                                         {"is_roundtrip", false}
+                              },
+                              json::List{"type", "Bus", "name", "Bus 3",
+                                         "is_roundtrip", false},
+          },
+          .want = std::nullopt,
+      },
       TestCase{
           .name = "Test requests count",
           .input = json::List{json::Dict{{"type", "Bus"},
