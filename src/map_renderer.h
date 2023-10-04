@@ -22,6 +22,7 @@ class MapRenderer {
   };
   using Buses = std::map<std::string_view, Route>;
   using Stops = std::map<std::string_view, rm::sphere::Coords>;
+  using StopCoords = std::unordered_map<std::string_view, svg::Point>;
 
   static std::unique_ptr<MapRenderer> Create(
       const Buses &buses, const Stops &stops,
@@ -35,22 +36,22 @@ class MapRenderer {
   void AddBusLinesLayout(
       const Buses &buses, const Stops &stops,
       const rm::RenderingSettings &settings,
-      const rm::CoordsConverter &converter);
+      const StopCoords &coords);
 
   void AddBusLabelsLayout(
       const Buses &buses, const Stops &stops,
       const rm::RenderingSettings &settings,
-      const rm::CoordsConverter &converter);
+      const StopCoords &coords);
 
   void AddStopPointsLayout(
       const Stops &stops,
       const rm::RenderingSettings &settings,
-      const rm::CoordsConverter &converter);
+      const StopCoords &coords);
 
   void AddStopLabelsLayout(
       const Stops &stops,
       const rm::RenderingSettings &settings,
-      const rm::CoordsConverter &converter);
+      const StopCoords &coords);
 
   svg::Document map_;
 };

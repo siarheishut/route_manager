@@ -194,12 +194,12 @@ TEST(TestMapRenderer, TestGetMap) {
                                                      MapLayer::kStopPoints,
                                                      MapLayer::kStopPoints}),
           .want = SVG_DOC(
-                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Airport, 242.1, 225.7)
                       STOP_NAME(Shop, 170, 170)
-                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Airport, 242.1, 225.7)
                       STOP_NAME(Shop, 170, 170)
-                      STOP(242.1, 214.631)STOP(170, 170)
-                      STOP(242.1, 214.631)STOP(170, 170))
+                      STOP(242.1, 225.7)STOP(170, 170)
+                      STOP(242.1, 225.7)STOP(170, 170))
       },
       TestCase{
           .name = "Random order",
@@ -211,15 +211,15 @@ TEST(TestMapRenderer, TestGetMap) {
                                                       MapLayer::kBusLabels,
                                                       MapLayer::kStopLabels}),
           .want = SVG_DOC(
-                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP_NAME(Airport, 242.1, 225.7)
                       STOP_NAME(Shop, 170, 170)
                       ROUTE("purple")
-                      POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      POINT(170, 170)NEXT_POINT(242.1, 225.7)
                       NEXT_POINT(170, 170) ROUTE_END()
-                      STOP(242.1, 214.631)STOP(170, 170)
+                      STOP(242.1, 225.7)STOP(170, 170)
                       BUS_NAME(1, 170, 170, "purple")
-                      BUS_NAME(1, 242.1, 214.631, "purple")
-                      STOP_NAME(Airport, 242.1, 214.631)
+                      BUS_NAME(1, 242.1, 225.7, "purple")
+                      STOP_NAME(Airport, 242.1, 225.7)
                       STOP_NAME(Shop, 170, 170))
       },
       TestCase{
@@ -229,11 +229,11 @@ TEST(TestMapRenderer, TestGetMap) {
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       ROUTE("purple")
-                      POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      POINT(170, 170)NEXT_POINT(242.1, 225.7)
                       NEXT_POINT(170, 170) ROUTE_END()
                       BUS_NAME(1, 170, 170, "purple")
-                      STOP(242.1, 214.631)STOP(170, 170)
-                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP(242.1, 225.7)STOP(170, 170)
+                      STOP_NAME(Airport, 242.1, 225.7)
                       STOP_NAME(Shop, 170, 170))
       },
       TestCase{
@@ -243,12 +243,12 @@ TEST(TestMapRenderer, TestGetMap) {
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       ROUTE("purple")
-                      POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      POINT(170, 170)NEXT_POINT(242.1, 225.7)
                       NEXT_POINT(170, 170) ROUTE_END()
                       BUS_NAME(1, 170, 170, "purple")
-                      BUS_NAME(1, 242.1, 214.631, "purple")
-                      STOP(242.1, 214.631)STOP(170, 170)
-                      STOP_NAME(Airport, 242.1, 214.631)
+                      BUS_NAME(1, 242.1, 225.7, "purple")
+                      STOP(242.1, 225.7)STOP(170, 170)
+                      STOP_NAME(Airport, 242.1, 225.7)
                       STOP_NAME(Shop, 170, 170))
       },
       TestCase{
@@ -258,12 +258,12 @@ TEST(TestMapRenderer, TestGetMap) {
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       ROUTE("purple")
-                      POINT(170, 170)NEXT_POINT(242.1, 214.631)
-                      NEXT_POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      POINT(170, 170)NEXT_POINT(242.1, 225.7)
+                      NEXT_POINT(170, 170)NEXT_POINT(242.1, 225.7)
                       NEXT_POINT(170, 170)ROUTE_END()
                       BUS_NAME(1, 170, 170, "purple")
-                      STOP(242.1, 214.631)STOP(170, 170)
-                      STOP_NAME(Airport, 242.1, 214.631)
+                      STOP(242.1, 225.7)STOP(170, 170)
+                      STOP_NAME(Airport, 242.1, 225.7)
                       STOP_NAME(Shop, 170, 170))
       },
       TestCase{
@@ -276,9 +276,9 @@ TEST(TestMapRenderer, TestGetMap) {
           .stops = {kAirport, kShop, kHighStreet},
           .rendering_settings = kTestRenderingSettings,
           .want =  SVG_DOC(
-                       STOP(242.1, 214.631)STOP(218.01, 192.764)STOP(170, 170)
-                       STOP_NAME(Airport, 242.1, 214.631)
-                       STOP_NAME(High Street, 218.01, 192.764)
+                       STOP(242.1, 225.7)STOP(206.05, 197.85)STOP(170, 170)
+                       STOP_NAME(Airport, 242.1, 225.7)
+                       STOP_NAME(High Street, 206.05, 197.85)
                        STOP_NAME(Shop, 170, 170))
       },
       TestCase{
@@ -292,22 +292,22 @@ TEST(TestMapRenderer, TestGetMap) {
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       ROUTE("purple")
-                      POINT(242.1, 214.631)NEXT_POINT(218.01, 192.764)
-                      NEXT_POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      POINT(242.1, 225.7)NEXT_POINT(218.067, 207.133)
+                      NEXT_POINT(170, 170)NEXT_POINT(242.1, 225.7)
                       ROUTE_END()
                       ROUTE("rgb(15,23,41)")
-                      POINT(218.01, 192.764)
-                      NEXT_POINT(242.1, 214.631) NEXT_POINT(170, 170)
-                      NEXT_POINT(177.713, 177.424) NEXT_POINT(170, 170)
-                      NEXT_POINT(242.1, 214.631) NEXT_POINT(218.01, 192.764)
+                      POINT(218.067, 207.133)
+                      NEXT_POINT(242.1, 225.7) NEXT_POINT(170, 170)
+                      NEXT_POINT(194.033, 188.567) NEXT_POINT(170, 170)
+                      NEXT_POINT(242.1, 225.7) NEXT_POINT(218.067, 207.133)
                       ROUTE_END()
-                      BUS_NAME(bus 1, 242.1, 214.631, "purple")
-                      BUS_NAME(bus 2, 218.01, 192.764, "rgb(15,23,41)")
-                      STOP(242.1, 214.631) STOP(218.01, 192.764)
-                      STOP(177.713, 177.424) STOP(170, 170)
-                      STOP_NAME(Airport, 242.1, 214.631)
-                      STOP_NAME(High Street, 218.01, 192.764)
-                      STOP_NAME(RW station, 177.713, 177.424)
+                      BUS_NAME(bus 1, 242.1, 225.7, "purple")
+                      BUS_NAME(bus 2, 218.067, 207.133, "rgb(15,23,41)")
+                      STOP(242.1, 225.7) STOP(218.067, 207.133)
+                      STOP(194.033, 188.567) STOP(170, 170)
+                      STOP_NAME(Airport, 242.1, 225.7)
+                      STOP_NAME(High Street, 218.067, 207.133)
+                      STOP_NAME(RW station, 194.033, 188.567)
                       STOP_NAME(Shop, 170, 170))
       },
       TestCase{
@@ -320,26 +320,26 @@ TEST(TestMapRenderer, TestGetMap) {
           .stops = {kShop, kAirport},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
-                      ROUTE("purple")POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      ROUTE("purple")POINT(170, 170)NEXT_POINT(242.1, 225.7)
                       NEXT_POINT(170, 170)ROUTE_END()
                       ROUTE("rgb(15,23,41)")POINT(170, 170)
-                      NEXT_POINT(242.1, 214.631)NEXT_POINT(170, 170)ROUTE_END()
+                      NEXT_POINT(242.1, 225.7)NEXT_POINT(170, 170)ROUTE_END()
                       ROUTE("rgba(210,81,14,0.94)")POINT(170, 170)
-                      NEXT_POINT(242.1, 214.631) NEXT_POINT(170, 170)ROUTE_END()
-                      ROUTE("purple")POINT(170, 170)NEXT_POINT(242.1, 214.631)
+                      NEXT_POINT(242.1, 225.7) NEXT_POINT(170, 170)ROUTE_END()
+                      ROUTE("purple")POINT(170, 170)NEXT_POINT(242.1, 225.7)
                       NEXT_POINT(170, 170)ROUTE_END()
                       ROUTE("rgb(15,23,41)")POINT(170, 170)
-                      NEXT_POINT(242.1, 214.631)NEXT_POINT(170, 170) ROUTE_END()
+                      NEXT_POINT(242.1, 225.7)NEXT_POINT(170, 170) ROUTE_END()
                       BUS_NAME(Bus 1, 170, 170, "purple")
-                      BUS_NAME(Bus 1, 242.1, 214.631, "purple")
+                      BUS_NAME(Bus 1, 242.1, 225.7, "purple")
                       BUS_NAME(Bus 2, 170, 170, "rgb(15,23,41)")
                       BUS_NAME(Bus 3, 170, 170, "rgba(210,81,14,0.94)")
-                      BUS_NAME(Bus 3, 242.1, 214.631, "rgba(210,81,14,0.94)")
+                      BUS_NAME(Bus 3, 242.1, 225.7, "rgba(210,81,14,0.94)")
                       BUS_NAME(Bus 4, 170, 170, "purple")
                       BUS_NAME(Bus 5, 170, 170, "rgb(15,23,41)")
-                      BUS_NAME(Bus 5, 242.1, 214.631, "rgb(15,23,41)")
-                      STOP(242.1, 214.631)STOP(170, 170)
-                      STOP_NAME(Airport, 242.1, 214.631)
+                      BUS_NAME(Bus 5, 242.1, 225.7, "rgb(15,23,41)")
+                      STOP(242.1, 225.7)STOP(170, 170)
+                      STOP_NAME(Airport, 242.1, 225.7)
                       STOP_NAME(Shop, 170, 170))
 
       },
@@ -347,16 +347,34 @@ TEST(TestMapRenderer, TestGetMap) {
           .name = "Empty stop name",
           .stops = {{"", {.latitude = 10, .longitude = 10}}},
           .rendering_settings = kTestRenderingSettings,
-          .want = SVG_DOC(STOP(170, 170)STOP_NAME(, 170, 170))
+          .want = SVG_DOC(STOP(170, 225.7)STOP_NAME(, 170, 225.7))
       },
       TestCase{
-          .name = "Several stops with the same coords",
-          .stops = {{"RW", {.latitude = 10, .longitude = 10}},
-                    {"Stop", {.latitude = 10, .longitude = 10}}},
+          .name = "Stops with identical latitude",
+          .stops = {{"ss", {.latitude = 10, .longitude = 10}},
+                    {"s", {.latitude = 10, .longitude = 11}}},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
-                      STOP(170, 170)STOP(170, 170)
-                      STOP_NAME(RW, 170, 170)STOP_NAME(Stop, 170, 170))
+                      STOP(242.1, 225.7)STOP(170, 170)
+                      STOP_NAME(s, 242.1, 225.7)STOP_NAME(ss, 170, 170))
+      },
+      TestCase{
+          .name = "Stops with identical longitude",
+          .stops = {{"ss", {.latitude = 11, .longitude = 10}},
+                    {"s", {.latitude = 10, .longitude = 10}}},
+          .rendering_settings = kTestRenderingSettings,
+          .want = SVG_DOC(
+                      STOP(170, 225.7)STOP(242.1, 170)
+                      STOP_NAME(s, 170, 225.7)STOP_NAME(ss, 242.1, 170))
+      },
+      TestCase{
+          .name = "Stops with identical coords",
+          .stops = {{"ss", {.latitude = 10, .longitude = 10}},
+                    {"s", {.latitude = 10, .longitude = 10}}},
+          .rendering_settings = kTestRenderingSettings,
+          .want = SVG_DOC(
+                      STOP(170, 225.7)STOP(242.1, 170)
+                      STOP_NAME(s, 170, 225.7)STOP_NAME(ss, 242.1, 170))
       },
   };
 
