@@ -248,6 +248,7 @@ std::optional<GetRequest> ParseOutputRequest(json::Dict dict) {
   auto type = dict.find("type");
 
   if (type == dict.end()) return std::nullopt;
+  if (!type->second.IsString()) return std::nullopt;
 
   std::string_view request_type = type->second.AsString();
   if (request_type == "Stop") {
