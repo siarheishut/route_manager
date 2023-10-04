@@ -10,6 +10,127 @@
 
 #include "test_utils.h"
 
+TEST(TestInputRequest, TestCommonProperties) {
+  using namespace rm;
+
+  struct TestCase {
+    std::string name;
+    json::Dict input;
+    bool want_fail;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Request doesn't contain field <type>",
+          .input = json::Dict{
+              {"name", "Bus 1"},
+              {"stops", json::List{"stop1", "stop2", "stop1"}},
+              {"is_roundtrip", true}},
+          .want_fail = true
+      },
+      TestCase{
+          .name = "Type isn't string",
+          .input = json::Dict{
+              {"type", json::List{"Bus"}},
+              {"name", "Bus 1"},
+              {"stops", json::List{"stop1", "stop2", "stop1"}},
+              {"is_roundtrip", true}},
+          .want_fail = true
+      },
+      TestCase{
+          .name = "Unknown request type",
+          .input = json::Dict{
+              {"type", "stop"},
+              {"name", "Stop 1"},
+              {"longitude", 10},
+              {"latitude", 25},
+              {"road_distances", json::Dict{}}},
+          .want_fail = true
+      },
+      TestCase{
+          .name = "Valid PostBusRequest",
+          .input = json::Dict{
+              {"type", "Bus"},
+              {"name", "Bus 1"},
+              {"stops", json::List{"stop1", "stop2", "stop1"}},
+              {"is_roundtrip", true}},
+          .want_fail = false
+      },
+      TestCase{
+          .name = "Valid PostStopRequest",
+          .input = json::Dict{
+              {"type", "Stop"},
+              {"name", "Stop 1"},
+              {"longitude", 10},
+              {"latitude", 25},
+              {"road_distances", json::Dict{}}},
+          .want_fail = false
+      },
+  };
+
+  for (auto &[name, input, want_fail] : test_cases) {
+    auto got = !ParseInputRequest(input).has_value();
+    EXPECT_EQ(got, want_fail) << name;
+  }
+}
+
+TEST(TestOutputRequest, TestCommonProperties) {
+  using namespace rm;
+
+  struct TestCase {
+    std::string name;
+    json::Dict input;
+    bool want_fail;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Request doesn't contain field <type>",
+          .input = json::Dict{{"name", "1"}, {"id", 1}},
+          .want_fail = true
+      },
+      TestCase{
+          .name = "Type isn't string",
+          .input = json::Dict{{"type", json::List{"Map"}}, {"id", 1}},
+          .want_fail = true
+      },
+      TestCase{
+          .name = "Unknown request type",
+          .input = json::Dict{{"type", "stop"}, {"name", "Stop 1"}, {"id", 1}},
+          .want_fail = true
+      },
+      TestCase{
+          .name = "Valid GetBusRequest",
+          .input = json::Dict{{"type", "Bus"}, {"name", "1"}, {"id", 1}},
+          .want_fail = false
+      },
+      TestCase{
+          .name = "Valid GetStopRequest",
+          .input = json::Dict{{"type", "Stop"}, {"name", "1"}, {"id", 1}},
+          .want_fail = false
+      },
+      TestCase{
+          .name = "Valid GetRouteRequest",
+          .input = json::Dict{
+              {"type", "Route"},
+              {"from", "1"},
+              {"to", "2"},
+              {"id", 1}},
+          .want_fail = false
+      },
+      TestCase{
+          .name = "Valid GetMapRequest",
+          .input = json::Dict{{"type", "Map"}, {"id", 1}},
+          .want_fail = false
+      },
+  };
+
+  for (auto &[name, input, want_fail] : test_cases) {
+    auto got = !ParseOutputRequest(input).has_value();
+    EXPECT_EQ(got, want_fail) << name;
+  }
+}
+
 TEST(TestInputRequest, TestPostBusRequest) {
   using namespace rm;
 
@@ -450,7 +571,7 @@ struct RequestCount {
   }
 };
 
-TEST(TestParseRequests, TestOutput) {
+TEST(TestOutput, TestOutputRequestsCount) {
   using namespace rm;
 
   struct TestCase {
@@ -558,7 +679,7 @@ TEST(TestParseRequests, TestOutput) {
   }
 }
 
-TEST(TestParseRequests, TestInput) {
+TEST(TestInput, TestInputRequestsCount) {
   using namespace rm;
   struct TestCase {
     std::string name;
