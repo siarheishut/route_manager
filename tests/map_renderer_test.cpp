@@ -9,6 +9,7 @@
 #include "gtest/gtest.h"
 #include "svg/common.h"
 
+#include "src/map_renderer_utils.h"
 #include "src/request_types.h"
 #include "src/sphere.h"
 
@@ -83,7 +84,7 @@ const std::pair<std::string_view, rm::sphere::Coords> kDostoevsky =
 TEST(TestMapRenderer, TestInitializing) {
   struct TestCase {
     std::string name;
-    std::map<std::string_view, rm::MapRenderer::Route> buses;
+    std::map<std::string_view, rm::renderer_utils::Route> buses;
     std::map<std::string_view, rm::sphere::Coords> stops;
     rm::RenderingSettings settings;
     bool want_fail;
@@ -172,7 +173,7 @@ TEST(TestMapRenderer, TestGetMap) {
 
   struct TestCase {
     std::string name;
-    std::map<std::string_view, MapRenderer::Route> buses;
+    std::map<std::string_view, rm::renderer_utils::Route> buses;
     std::map<std::string_view, sphere::Coords> stops;
     RenderingSettings rendering_settings;
     std::string want;
