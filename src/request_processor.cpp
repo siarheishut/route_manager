@@ -8,19 +8,21 @@
 
 #include "bus_manager.h"
 #include "map_renderer.h"
+#include "map_renderer_utils.h"
 
 namespace {
 auto MapRendererParams(const std::vector<rm::PostRequest> &requests) {
   using namespace std;
   using namespace rm;
 
-  map<string_view, MapRenderer::Route> buses;
+  map<string_view, rm::renderer_utils::Route> buses;
   map<string_view, sphere::Coords> stops;
   for (auto &request : requests) {
     if (auto bus = get_if<PostBusRequest>(&request)) {
-      buses.emplace(bus->bus,
-                    MapRenderer::Route{{begin(bus->stops), end(bus->stops)},
-                                       bus->is_roundtrip});
+      buses.emplace(
+          bus->bus,
+          rm::renderer_utils::Route{{begin(bus->stops), end(bus->stops)},
+                                    bus->is_roundtrip});
     } else if (auto stop = get_if<PostStopRequest>(&request)) {
       stops[stop->stop] = stop->coords;
     }

@@ -11,6 +11,7 @@
 #include "svg/figures.h"
 
 #include "coords_converter.h"
+#include "map_renderer_utils.h"
 #include "request_types.h"
 #include "sphere.h"
 
@@ -54,7 +55,9 @@ svg::Text BusNameText(std::string name, svg::Point point,
 
 namespace rm {
 std::unique_ptr<MapRenderer> MapRenderer::Create(
-    const Buses &buses, const Stops &stops, const RenderingSettings &settings) {
+    const renderer_utils::Buses &buses,
+    const renderer_utils::Stops &stops,
+    const RenderingSettings &settings) {
   if (settings.color_palette.empty()) return nullptr;
 
   for (auto [_, coords] : stops) {
@@ -76,8 +79,10 @@ std::unique_ptr<MapRenderer> MapRenderer::Create(
 }
 
 MapRenderer::MapRenderer(
-    const Buses &buses, const Stops &stops, const RenderingSettings &settings) {
-  StopCoords stop_to_coords = ConvertCoords(stops, settings);
+    const renderer_utils::Buses &buses,
+    const renderer_utils::Stops &stops,
+    const RenderingSettings &settings) {
+  auto stop_to_coords = ConvertCoords(stops, settings);
 
   for (auto layer : settings.layers) {
     switch (layer) {
@@ -108,9 +113,10 @@ MapRenderer::MapRenderer(
 }
 
 void MapRenderer::AddBusLinesLayout(
-    const Buses &buses, const Stops &stops,
+    const renderer_utils::Buses &buses,
+    const renderer_utils::Stops &stops,
     const rm::RenderingSettings &settings,
-    const StopCoords &coords) {
+    const renderer_utils::StopCoords &coords) {
   int i = 0;
   for (auto &[_, route] : buses) {
     auto color = settings.color_palette[i];
@@ -133,9 +139,10 @@ void MapRenderer::AddBusLinesLayout(
 }
 
 void MapRenderer::AddBusLabelsLayout(
-    const Buses &buses, const Stops &stops,
+    const renderer_utils::Buses &buses,
+    const renderer_utils::Stops &stops,
     const rm::RenderingSettings &settings,
-    const StopCoords &coords) {
+    const renderer_utils::StopCoords &coords) {
   int i = 0;
   for (auto &[bus, route] : buses) {
     auto color = settings.color_palette[i];
@@ -155,9 +162,9 @@ void MapRenderer::AddBusLabelsLayout(
 }
 
 void MapRenderer::AddStopPointsLayout(
-    const Stops &stops,
+    const renderer_utils::Stops &stops,
     const rm::RenderingSettings &settings,
-    const StopCoords &coords) {
+    const renderer_utils::StopCoords &coords) {
   for (auto [stop, _] : stops) {
     map_.Add(std::move(svg::Circle{}
                            .SetFillColor("white")
@@ -167,9 +174,9 @@ void MapRenderer::AddStopPointsLayout(
 }
 
 void MapRenderer::AddStopLabelsLayout(
-    const Stops &stops,
+    const renderer_utils::Stops &stops,
     const rm::RenderingSettings &settings,
-    const StopCoords &coords) {
+    const renderer_utils::StopCoords &coords) {
   for (auto [stop, _] : stops) {
     map_.Add(std::move(svg::Text{}
                            .SetPoint(coords.at(stop))

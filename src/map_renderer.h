@@ -10,48 +10,45 @@
 #include "svg/document.h"
 
 #include "coords_converter.h"
+#include "map_renderer_utils.h"
 #include "request_types.h"
 #include "sphere.h"
 
 namespace rm {
 class MapRenderer {
  public:
-  struct Route {
-    std::vector<std::string_view> route;
-    bool is_roundtrip;
-  };
-  using Buses = std::map<std::string_view, Route>;
-  using Stops = std::map<std::string_view, rm::sphere::Coords>;
-  using StopCoords = std::unordered_map<std::string_view, svg::Point>;
-
   static std::unique_ptr<MapRenderer> Create(
-      const Buses &buses, const Stops &stops,
+      const renderer_utils::Buses &buses,
+      const renderer_utils::Stops &stops,
       const RenderingSettings &settings);
 
   std::string GetMap() const;
  private:
-  MapRenderer(const Buses &buses, const Stops &stops,
+  MapRenderer(const renderer_utils::Buses &buses,
+              const renderer_utils::Stops &stops,
               const RenderingSettings &settings);
 
   void AddBusLinesLayout(
-      const Buses &buses, const Stops &stops,
+      const renderer_utils::Buses &buses,
+      const renderer_utils::Stops &stops,
       const rm::RenderingSettings &settings,
-      const StopCoords &coords);
+      const renderer_utils::StopCoords &coords);
 
   void AddBusLabelsLayout(
-      const Buses &buses, const Stops &stops,
+      const renderer_utils::Buses &buses,
+      const renderer_utils::Stops &stops,
       const rm::RenderingSettings &settings,
-      const StopCoords &coords);
+      const renderer_utils::StopCoords &coords);
 
   void AddStopPointsLayout(
-      const Stops &stops,
+      const renderer_utils::Stops &stops,
       const rm::RenderingSettings &settings,
-      const StopCoords &coords);
+      const renderer_utils::StopCoords &coords);
 
   void AddStopLabelsLayout(
-      const Stops &stops,
+      const renderer_utils::Stops &stops,
       const rm::RenderingSettings &settings,
-      const StopCoords &coords);
+      const renderer_utils::StopCoords &coords);
 
   svg::Document map_;
 };
