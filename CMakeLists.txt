@@ -58,6 +58,7 @@ add_executable(route_manager_tests
         tests/settings_parser_test.cpp
         tests/color_parser_test.cpp
         tests/map_renderer_test.cpp
+        tests/coords_converter_test.cpp
 )
 
 target_link_libraries(route_manager_tests GTest::gtest_main json graph svg)
