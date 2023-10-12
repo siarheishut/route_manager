@@ -51,6 +51,42 @@ svg::Text BusNameText(std::string name, svg::Point point,
                        .SetData(std::move(name))
                        .SetFillColor(color));
 }
+
+std::unordered_map<std::string_view, svg::Point>
+CombineCoords(
+    const std::vector<std::pair<std::string_view, double>> &x_coords,
+    const std::vector<std::pair<std::string_view, double>> &y_coords) {
+  std::unordered_map<std::string_view, svg::Point> result;
+  for (auto &[stop, x_coord] : x_coords) {
+    result[stop].x = x_coord;
+  }
+  for (auto &[stop, y_coord] : y_coords) {
+    result[stop].y = y_coord;
+  }
+  return result;
+}
+
+std::unordered_map<std::string_view, svg::Point> TransformCoords(
+    const rm::renderer_utils::Buses &buses,
+    const rm::renderer_utils::Stops &stops,
+    const rm::renderer_utils::Frame &frame) {
+  using namespace rm::coords_converter;
+
+  auto adjacent_stops = AdjacentStops(buses);
+
+  auto stops_by_lon = SortStops(stops, SortMode::kByLongitude);
+  auto layers_by_lon = CompressNonadjacent(stops_by_lon, adjacent_stops);
+  auto x_coords = SpreadStops(layers_by_lon,
+                              frame.padding,
+                              frame.width - frame.padding);
+
+  auto stops_by_lat = SortStops(stops, SortMode::kByLatitude);
+  auto layers_by_lat = CompressNonadjacent(stops_by_lat, adjacent_stops);
+  auto y_coords = SpreadStops(layers_by_lat,
+                              frame.height - frame.padding, frame.padding);
+
+  return CombineCoords(x_coords, y_coords);
+}
 }
 
 namespace rm {
@@ -82,7 +118,7 @@ MapRenderer::MapRenderer(
     const renderer_utils::Buses &buses,
     const renderer_utils::Stops &stops,
     const RenderingSettings &settings) {
-  auto stop_to_coords = ConvertCoords(stops, settings);
+  auto stop_to_coords = TransformCoords(buses, stops, settings.frame);
 
   for (auto layer : settings.layers) {
     switch (layer) {

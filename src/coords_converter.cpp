@@ -1,52 +1,88 @@
 #include "coords_converter.h"
 
+#include <algorithm>
 #include <map>
 #include <string_view>
-#include <tuple>
 #include <unordered_map>
+#include <utility>
 #include <vector>
-
-#include "svg/common.h"
 
 #include "request_types.h"
 
-namespace rm {
-std::unordered_map<std::string_view, svg::Point> ConvertCoords(
-    const std::map<std::string_view, rm::sphere::Coords> &stops,
-    const rm::RenderingSettings &settings) {
-  std::unordered_map<std::string_view, svg::Point> result;
+using namespace std;
 
-  int stop_count = stops.size();
-  if (stop_count == 0) return result;
-  if (stop_count == 1) {
-    result[stops.cbegin()->first] = {
-        .x = settings.frame.padding,
-        .y = settings.frame.height - settings.frame.padding};
-    return result;
+namespace rm::coords_converter {
+vector <string_view>
+SortStops(const renderer_utils::Stops &stops, SortMode mode) {
+  vector<pair<double, string_view>> sorted_stops;
+  transform(begin(stops), end(stops), back_inserter(sorted_stops),
+            [mode](auto &item) {
+              if (mode == SortMode::kByLatitude)
+                return pair{item.second.latitude, item.first};
+              return pair{item.second.longitude, item.first};
+            });
+  sort(begin(sorted_stops), end(sorted_stops));
+
+  vector<string_view> layers;
+  transform(begin(sorted_stops), end(sorted_stops), back_inserter(layers),
+            [](auto &item) { return item.second; });
+  return layers;
+}
+
+vector <pair<string_view, string_view>>
+AdjacentStops(const renderer_utils::Buses &buses) {
+  vector<pair<string_view, string_view>> result;
+  for (auto &[_, route] : buses) {
+    for (int i = 1; i < route.route.size(); ++i) {
+      auto prev = route.route[i - 1];
+      auto curr = route.route[i];
+      if (prev == curr) continue;
+      result.emplace_back(prev, curr);
+    }
+  }
+  return result;
+}
+
+vector <vector<string_view>> CompressNonadjacent(
+    const vector <string_view> &stops,
+    const vector <pair<string_view,
+                       string_view>> &neighbors) {
+  unordered_map<string_view, int> stop_to_layer;
+  for (int i = 0; i < stops.size(); ++i)
+    stop_to_layer[stops[i]] = i;
+
+  vector<int> max_next(stops.size(), static_cast<int>(stops.size()) - 1);
+
+  for (auto &[prev, curr] : neighbors) {
+    auto prev_layer = stop_to_layer[prev];
+    auto curr_layer = stop_to_layer[curr];
+    if (prev_layer > curr_layer) swap(prev_layer, curr_layer);
+    max_next[prev_layer] = min(max_next[prev_layer], curr_layer - 1);
   }
 
-  std::vector<std::pair<double, std::string_view>> stops_by_lat, stops_by_lon;
-  stops_by_lat.reserve(stop_count);
-  stops_by_lon.reserve(stop_count);
-  for (const auto &[stop, coords] : stops) {
-    stops_by_lat.emplace_back(coords.latitude, stop);
-    stops_by_lon.emplace_back(coords.longitude, stop);
+  vector<vector<string_view>> res;
+  int last = -1;
+  for (int layer = 0; layer < stops.size(); ++layer) {
+    if (layer > last) {
+      res.push_back({stops[layer]});
+      last = max_next[layer];
+      continue;
+    }
+    last = min(last, max_next[layer]);
+    res.back().push_back(stops[layer]);
   }
-  std::sort(begin(stops_by_lat), end(stops_by_lat));
-  std::sort(begin(stops_by_lon), end(stops_by_lon));
+  return res;
+}
 
-  double x_step =
-      (settings.frame.width - 2 * settings.frame.padding) / (stop_count - 1);
-  double y_step =
-      (settings.frame.height - 2 * settings.frame.padding) / (stop_count - 1);
-  for (int i = 0; i < stops_by_lat.size(); ++i) {
-    result[stops_by_lat[i].second].y =
-        settings.frame.height - settings.frame.padding - y_step * i;
-  }
-  for (int i = 0; i < stops_by_lon.size(); ++i) {
-    result[stops_by_lon[i].second].x = settings.frame.padding + x_step * i;
-  }
-
+vector <pair<string_view, double>> SpreadStops(
+    const vector <vector<string_view>> &layers,
+    double from, double to) {
+  int stop_count = layers.size();
+  double step = (stop_count == 1) ? 0.0 : (to - from) / (stop_count - 1);
+  vector<pair<string_view, double>> result;
+  for (int i = 0; i < layers.size(); ++i)
+    for (auto stop : layers[i])
+      result.emplace_back(stop, from + step * i);
   return result;
 }
 }
