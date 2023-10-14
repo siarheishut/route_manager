@@ -53,8 +53,11 @@
 #define SVG_DOC(body) PREFIX body POSTFIX
 
 const rm::RenderingSettings kTestRenderingSettings{
-    .width = 412.1, .height = 395.7, .padding = 170, .stop_radius = 4.2,
-    .line_width = 11, .stop_label_font_size = 10,
+    .frame = rm::renderer_utils::Frame{
+        .width = 412.1, .height = 395.7, .padding = 170,
+    },
+    .stop_radius = 4.2, .line_width = 11,
+    .stop_label_font_size = 10,
     .stop_label_offset = svg::Point{.x = -5, .y = 2},
     .underlayer_color = svg::Color(
         svg::Rgba{.red = 1, .green = 100, .blue = 20, .alpha = 0.1}),

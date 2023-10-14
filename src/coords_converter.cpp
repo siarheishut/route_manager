@@ -19,8 +19,9 @@ std::unordered_map<std::string_view, svg::Point> ConvertCoords(
   int stop_count = stops.size();
   if (stop_count == 0) return result;
   if (stop_count == 1) {
-    result[stops.cbegin()->first] =
-        {.x = settings.padding, .y = settings.height - settings.padding};
+    result[stops.cbegin()->first] = {
+        .x = settings.frame.padding,
+        .y = settings.frame.height - settings.frame.padding};
     return result;
   }
 
@@ -34,14 +35,16 @@ std::unordered_map<std::string_view, svg::Point> ConvertCoords(
   std::sort(begin(stops_by_lat), end(stops_by_lat));
   std::sort(begin(stops_by_lon), end(stops_by_lon));
 
-  double x_step = (settings.width - 2 * settings.padding) / (stop_count - 1);
-  double y_step = (settings.height - 2 * settings.padding) / (stop_count - 1);
+  double x_step =
+      (settings.frame.width - 2 * settings.frame.padding) / (stop_count - 1);
+  double y_step =
+      (settings.frame.height - 2 * settings.frame.padding) / (stop_count - 1);
   for (int i = 0; i < stops_by_lat.size(); ++i) {
     result[stops_by_lat[i].second].y =
-        settings.height - settings.padding - y_step * i;
+        settings.frame.height - settings.frame.padding - y_step * i;
   }
   for (int i = 0; i < stops_by_lon.size(); ++i) {
-    result[stops_by_lon[i].second].x = settings.padding + x_step * i;
+    result[stops_by_lon[i].second].x = settings.frame.padding + x_step * i;
   }
 
   return result;
