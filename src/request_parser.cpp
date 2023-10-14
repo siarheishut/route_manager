@@ -121,10 +121,12 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
     return std::nullopt;
 
   RenderingSettings rs;
-  rs.width = width->second.AsDouble();
-  rs.height = height->second.AsDouble();
-  rs.padding = padding->second.AsDouble();
-  rs.stop_radius = stop_radius->second.AsDouble();
+  rs.frame = rm::renderer_utils::Frame{
+      .width = width->second.AsDouble(),
+      .height = height->second.AsDouble(),
+      .padding = padding->second.AsDouble(),
+  },
+      rs.stop_radius = stop_radius->second.AsDouble();
   rs.line_width = line_width->second.AsDouble();
   rs.stop_label_font_size = stop_label_font_size->second.AsInt();
   rs.stop_label_offset = AsOffset(std::move(stop_label_offset->second));
