@@ -8,8 +8,9 @@
 #include "svg/common.h"
 
 #include "src/bus_manager.h"
-#include "src/request_types.h"
 #include "svg/common.h"
+#include "src/map_renderer_utils.h"
+#include "src/request_types.h"
 
 namespace rm {
 bool CompareLength(double lhs, double rhs, int precision);
@@ -62,6 +63,12 @@ bool operator==(const svg::Color &lhs, const svg::Color &rhs);
 
 bool operator!=(const svg::Color &lhs, const svg::Color &rhs);
 
+bool operator==(const rm::renderer_utils::Frame &lhs,
+                const rm::renderer_utils::Frame &rhs);
+
+bool operator!=(const rm::renderer_utils::Frame &lhs,
+                const rm::renderer_utils::Frame &rhs);
+
 bool operator==(const rm::RenderingSettings &lhs,
                 const rm::RenderingSettings &rhs);
 
@@ -97,6 +104,8 @@ std::ostream &operator<<(std::ostream &out, const rm::GetBusRequest &br);
 std::ostream &operator<<(std::ostream &out, const rm::GetMapRequest &br);
 
 std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br);
+
+std::ostream &operator<<(std::ostream &out, const renderer_utils::Frame &frame);
 
 std::ostream &operator<<(std::ostream &out,
                          const rm::RoutingSettings &settings);

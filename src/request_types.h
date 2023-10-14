@@ -7,9 +7,10 @@
 #include <variant>
 #include <vector>
 
-#include "sphere.h"
-
 #include "svg/common.h"
+
+#include "map_renderer_utils.h"
+#include "sphere.h"
 
 namespace rm {
 struct RoutingSettings {
@@ -27,9 +28,7 @@ enum class MapLayer {
 };
 
 struct RenderingSettings {
-  double width;
-  double height;
-  double padding;
+  renderer_utils::Frame frame;
   double stop_radius;
   double line_width;
   int stop_label_font_size;

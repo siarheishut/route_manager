@@ -8,6 +8,8 @@
 
 #include "svg/common.h"
 
+#include "src/map_renderer_utils.h"
+
 namespace rm {
 bool CompareLength(double lhs, double rhs, int precision) {
   std::stringstream ssl, ssr;
@@ -96,27 +98,33 @@ bool operator==(const svg::Color &lhs, const svg::Color &rhs) {
       std::holds_alternative<std::monostate>(rhs);
 }
 
+bool operator==(const rm::renderer_utils::Frame &lhs,
+                const rm::renderer_utils::Frame &rhs) {
+  return std::tie(lhs.width, lhs.height, lhs.padding) ==
+      std::tie(rhs.width, rhs.height, rhs.padding);
+}
+
+bool operator!=(const rm::renderer_utils::Frame &lhs,
+                const rm::renderer_utils::Frame &rhs) {
+  return !(lhs == rhs);
+}
+
 bool operator==(const rm::RenderingSettings &lhs,
                 const rm::RenderingSettings &rhs) {
-  if (std::tuple(lhs.width,
-                 lhs.height,
-                 lhs.padding,
-                 lhs.stop_radius,
+  if (std::tuple(lhs.stop_radius,
                  lhs.line_width,
                  lhs.underlayer_width,
                  lhs.stop_label_font_size,
                  lhs.color_palette.size(),
                  lhs.layers) !=
-      std::tuple(rhs.width,
-                 rhs.height,
-                 rhs.padding,
-                 rhs.stop_radius,
+      std::tuple(rhs.stop_radius,
                  rhs.line_width,
                  rhs.underlayer_width,
                  rhs.stop_label_font_size,
                  rhs.color_palette.size(),
                  rhs.layers))
     return false;
+  if (lhs.frame != rhs.frame) return false;
   if (lhs.stop_label_offset != rhs.stop_label_offset) return false;
   if (lhs.underlayer_color != rhs.underlayer_color) return false;
   for (int i = 0; i < lhs.color_palette.size(); ++i) {
@@ -257,9 +265,14 @@ std::ostream &operator<<(std::ostream &out, const svg::Point point) {
 }
 
 std::ostream &operator<<(std::ostream &out,
+                         const rm::renderer_utils::Frame &frame) {
+  return out << frame.width << ' ' << frame.height << ' ' << frame.padding;
+}
+
+std::ostream &operator<<(std::ostream &out,
                          const rm::RenderingSettings &settings) {
-  return out << settings.width << ' ' << settings.height << ' ' <<
-             settings.padding << ' ' << settings.stop_radius << ' ' <<
+  return out << settings.frame.width << ' ' << settings.frame.height << ' ' <<
+             settings.frame.padding << ' ' << settings.stop_radius << ' ' <<
              settings.line_width << ' ' << settings.stop_label_font_size
              << ' ' << settings.stop_label_offset << ' ' <<
              settings.underlayer_color << ' ' << settings.underlayer_width

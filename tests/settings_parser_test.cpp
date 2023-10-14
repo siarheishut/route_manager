@@ -98,8 +98,10 @@ TEST(TestParseSettings, TestRedneringSettings) {
   };
 
   const auto settings = RenderingSettings{
-      .width = 412.1, .height = 395.7, .padding = 210, .stop_radius = 4.2,
-      .line_width = 11, .stop_label_font_size = 10,
+      .frame = renderer_utils::Frame{
+          .width = 412.1, .height = 395.7, .padding = 210,
+      },
+      .stop_radius = 4.2, .line_width = 11, .stop_label_font_size = 10,
       .stop_label_offset = svg::Point{.x = -5, .y = 2},
       .underlayer_color = svg::Color(
           svg::Rgba{.red = 1, .green = 100, .blue = 20, .alpha = 0.1}),
