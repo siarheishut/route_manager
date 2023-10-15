@@ -4,6 +4,7 @@
 #include <map>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -27,6 +28,85 @@ SortStops(const renderer_utils::Stops &stops, SortMode mode) {
   transform(begin(sorted_stops), end(sorted_stops), back_inserter(layers),
             [](auto &item) { return item.second; });
   return layers;
+}
+
+unordered_set <string_view> BaseStops(const renderer_utils::Buses &buses) {
+  unordered_set < string_view > base_stops, visited;
+
+  for (auto &[_, route] : buses) {
+    base_stops.insert(route.route.front());
+    if (!route.is_roundtrip)
+      base_stops.insert(route.route.back());
+  }
+
+  for (auto &[_, route] : buses) {
+    for (auto stop : route.route)
+      if (visited.find(stop) != visited.end())
+        base_stops.insert(stop);
+
+    for (auto stop : route.route) {
+      visited.insert(stop);
+    }
+  }
+
+  for (auto &[_, route] : buses) {
+    unordered_map<string_view, int> stop_freqs;
+
+    for (auto stop : route.route) {
+      if (++stop_freqs[stop] == 3)
+        base_stops.insert(stop);
+    }
+
+    if (!route.is_roundtrip) {
+      for (int i = 1; i < route.route.size() - 1; ++i) {
+        if (++stop_freqs[route.route[i]] == 3) {
+          base_stops.insert(route.route[i]);
+        }
+      }
+    }
+
+  }
+  return base_stops;
+}
+
+renderer_utils::Stops Interpolate(const renderer_utils::Buses &buses,
+                                  const unordered_set <string_view> &base_stops,
+                                  rm::renderer_utils::Stops stops) {
+  for (auto &item : buses) {
+    auto route = item.second.route;
+    if (!item.second.is_roundtrip)
+      for (int i = static_cast<int>(route.size()) - 2; i >= 0; --i) {
+        route.push_back(route[i]);
+      }
+
+    auto is_base =
+        [&](auto s) { return base_stops.find(s) != end(base_stops); };
+    auto find_next = [&](int i) {
+      auto it = find_if(begin(route) + i, end(route), is_base);
+      return it - begin(route);
+    };
+
+    int left = 0, right = 0;
+    for (int i = 0; i < route.size(); ++i) {
+      if (i == right) {
+        left = right;
+        right = find_next(right + 1);
+        continue;
+      }
+
+      auto stop = route[i];
+      auto lon_step = (stops[route[right]].longitude -
+          stops[route[left]].longitude) / (right - left);
+      auto lat_step = (stops[route[right]].latitude -
+          stops[route[left]].latitude) / (right - left);
+
+      stops[stop].longitude = stops[route[left]].longitude +
+          lon_step * (i - left);
+      stops[stop].latitude = stops[route[left]].latitude +
+          lat_step * (i - left);
+    }
+  }
+  return std::move(stops);
 }
 
 vector <pair<string_view, string_view>>

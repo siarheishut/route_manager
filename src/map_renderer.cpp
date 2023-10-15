@@ -68,11 +68,12 @@ CombineCoords(
 
 std::unordered_map<std::string_view, svg::Point> TransformCoords(
     const rm::renderer_utils::Buses &buses,
-    const rm::renderer_utils::Stops &stops,
+    rm::renderer_utils::Stops &stops,
     const rm::renderer_utils::Frame &frame) {
   using namespace rm::coords_converter;
 
   auto adjacent_stops = AdjacentStops(buses);
+  stops = Interpolate(buses, BaseStops(buses), std::move(stops));
 
   auto stops_by_lon = SortStops(stops, SortMode::kByLongitude);
   auto layers_by_lon = CompressNonadjacent(stops_by_lon, adjacent_stops);
@@ -92,7 +93,7 @@ std::unordered_map<std::string_view, svg::Point> TransformCoords(
 namespace rm {
 std::unique_ptr<MapRenderer> MapRenderer::Create(
     const renderer_utils::Buses &buses,
-    const renderer_utils::Stops &stops,
+    renderer_utils::Stops stops,
     const RenderingSettings &settings) {
   if (settings.color_palette.empty()) return nullptr;
 
@@ -104,21 +105,25 @@ std::unique_ptr<MapRenderer> MapRenderer::Create(
   }
 
   for (auto &[bus, route] : buses) {
-    if (route.route.size() < 2) return nullptr;
+    if (route.route.size() < 2 ||
+        (route.is_roundtrip && route.route.front() != route.route.back()))
+      return nullptr;
     for (auto stop : route.route) {
       if (stops.find(stop) == stops.end())
         return nullptr;
     }
   }
 
-  return std::unique_ptr<MapRenderer>(new MapRenderer(buses, stops, settings));
+  return std::unique_ptr<MapRenderer>(new MapRenderer(buses, std::move(stops),
+                                                      settings));
 }
 
 MapRenderer::MapRenderer(
     const renderer_utils::Buses &buses,
-    const renderer_utils::Stops &stops,
+    renderer_utils::Stops stops,
     const RenderingSettings &settings) {
-  auto stop_to_coords = TransformCoords(buses, stops, settings.frame);
+  auto
+      stop_to_coords = TransformCoords(buses, stops, settings.frame);
 
   for (auto layer : settings.layers) {
     switch (layer) {

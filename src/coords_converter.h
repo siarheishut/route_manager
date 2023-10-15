@@ -4,6 +4,8 @@
 #include <map>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "svg/common.h"
 
@@ -18,6 +20,14 @@ struct Frame { double width, height, padding; };
 
 std::vector<std::string_view>
 SortStops(const renderer_utils::Stops &stops, SortMode mode);
+
+std::unordered_set<std::string_view>
+BaseStops(const rm::renderer_utils::Buses &buses);
+
+renderer_utils::Stops
+Interpolate(const renderer_utils::Buses &buses,
+            const std::unordered_set<std::string_view> &base_stops,
+            rm::renderer_utils::Stops stops);
 
 std::vector<std::pair<std::string_view, std::string_view>>
 AdjacentStops(const renderer_utils::Buses &buses);

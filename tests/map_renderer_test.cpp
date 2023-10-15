@@ -142,7 +142,7 @@ TEST(TestMapRenderer, TestInitializing) {
       TestCase{
           .name = "Valid config",
           .buses = {{"Bus 1", {{"Airport", "Clemens street", "RW station",
-                                "High Street"}, true}}},
+                                "High Street", "Airport"}, true}}},
           .stops = {kAirport, kClemens, kRWStation, kHighStreet},
           .settings = kTestRenderingSettings,
           .want_fail = false
@@ -231,12 +231,12 @@ TEST(TestMapRenderer, TestGetMap) {
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       ROUTE("purple")
-                      POINT(170, 170)NEXT_POINT(242.1, 225.7)
-                      NEXT_POINT(170, 170) ROUTE_END()
-                      BUS_NAME(1, 170, 170, "purple")
-                      STOP(242.1, 225.7)STOP(170, 170)
-                      STOP_NAME(Airport, 242.1, 225.7)
-                      STOP_NAME(Shop, 170, 170))
+                      POINT(242.1, 170)NEXT_POINT(170, 225.7)
+                      NEXT_POINT(242.1, 170) ROUTE_END()
+                      BUS_NAME(1, 242.1, 170, "purple")
+                      STOP(170, 225.7)STOP(242.1, 170)
+                      STOP_NAME(Airport, 170, 225.7)
+                      STOP_NAME(Shop, 242.1, 170))
       },
       TestCase{
           .name = "Non-roundrip with difference start and end stops",
@@ -260,13 +260,13 @@ TEST(TestMapRenderer, TestGetMap) {
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       ROUTE("purple")
-                      POINT(170, 170)NEXT_POINT(242.1, 225.7)
-                      NEXT_POINT(170, 170)NEXT_POINT(242.1, 225.7)
-                      NEXT_POINT(170, 170)ROUTE_END()
-                      BUS_NAME(1, 170, 170, "purple")
-                      STOP(242.1, 225.7)STOP(170, 170)
-                      STOP_NAME(Airport, 242.1, 225.7)
-                      STOP_NAME(Shop, 170, 170))
+                      POINT(242.1, 170)NEXT_POINT(170, 225.7)
+                      NEXT_POINT(242.1, 170)NEXT_POINT(170, 225.7)
+                      NEXT_POINT(242.1, 170)ROUTE_END()
+                      BUS_NAME(1, 242.1, 170, "purple")
+                      STOP(170, 225.7)STOP(242.1, 170)
+                      STOP_NAME(Airport, 170, 225.7)
+                      STOP_NAME(Shop, 242.1, 170))
       },
       TestCase{
           .name = "Empty map",
@@ -294,23 +294,23 @@ TEST(TestMapRenderer, TestGetMap) {
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       ROUTE("purple")
-                      POINT(242.1, 225.7)NEXT_POINT(206.05, 197.85)
-                      NEXT_POINT(170, 170)NEXT_POINT(242.1, 225.7)
+                      POINT(242.1, 225.7)NEXT_POINT(218.067, 197.85)
+                      NEXT_POINT(194.033, 170)NEXT_POINT(242.1, 225.7)
                       ROUTE_END()
                       ROUTE("rgb(15,23,41)")
-                      POINT(206.05, 197.85)
-                      NEXT_POINT(242.1, 225.7) NEXT_POINT(170, 170)
-                      NEXT_POINT(206.05, 197.85) NEXT_POINT(170, 170)
-                      NEXT_POINT(242.1, 225.7) NEXT_POINT(206.05, 197.85)
+                      POINT(218.067, 197.85)
+                      NEXT_POINT(242.1, 225.7) NEXT_POINT(194.033, 170)
+                      NEXT_POINT(170, 197.85) NEXT_POINT(194.033, 170)
+                      NEXT_POINT(242.1, 225.7) NEXT_POINT(218.067, 197.85)
                       ROUTE_END()
                       BUS_NAME(bus 1, 242.1, 225.7, "purple")
-                      BUS_NAME(bus 2, 206.05, 197.85, "rgb(15,23,41)")
-                      STOP(242.1, 225.7) STOP(206.05, 197.85)
-                      STOP(206.05, 197.85) STOP(170, 170)
+                      BUS_NAME(bus 2, 218.067, 197.85, "rgb(15,23,41)")
+                      STOP(242.1, 225.7) STOP(218.067, 197.85)
+                      STOP(170, 197.85) STOP(194.033, 170)
                       STOP_NAME(Airport, 242.1, 225.7)
-                      STOP_NAME(High Street, 206.05, 197.85)
-                      STOP_NAME(RW station, 206.05, 197.85)
-                      STOP_NAME(Shop, 170, 170))
+                      STOP_NAME(High Street, 218.067, 197.85)
+                      STOP_NAME(RW station, 170, 197.85)
+                      STOP_NAME(Shop, 194.033, 170))
       },
       TestCase{
           .name = "Route number is greater than palette size",

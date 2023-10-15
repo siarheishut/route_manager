@@ -9,6 +9,7 @@
 #include "svg/common.h"
 
 #include "src/map_renderer_utils.h"
+#include "src/sphere.h"
 
 using namespace std;
 
@@ -283,5 +284,21 @@ bool operator!=(const Color &lhs, const Color &rhs) {
 
 ostream &operator<<(ostream &out, const Point point) {
   return out << '{' << point.x << ',' << point.y << '}';
+}
+}
+
+namespace rm::sphere {
+bool operator==(const Coords &lhs, const Coords &rhs) {
+  return std::tie(lhs.longitude, lhs.latitude) ==
+      std::tie(rhs.longitude, rhs.latitude);
+}
+
+bool operator!=(const Coords &lhs, const Coords &rhs) {
+  return !(lhs == rhs);
+}
+
+std::ostream &operator<<(std::ostream &out, const Coords &coords) {
+  return out << "{lon = " << coords.longitude << ", lat = " << coords.latitude
+             << '}';
 }
 }

@@ -1,10 +1,15 @@
 #include <string>
-#include <vector>
+#include <string_view>
+#include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "gtest/gtest.h"
 
 #include "src/coords_converter.h"
+#include "src/map_renderer_utils.h"
+#include "src/sphere.h"
+#include "test_utils.h"
 
 using namespace std;
 
@@ -214,6 +219,112 @@ TEST(TestSpreadStops, TestSpreadStops) {
 
   for (auto &[name, layers, from, to, want] : test_cases) {
     auto got = rm::coords_converter::SpreadStops(layers, from, to);
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
+TEST(TestBaseStops, TestBaseStops) {
+  using namespace std;
+
+  struct TestCase {
+    string name;
+    rm::renderer_utils::Buses buses;
+    unordered_set<string_view> want;
+  };
+
+  vector<TestCase> test_cases{
+      TestCase{
+          .name = "Empty buses",
+          .want = {},
+      },
+      TestCase{
+          .name = "One bus(roundtrip) - one base stop",
+          .buses = {{"1", {{"1", "2", "3", "1"}, true}}},
+          .want = {"1"},
+      },
+      TestCase{
+          .name = "One bus(roundtrip) - many base stops",
+          .buses = {{"1", {{"1", "2", "3", "2", "1", "2", "1"}, true}}},
+          .want = {"1", "2"},
+      },
+      TestCase{
+          .name = "One bus(non-roundtrip) - two base stop",
+          .buses = {{"1", {{"1", "2", "3", "4"}, false}}},
+          .want = {"1", "4"},
+      },
+      TestCase{
+          .name = "One bus(non-roundtrip) - many base stops",
+          .buses = {{"1", {{"1", "2", "3", "2", "4"}, false}}},
+          .want = {"1", "2", "4"},
+      },
+      TestCase{
+          .name = "Buses with common stop",
+          .buses = {{"1", {{"1", "2", "3", "4"}, false}},
+                    {"2", {{"3", "2", "4", "3"}, true}}},
+          .want = {"1", "2", "3", "4"},
+      },
+  };
+
+  for (auto &[name, buses, want] : test_cases) {
+    auto got = rm::coords_converter::BaseStops(buses);
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
+TEST(TestInterpolation, TestInterpolation) {
+  using namespace std;
+  using namespace rm::renderer_utils;
+  using namespace rm;
+
+  struct TestCase {
+    string name;
+    Buses buses;
+    unordered_set<string_view> base_stops;
+    Stops stops;
+    Stops want;
+  };
+
+  vector<TestCase> test_cases{
+      TestCase{
+          .name = "Empty base stops and buses",
+          .stops = {{"1", {10, 10}}, {"2", {20, 20}}, {"3", {30, 30}}},
+          .want = {{"1", {10, 10}}, {"2", {20, 20}}, {"3", {30, 30}}}
+      },
+      TestCase{
+          .name = "Roundtrip route, 1 base stop",
+          .buses = {{"1", {{"1", "2", "3", "1"}, true}}},
+          .base_stops = {"1"},
+          .stops = {{"1", {10, 10}}, {"2", {20, 20}}, {"3", {30, 30}}},
+          .want = {{"1", {10, 10}}, {"2", {10, 10}}, {"3", {10, 10}}}
+      },
+      TestCase{
+          .name = "Roundtrip route, several base stops",
+          .buses = {{"1", {{"1", "2", "3", "1"}, true}}},
+          .base_stops = {"1", "2"},
+          .stops = {{"1", {10, 10}}, {"2", {20, 20}}, {"3", {25, 25}}},
+          .want = {{"1", {10, 10}}, {"2", {20, 20}}, {"3", {15, 15}}}
+      },
+      TestCase{
+          .name = "Non-roundtrip route",
+          .buses = {{"1", {{"1", "2", "3"}, false}}},
+          .base_stops = {"1", "3"},
+          .stops = {{"1", {10, 10}}, {"2", {20, 20}}, {"3", {30, 10}}},
+          .want = {{"1", {10, 10}}, {"2", {20, 10}}, {"3", {30, 10}}}
+      },
+      TestCase{
+          .name = "Several interpolation possibilities",
+          .buses = {{"1", {{"1", "2", "3", "4", "3", "5", "1"}, true}}},
+          .base_stops = {"1", "3", "4", "5"},
+          .stops = {{"1", {10, 10}}, {"2", {15, 15}}, {"3", {25, 25}},
+                    {"4", {30, 10}}, {"5", {10, 30}}},
+          .want = {{"1", {10, 10}}, {"2", {17.5, 17.5}}, {"3", {25, 25}},
+                   {"4", {30, 10}}, {"5", {10, 30}}},
+      },
+  };
+
+  for (auto &[name, buses, base_stops, stops, want] : test_cases) {
+    auto got = rm::coords_converter::Interpolate(buses, base_stops,
+                                                 std::move(stops));
     EXPECT_EQ(want, got) << name;
   }
 }
