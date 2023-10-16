@@ -8,6 +8,8 @@
 
 #include "test_utils.h"
 
+using namespace std;
+
 const rm::RoutingSettings kTestRoutingSettings{
     .bus_wait_time = 7,
     .bus_velocity = 54.0
@@ -401,14 +403,14 @@ TEST(TestBusManager, TestGetBusInfo) {
   using namespace rm;
 
   struct TestCase {
-    std::string name;
-    std::vector<PostRequest> config;
+    string name;
+    vector<PostRequest> config;
     RoutingSettings routing_settings;
-    std::vector<GetBusRequest> requests;
-    std::vector<std::optional<BusResponse>> want;
+    vector<GetBusRequest> requests;
+    vector<optional<BusResponse>> want;
   };
 
-  std::vector<TestCase> test_cases{
+  vector<TestCase> test_cases{
       TestCase{
           .name = "Requests to an empty database",
           .config = {},
@@ -416,9 +418,9 @@ TEST(TestBusManager, TestGetBusInfo) {
           .requests = {GetBusRequest{.bus = "123"},
                        GetBusRequest{.bus = "some bus"},
                        GetBusRequest{.bus = "s      s"},},
-          .want = {std::nullopt,
-                   std::nullopt,
-                   std::nullopt},
+          .want = {nullopt,
+                   nullopt,
+                   nullopt},
       },
       TestCase{
           .name = "Common requests",
@@ -467,7 +469,7 @@ TEST(TestBusManager, TestGetBusInfo) {
                        GetBusRequest{.bus = "none"}},
           .want = {BusResponse{5, 3, 2.35535e+04},
                    BusResponse{6, 5, 7598.15},
-                   std::nullopt},
+                   nullopt},
       },
   };
 
@@ -484,13 +486,13 @@ TEST(TestBusManager, TestGetBusInfo) {
         continue;
       }
 
-      std::pair p1{want[i]->stop_count, want[i]->unique_stop_count};
-      std::pair p2{got->stop_count, got->unique_stop_count};
+      pair p1{want[i]->stop_count, want[i]->unique_stop_count};
+      pair p2{got->stop_count, got->unique_stop_count};
       EXPECT_EQ(p1, p2) << name;
 
-      if (want[i] != std::nullopt)
+      if (want[i] != nullopt)
         EXPECT_TRUE(CompareLength(want[i]->length, got->length, 6))
-                  << name << " – " << std::setprecision(6) << "want: "
+                  << name << " – " << setprecision(6) << "want: "
                   << want[i]->length << ", got: " << got->length;
     }
   }
@@ -500,14 +502,14 @@ TEST(TestBusManager, TestGetStopInfo) {
   using namespace rm;
 
   struct TestCase {
-    std::string name;
-    std::vector<PostRequest> config;
+    string name;
+    vector<PostRequest> config;
     RoutingSettings routing_settings;
-    std::vector<GetStopRequest> requests;
-    std::vector<std::optional<StopInfo>> want;
+    vector<GetStopRequest> requests;
+    vector<optional<StopInfo>> want;
   };
 
-  std::vector<TestCase> test_cases{
+  vector<TestCase> test_cases{
       TestCase{
           .name = "Requests to an empty database",
           .config = {},
@@ -515,9 +517,9 @@ TEST(TestBusManager, TestGetStopInfo) {
           .requests = {GetStopRequest{.stop = "123"},
                        GetStopRequest{.stop = "some stop"},
                        GetStopRequest{.stop = "s      s"},},
-          .want = {std::nullopt,
-                   std::nullopt,
-                   std::nullopt},
+          .want = {nullopt,
+                   nullopt,
+                   nullopt},
       },
       TestCase{
           .name = "Common requests",
@@ -566,7 +568,7 @@ TEST(TestBusManager, TestGetStopInfo) {
               StopInfo{.buses = {"Bus1"}},
               StopInfo{.buses = {"Bus1", "Bus2"}},
               StopInfo{},
-              std::nullopt},
+              nullopt},
       },
   };
 
@@ -587,20 +589,20 @@ TEST(TestBusManager, TestGetStopInfo) {
 }
 
 TEST(TestBusManager, TestFindRouteInfo) {
+  using namespace rm;
+
   using WaitItem = rm::RouteInfo::WaitItem;
   using RoadItem = rm::RouteInfo::RoadItem;
 
-  using namespace rm;
-
   struct TestCase {
-    std::string name;
-    std::vector<PostRequest> config;
+    string name;
+    vector<PostRequest> config;
     RoutingSettings routing_settings;
-    std::vector<GetRouteRequest> requests;
-    std::vector<std::optional<RouteResponse>> want;
+    vector<GetRouteRequest> requests;
+    vector<optional<RouteResponse>> want;
   };
 
-  std::vector<TestCase> test_cases{
+  vector<TestCase> test_cases{
       TestCase{
           .name = "Requests to an empty database",
           .config = {},
@@ -615,8 +617,8 @@ TEST(TestBusManager, TestFindRouteInfo) {
                   .from = "stop 3",
                   .to = "stop 4"}
           },
-          .want = {std::nullopt,
-                   std::nullopt},
+          .want = {nullopt,
+                   nullopt},
       },
       // Requests for the paths between existing stops with at least one
       // path between.
@@ -738,8 +740,8 @@ TEST(TestBusManager, TestFindRouteInfo) {
                   .to = "stop5"
               }
           },
-          .want = {std::nullopt,
-                   std::nullopt},
+          .want = {nullopt,
+                   nullopt},
       },
       // requests for the path between existing stop and missing one.
       TestCase{
@@ -785,8 +787,8 @@ TEST(TestBusManager, TestFindRouteInfo) {
                   .to = "stop6"
               }
           },
-          .want = {std::nullopt,
-                   std::nullopt},
+          .want = {nullopt,
+                   nullopt},
       },
   };
 

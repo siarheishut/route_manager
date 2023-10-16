@@ -81,8 +81,6 @@ const std::pair<std::string_view, rm::sphere::Coords> kRWStation =
     {"RW station", {.latitude = 63.015232, .longitude = -35.621022}};
 const std::pair<std::string_view, rm::sphere::Coords> kClemens =
     {"Clemens street", {.latitude = 49.102842, .longitude = 39.845290}};
-const std::pair<std::string_view, rm::sphere::Coords> kDostoevsky =
-    {"Dostoevsky street", {.latitude = 13.102921, .longitude = 12.432091}};
 
 TEST(TestMapRenderer, TestInitializing) {
   struct TestCase {

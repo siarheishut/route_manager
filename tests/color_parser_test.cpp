@@ -10,12 +10,12 @@
 #include "test_utils.h"
 
 TEST(TestColor, TestColor) {
-  using namespace rm;
+  using namespace svg;
 
   struct TestCase {
     std::string name;
     json::Node input;
-    std::optional<svg::Color> want;
+    std::optional<Color> want;
   };
 
   std::vector<TestCase> test_cases{
@@ -77,12 +77,12 @@ TEST(TestColor, TestColor) {
       TestCase{
           .name = "Valid color: Rgb type",
           .input = json::List{15, 14, 17},
-          .want = svg::Color{svg::Rgb{.red = 15, .green = 14, .blue = 17}}
+          .want = Color{Rgb{.red = 15, .green = 14, .blue = 17}}
       },
       TestCase{
           .name = "Valid color: Rgba type",
           .input = json::List{111, 144, 177, 0.555},
-          .want = svg::Color{svg::Rgba{
+          .want = Color{Rgba{
               .red = 111, .green = 144, .blue = 177, .alpha = 0.555}}
       }
   };
@@ -94,6 +94,6 @@ TEST(TestColor, TestColor) {
     }
 
     auto got = rm::AsColor(std::move(input));
-    EXPECT_TRUE(*want == got) << name;
+    EXPECT_EQ(*want, got) << name;
   }
 }
