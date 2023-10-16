@@ -6,6 +6,8 @@
 
 #include "src/coords_converter.h"
 
+using namespace std;
+
 const std::pair<std::string_view, rm::sphere::Coords> kAirport =
     {"Airport", {.latitude = 12.312245, .longitude = 52.119401}};
 const std::pair<std::string_view, rm::sphere::Coords> kShop =
@@ -16,12 +18,8 @@ const std::pair<std::string_view, rm::sphere::Coords> kRWStation =
     {"RW station", {.latitude = 63.015232, .longitude = -35.621022}};
 const std::pair<std::string_view, rm::sphere::Coords> kClemens =
     {"Clemens street", {.latitude = 49.102842, .longitude = 39.845290}};
-const std::pair<std::string_view, rm::sphere::Coords> kDostoevsky =
-    {"Dostoevsky street", {.latitude = 13.102921, .longitude = 12.432091}};
 
 TEST(TestSortStops, TestSortByLatitude) {
-  using namespace std;
-
   struct TestCase {
     string name;
     rm::renderer_utils::Stops stops;
@@ -53,8 +51,6 @@ TEST(TestSortStops, TestSortByLatitude) {
 }
 
 TEST(TestSortStops, TestSortByLongitude) {
-  using namespace std;
-
   struct TestCase {
     string name;
     rm::renderer_utils::Stops stops;
@@ -86,8 +82,6 @@ TEST(TestSortStops, TestSortByLongitude) {
 }
 
 TEST(TestAdjacentStops, TestAdjacentStops) {
-  using namespace std;
-
   struct TestCase {
     string name;
     rm::renderer_utils::Buses buses;
@@ -119,8 +113,6 @@ TEST(TestAdjacentStops, TestAdjacentStops) {
 }
 
 TEST(TestCompressCoords, TestCompressCoords) {
-  using namespace std;
-
   struct TestCase {
     string name;
     vector<string_view> stops;
@@ -160,8 +152,6 @@ TEST(TestCompressCoords, TestCompressCoords) {
 }
 
 TEST(TestSpreadStops, TestSpreadStops) {
-  using namespace std;
-
   struct TestCase {
     string name;
     vector<vector<string_view>> layers;
