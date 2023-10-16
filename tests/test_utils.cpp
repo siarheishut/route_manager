@@ -10,197 +10,131 @@
 
 #include "src/map_renderer_utils.h"
 
+using namespace std;
+
 namespace rm {
 bool CompareLength(double lhs, double rhs, int precision) {
-  std::stringstream ssl, ssr;
-  ssl << std::setprecision(precision) << lhs;
-  ssr << std::setprecision(precision) << rhs;
+  stringstream ssl, ssr;
+  ssl << setprecision(precision) << lhs;
+  ssr << setprecision(precision) << rhs;
   return ssl.str() == ssr.str();
 }
 
-bool operator==(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs) {
+bool operator==(const GetBusRequest &lhs, const GetBusRequest &rhs) {
   return lhs.bus == rhs.bus;
 }
 
-bool operator==(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs) {
+bool operator==(const GetStopRequest &lhs, const GetStopRequest &rhs) {
   return lhs.stop == rhs.stop;
 }
 
-bool operator==(const rm::GetRouteRequest &lhs,
-                const rm::GetRouteRequest &rhs) {
-  return std::tie(lhs.from, lhs.to, lhs.id)
-      == std::tie(rhs.from, rhs.to, rhs.id);
+bool operator==(const GetRouteRequest &lhs, const GetRouteRequest &rhs) {
+  return tie(lhs.from, lhs.to, lhs.id) == tie(rhs.from, rhs.to, rhs.id);
 }
 
-bool operator==(const rm::GetMapRequest &lhs, const rm::GetMapRequest &rhs) {
+bool operator==(const GetMapRequest &lhs, const GetMapRequest &rhs) {
   return lhs.id == rhs.id;
 }
 
-bool operator==(const rm::BusResponse &lhs, const rm::BusResponse &rhs) {
-  return std::tie(lhs.stop_count, lhs.unique_stop_count, lhs.length)
-      == std::tie(rhs.stop_count, rhs.unique_stop_count, rhs.length);
+bool operator==(const BusResponse &lhs, const BusResponse &rhs) {
+  return tie(lhs.stop_count, lhs.unique_stop_count, lhs.length)
+      == tie(rhs.stop_count, rhs.unique_stop_count, rhs.length);
 }
 
-bool operator==(const rm::PostBusRequest &lhs, const rm::PostBusRequest &rhs) {
-  return std::tie(lhs.bus, lhs.stops, lhs.is_roundtrip)
-      == std::tie(rhs.bus, rhs.stops, rhs.is_roundtrip);
+bool operator==(const PostBusRequest &lhs, const PostBusRequest &rhs) {
+  return tie(lhs.bus, lhs.stops, lhs.is_roundtrip)
+      == tie(rhs.bus, rhs.stops, rhs.is_roundtrip);
 }
 
-bool operator==(const rm::PostStopRequest &lhs,
-                const rm::PostStopRequest &rhs) {
-  return
-      std::tie(lhs.stop,
-               lhs.coords.latitude,
-               lhs.coords.longitude,
-               lhs.stop_distances)
-          == std::tie(rhs.stop, rhs.coords.latitude, rhs.coords.longitude,
-                      rhs.stop_distances);
+bool operator==(const PostStopRequest &lhs, const PostStopRequest &rhs) {
+  return tie(lhs.stop,
+             lhs.coords.latitude,
+             lhs.coords.longitude,
+             lhs.stop_distances)
+      == tie(rhs.stop,
+             rhs.coords.latitude,
+             rhs.coords.longitude,
+             rhs.stop_distances);
 }
 
-bool operator==(const rm::RoutingSettings &lhs,
-                const rm::RoutingSettings &rhs) {
-  return std::tie(lhs.bus_wait_time, lhs.bus_velocity)
-      == std::tie(rhs.bus_wait_time, rhs.bus_velocity);
+bool operator==(const RoutingSettings &lhs, const RoutingSettings &rhs) {
+  return tie(lhs.bus_wait_time, lhs.bus_velocity)
+      == tie(rhs.bus_wait_time, rhs.bus_velocity);
 }
 
-bool operator==(svg::Point lhs, svg::Point rhs) {
-  return std::tie(lhs.x, lhs.y) == std::tie(rhs.x, rhs.y);
-}
+bool operator==(const RenderingSettings &lhs, const RenderingSettings &rhs) {
+  using namespace svg;
 
-bool operator==(svg::Rgb lhs, svg::Rgb rhs) {
-  return std::tuple<int, int, int>(lhs.red, lhs.green, lhs.blue)
-      == std::tuple<int, int, int>(rhs.red, rhs.green, rhs.blue);
-}
-
-bool operator==(svg::Rgba lhs, svg::Rgba rhs) {
-  return
-      std::tuple<int, int, int, double>(lhs.red, lhs.green, lhs.blue, lhs.alpha)
-          == std::tuple<int, int, int, double>(rhs.red,
-                                               rhs.green,
-                                               rhs.blue,
-                                               rhs.alpha);
-}
-
-bool operator==(const svg::Color &lhs, const svg::Color &rhs) {
-  if (std::holds_alternative<std::string>(lhs) &&
-      std::holds_alternative<std::string>(rhs)) {
-    return std::get<std::string>(lhs) == std::get<std::string>(rhs);
-  }
-  if (std::holds_alternative<svg::Rgb>(lhs) &&
-      std::holds_alternative<svg::Rgb>(rhs)) {
-    return std::get<svg::Rgb>(lhs) == std::get<svg::Rgb>(rhs);
-  }
-  if (std::holds_alternative<svg::Rgba>(lhs) &&
-      std::holds_alternative<svg::Rgba>(rhs)) {
-    return std::get<svg::Rgba>(lhs) == std::get<svg::Rgba>(rhs);
-  }
-  return std::holds_alternative<std::monostate>(lhs) &&
-      std::holds_alternative<std::monostate>(rhs);
-}
-
-bool operator==(const rm::renderer_utils::Frame &lhs,
-                const rm::renderer_utils::Frame &rhs) {
-  return std::tie(lhs.width, lhs.height, lhs.padding) ==
-      std::tie(rhs.width, rhs.height, rhs.padding);
-}
-
-bool operator!=(const rm::renderer_utils::Frame &lhs,
-                const rm::renderer_utils::Frame &rhs) {
-  return !(lhs == rhs);
-}
-
-bool operator==(const rm::RenderingSettings &lhs,
-                const rm::RenderingSettings &rhs) {
-  if (std::tuple(lhs.stop_radius,
-                 lhs.line_width,
-                 lhs.underlayer_width,
-                 lhs.stop_label_font_size,
-                 lhs.color_palette.size(),
-                 lhs.layers) !=
-      std::tuple(rhs.stop_radius,
-                 rhs.line_width,
-                 rhs.underlayer_width,
-                 rhs.stop_label_font_size,
-                 rhs.color_palette.size(),
-                 rhs.layers))
-    return false;
-  if (lhs.frame != rhs.frame) return false;
-  if (lhs.stop_label_offset != rhs.stop_label_offset) return false;
-  if (lhs.underlayer_color != rhs.underlayer_color) return false;
-  for (int i = 0; i < lhs.color_palette.size(); ++i) {
-    if (lhs.color_palette[i] != rhs.color_palette[i]) return false;
-  }
-  return true;
+  return tuple(lhs.frame,
+               lhs.stop_radius,
+               lhs.line_width,
+               lhs.underlayer_width,
+               lhs.underlayer_color,
+               lhs.stop_label_font_size,
+               lhs.stop_label_offset,
+               lhs.color_palette.size(),
+               lhs.layers,
+               lhs.color_palette) ==
+      tuple(rhs.frame,
+            rhs.stop_radius,
+            rhs.line_width,
+            rhs.underlayer_width,
+            rhs.underlayer_color,
+            rhs.stop_label_font_size,
+            rhs.stop_label_offset,
+            rhs.color_palette.size(),
+            rhs.layers,
+            rhs.color_palette);
 }
 
 bool operator==(const RouteResponse::WaitItem &lhs,
                 const RouteResponse::WaitItem &rhs) {
-  return std::tie(lhs.stop, lhs.time) == std::tie(rhs.stop, rhs.time);
+  return tie(lhs.stop, lhs.time) == tie(rhs.stop, rhs.time);
 }
 
 bool operator==(const RouteResponse::RoadItem &lhs,
                 const RouteResponse::RoadItem &rhs) {
   if (!CompareLength(lhs.time, rhs.time, 9)) return false;
-  return std::tie(lhs.bus, lhs.span_count)
-      == std::tie(rhs.bus, rhs.span_count);
+  return tie(lhs.bus, lhs.span_count) == tie(rhs.bus, rhs.span_count);
 }
 
-bool operator==(const rm::RouteResponse &lhs, const rm::RouteResponse &rhs) {
-  return std::tie(lhs.items, lhs.time) == std::tie(rhs.items, rhs.time);
+bool operator==(const RouteResponse &lhs, const RouteResponse &rhs) {
+  return tie(lhs.items, lhs.time) == tie(rhs.items, rhs.time);
 }
 
-bool operator!=(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs) {
+bool operator!=(const GetBusRequest &lhs, const GetBusRequest &rhs) {
   return !(lhs == rhs);
 }
 
-bool operator!=(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs) {
+bool operator!=(const GetStopRequest &lhs, const GetStopRequest &rhs) {
   return !(lhs == rhs);
 }
 
-bool operator!=(const rm::GetRouteRequest &lhs,
-                const rm::GetRouteRequest &rhs) {
+bool operator!=(const GetRouteRequest &lhs, const GetRouteRequest &rhs) {
   return !(lhs == rhs);
 }
 
-bool operator!=(const rm::GetMapRequest &lhs, const rm::GetMapRequest &rhs) {
+bool operator!=(const GetMapRequest &lhs, const GetMapRequest &rhs) {
   return !(lhs == rhs);
 }
 
-bool operator!=(const rm::BusResponse &lhs, const rm::BusResponse &rhs) {
+bool operator!=(const BusResponse &lhs, const BusResponse &rhs) {
   return !(lhs == rhs);
 }
 
-bool operator!=(const rm::PostBusRequest &lhs,
-                const rm::PostBusRequest &rhs) { return !(lhs == rhs); }
-
-bool operator!=(const rm::PostStopRequest &lhs,
-                const rm::PostStopRequest &rhs) {
+bool operator!=(const PostBusRequest &lhs, const PostBusRequest &rhs) {
   return !(lhs == rhs);
 }
 
-bool operator!=(const rm::RoutingSettings &lhs,
-                const rm::RoutingSettings &rhs) {
+bool operator!=(const PostStopRequest &lhs, const PostStopRequest &rhs) {
   return !(lhs == rhs);
 }
 
-bool operator!=(svg::Point lhs, svg::Point rhs) {
+bool operator!=(const RoutingSettings &lhs, const RoutingSettings &rhs) {
   return !(lhs == rhs);
 }
 
-bool operator!=(svg::Rgb lhs, svg::Rgb rhs) {
-  return !(lhs == rhs);
-}
-
-bool operator!=(svg::Rgba lhs, svg::Rgba rhs) {
-  return !(lhs == rhs);
-}
-
-bool operator!=(const svg::Color &lhs, const svg::Color &rhs) {
-  return !(lhs == rhs);
-}
-
-bool operator!=(const rm::RenderingSettings lhs,
-                const rm::RenderingSettings rhs) {
+bool operator!=(const RenderingSettings &lhs, const RenderingSettings &rhs) {
   return !(lhs == rhs);
 }
 
@@ -213,23 +147,22 @@ bool operator!=(const RouteResponse::RoadItem &lhs,
   return !(lhs == rhs);
 }
 
-bool operator!=(const rm::RouteResponse &lhs, const rm::RouteResponse &rhs) {
+bool operator!=(const RouteResponse &lhs, const RouteResponse &rhs) {
   return !(lhs == rhs);
 }
 
 template<typename T>
-std::ostream &operator<<(std::ostream &out,
-                         const std::vector<T> &str_v) {
+ostream &operator<<(ostream &out, const vector <T> &str_v) {
   for (auto &item : str_v)
     out << ' ' << item;
   return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const rm::PostBusRequest &br) {
+ostream &operator<<(ostream &out, const PostBusRequest &br) {
   return out << br.bus << ": " << br.stops << ' ' << br.is_roundtrip;
 }
 
-std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr) {
+ostream &operator<<(ostream &out, const PostStopRequest &sr) {
   out << sr.stop << ": " << sr.coords.latitude << ' ' <<
       sr.coords.longitude << '\t';
   for (auto [stop, dist] : sr.stop_distances) {
@@ -238,39 +171,28 @@ std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr) {
   return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const rm::GetBusRequest &br) {
+ostream &operator<<(ostream &out, const GetBusRequest &br) {
   return out << br.bus << " – " << br.id;
 }
 
-std::ostream &operator<<(std::ostream &out, const rm::GetStopRequest &br) {
+ostream &operator<<(ostream &out, const GetStopRequest &br) {
   return out << br.stop << " – " << br.id;
 }
 
-std::ostream &operator<<(std::ostream &out, const rm::GetMapRequest &mr) {
+ostream &operator<<(ostream &out, const GetMapRequest &mr) {
   return out << mr.id;
 }
 
-std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br) {
+ostream &operator<<(ostream &out, const BusResponse &br) {
   return out << br.stop_count << ' ' << br.unique_stop_count << ' '
              << br.length;
 }
 
-std::ostream &operator<<(std::ostream &out,
-                         const rm::RoutingSettings &settings) {
+ostream &operator<<(ostream &out, const RoutingSettings &settings) {
   return out << settings.bus_wait_time << ' ' << settings.bus_velocity;
 }
 
-std::ostream &operator<<(std::ostream &out, const svg::Point point) {
-  return out << '{' << point.x << ',' << point.y << '}';
-}
-
-std::ostream &operator<<(std::ostream &out,
-                         const rm::renderer_utils::Frame &frame) {
-  return out << frame.width << ' ' << frame.height << ' ' << frame.padding;
-}
-
-std::ostream &operator<<(std::ostream &out,
-                         const rm::RenderingSettings &settings) {
+ostream &operator<<(ostream &out, const RenderingSettings &settings) {
   return out << settings.frame.width << ' ' << settings.frame.height << ' ' <<
              settings.frame.padding << ' ' << settings.stop_radius << ' ' <<
              settings.line_width << ' ' << settings.stop_label_font_size
@@ -279,24 +201,87 @@ std::ostream &operator<<(std::ostream &out,
              << ' ' << settings.color_palette;
 }
 
-std::ostream &operator<<(std::ostream &out,
-                         const rm::RouteResponse::RoadItem &ri) {
+ostream &operator<<(ostream &out, const RouteResponse::RoadItem &ri) {
   return out << ri.bus << '-' << ri.time << '-' << ri.span_count;
 }
 
-std::ostream &operator<<(std::ostream &out, const RouteResponse::WaitItem &wi) {
+ostream &operator<<(ostream &out, const RouteResponse::WaitItem &wi) {
   return out << wi.stop << '-' << wi.time;
 }
 
-std::ostream &operator<<(std::ostream &out, const rm::RouteResponse &rr) {
-  return out << rr.time << ' ' << rr.items;
-}
-
-std::ostream &operator<<(std::ostream &out,
-                         const rm::RouteResponse::Item &item) {
-  std::visit([&](auto &&var) {
+ostream &operator<<(ostream &out, const RouteResponse::Item &item) {
+  visit([&](auto &&var) {
     out << var;
   }, item);
   return out;
+}
+
+ostream &operator<<(ostream &out, const RouteResponse &rr) {
+  return out << rr.time << ' ' << rr.items;
+}
+}
+
+namespace rm::renderer_utils {
+bool operator==(const Frame &lhs, const Frame &rhs) {
+  return tie(lhs.width, lhs.height, lhs.padding) ==
+      tie(rhs.width, rhs.height, rhs.padding);
+}
+
+bool operator!=(const Frame &lhs, const Frame &rhs) {
+  return !(lhs == rhs);
+}
+
+ostream &operator<<(ostream &out, const Frame &frame) {
+  return out << frame.width << ' ' << frame.height << ' ' << frame.padding;
+}
+}
+
+namespace svg {
+bool operator==(Point lhs, Point rhs) {
+  return tie(lhs.x, lhs.y) == tie(rhs.x, rhs.y);
+}
+
+bool operator!=(Point lhs, Point rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator==(Rgb lhs, Rgb rhs) {
+  return tuple<int, int, int>(lhs.red, lhs.green, lhs.blue)
+      == tuple<int, int, int>(rhs.red, rhs.green, rhs.blue);
+}
+
+bool operator!=(Rgb lhs, Rgb rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator==(Rgba lhs, Rgba rhs) {
+  return
+      tuple<int, int, int, double>(lhs.red, lhs.green, lhs.blue, lhs.alpha) ==
+          tuple<int, int, int, double>(rhs.red, rhs.green, rhs.blue, rhs.alpha);
+}
+
+bool operator!=(Rgba lhs, Rgba rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator==(const Color &lhs, const Color &rhs) {
+  if (holds_alternative<string>(lhs) && holds_alternative<string>(rhs)) {
+    return get<string>(lhs) == get<string>(rhs);
+  }
+  if (holds_alternative<Rgb>(lhs) && holds_alternative<Rgb>(rhs)) {
+    return get<Rgb>(lhs) == get<Rgb>(rhs);
+  }
+  if (holds_alternative<Rgba>(lhs) && holds_alternative<Rgba>(rhs)) {
+    return get<Rgba>(lhs) == get<Rgba>(rhs);
+  }
+  return holds_alternative<monostate>(lhs) && holds_alternative<monostate>(rhs);
+}
+
+bool operator!=(const Color &lhs, const Color &rhs) {
+  return !(lhs == rhs);
+}
+
+ostream &operator<<(ostream &out, const Point point) {
+  return out << '{' << point.x << ',' << point.y << '}';
 }
 }

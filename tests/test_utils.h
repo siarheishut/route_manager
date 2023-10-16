@@ -15,69 +15,41 @@
 namespace rm {
 bool CompareLength(double lhs, double rhs, int precision);
 
-bool operator==(const rm::BusResponse &lhs, const rm::BusResponse &rhs);
+bool operator==(const BusResponse &lhs, const BusResponse &rhs);
 
-bool operator!=(const rm::BusResponse &lhs, const rm::BusResponse &rhs);
+bool operator!=(const BusResponse &lhs, const BusResponse &rhs);
 
-bool operator==(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs);
+bool operator==(const GetBusRequest &lhs, const GetBusRequest &rhs);
 
-bool operator!=(const rm::GetBusRequest &lhs, const rm::GetBusRequest &rhs);
+bool operator!=(const GetBusRequest &lhs, const GetBusRequest &rhs);
 
-bool operator==(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs);
+bool operator==(const GetStopRequest &lhs, const GetStopRequest &rhs);
 
-bool operator!=(const rm::GetStopRequest &lhs, const rm::GetStopRequest &rhs);
+bool operator!=(const GetStopRequest &lhs, const GetStopRequest &rhs);
 
-bool operator==(const rm::GetRouteRequest &lhs, const rm::GetRouteRequest &rhs);
+bool operator==(const GetRouteRequest &lhs, const GetRouteRequest &rhs);
 
-bool operator!=(const rm::GetRouteRequest &lhs, const rm::GetRouteRequest &rhs);
+bool operator!=(const GetRouteRequest &lhs, const GetRouteRequest &rhs);
 
-bool operator==(const rm::GetMapRequest &lhs, const rm::GetMapRequest &rhs);
+bool operator==(const GetMapRequest &lhs, const GetMapRequest &rhs);
 
-bool operator!=(const rm::GetMapRequest &lhs, const rm::GetMapRequest &rhs);
+bool operator!=(const GetMapRequest &lhs, const GetMapRequest &rhs);
 
-bool operator==(const rm::PostBusRequest &lhs, const rm::PostBusRequest &rhs);
+bool operator==(const PostBusRequest &lhs, const PostBusRequest &rhs);
 
-bool operator!=(const rm::PostBusRequest &lhs, const rm::PostBusRequest &rhs);
+bool operator!=(const PostBusRequest &lhs, const PostBusRequest &rhs);
 
-bool operator==(const rm::PostStopRequest &lhs, const rm::PostStopRequest &rhs);
+bool operator==(const PostStopRequest &lhs, const PostStopRequest &rhs);
 
-bool operator!=(const rm::PostStopRequest &lhs, const rm::PostStopRequest &rhs);
+bool operator!=(const PostStopRequest &lhs, const PostStopRequest &rhs);
 
-bool operator==(const rm::RoutingSettings &lhs, const rm::RoutingSettings &rhs);
+bool operator==(const RoutingSettings &lhs, const RoutingSettings &rhs);
 
-bool operator!=(const rm::RoutingSettings &lhs, const rm::RoutingSettings &rhs);
+bool operator!=(const RoutingSettings &lhs, const RoutingSettings &rhs);
 
-bool operator==(svg::Point lhs, svg::Point rhs);
+bool operator==(const RenderingSettings &lhs, const RenderingSettings &rhs);
 
-bool operator!=(svg::Point lhs, svg::Point rhs);
-
-bool operator==(svg::Rgb lhs, svg::Rgb rhs);
-
-bool operator!=(svg::Rgb lhs, svg::Rgb rhs);
-
-bool operator==(svg::Rgba lhs, svg::Rgba rhs);
-
-bool operator!=(svg::Rgba lhs, svg::Rgba rhs);
-
-bool operator==(const svg::Color &lhs, const svg::Color &rhs);
-
-bool operator!=(const svg::Color &lhs, const svg::Color &rhs);
-
-bool operator==(const rm::renderer_utils::Frame &lhs,
-                const rm::renderer_utils::Frame &rhs);
-
-bool operator!=(const rm::renderer_utils::Frame &lhs,
-                const rm::renderer_utils::Frame &rhs);
-
-bool operator==(const rm::RenderingSettings &lhs,
-                const rm::RenderingSettings &rhs);
-
-bool operator!=(const rm::RenderingSettings &lhs,
-                const rm::RenderingSettings &rhs);
-
-bool operator==(const svg::Color &lhs, const svg::Color &rhs);
-
-bool operator!=(const svg::Color &lhs, const svg::Color &rhs);
+bool operator!=(const RenderingSettings &lhs, const RenderingSettings &rhs);
 
 bool operator==(const RouteResponse::WaitItem &lhs,
                 const RouteResponse::WaitItem &rhs);
@@ -91,39 +63,59 @@ bool operator==(const RouteResponse::RoadItem &lhs,
 bool operator!=(const RouteResponse::RoadItem &lhs,
                 const RouteResponse::RoadItem &rhs);
 
-bool operator==(const rm::RouteResponse &lhs, const rm::RouteResponse &rhs);
+bool operator==(const RouteResponse &lhs, const RouteResponse &rhs);
 
-bool operator!=(const rm::RouteResponse &lhs, const rm::RouteResponse &rhs);
+bool operator!=(const RouteResponse &lhs, const RouteResponse &rhs);
 
-std::ostream &operator<<(std::ostream &out, const rm::PostBusRequest &br);
+std::ostream &operator<<(std::ostream &out, const PostBusRequest &br);
 
-std::ostream &operator<<(std::ostream &out, const rm::PostStopRequest &sr);
+std::ostream &operator<<(std::ostream &out, const PostStopRequest &sr);
 
-std::ostream &operator<<(std::ostream &out, const rm::GetBusRequest &br);
+std::ostream &operator<<(std::ostream &out, const GetBusRequest &br);
 
-std::ostream &operator<<(std::ostream &out, const rm::GetMapRequest &br);
+std::ostream &operator<<(std::ostream &out, const GetMapRequest &br);
 
-std::ostream &operator<<(std::ostream &out, const rm::BusResponse &br);
+std::ostream &operator<<(std::ostream &out, const BusResponse &br);
 
-std::ostream &operator<<(std::ostream &out, const renderer_utils::Frame &frame);
+std::ostream &operator<<(std::ostream &out, const RoutingSettings &settings);
 
-std::ostream &operator<<(std::ostream &out,
-                         const rm::RoutingSettings &settings);
+std::ostream &operator<<(std::ostream &out, const RenderingSettings &settings);
 
-std::ostream &operator<<(std::ostream &out, svg::Point point);
+std::ostream &operator<<(std::ostream &out, const RouteResponse::RoadItem &ri);
 
-std::ostream &operator<<(std::ostream &out,
-                         const rm::RenderingSettings &settings);
-
-std::ostream &operator<<(std::ostream &out,
-                         const rm::RouteResponse::RoadItem &ri);
-
-std::ostream &operator<<(std::ostream &out,
-                         const rm::RouteResponse::WaitItem &ri);
-
-std::ostream &operator<<(std::ostream &out, const rm::RouteResponse &rr);
+std::ostream &operator<<(std::ostream &out, const RouteResponse::WaitItem &ri);
 
 std::ostream &operator<<(std::ostream &out, const RouteResponse::Item &item);
+
+std::ostream &operator<<(std::ostream &out, const RouteResponse &rr);
+}
+
+namespace rm::renderer_utils {
+bool operator==(const Frame &lhs, const Frame &rhs);
+
+bool operator!=(const Frame &lhs, const Frame &rhs);
+
+std::ostream &operator<<(std::ostream &out, const Frame &frame);
+}
+
+namespace svg {
+bool operator==(Point lhs, Point rhs);
+
+bool operator!=(Point lhs, Point rhs);
+
+bool operator==(Rgb lhs, Rgb rhs);
+
+bool operator!=(Rgb lhs, Rgb rhs);
+
+bool operator==(Rgba lhs, Rgba rhs);
+
+bool operator!=(Rgba lhs, Rgba rhs);
+
+bool operator==(const Color &lhs, const Color &rhs);
+
+bool operator!=(const Color &lhs, const Color &rhs);
+
+std::ostream &operator<<(std::ostream &out, Point point);
 }
 
 #endif // ROOT_MANAGER_TESTS_TEST_UTILS_H_

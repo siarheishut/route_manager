@@ -58,12 +58,13 @@ TEST(TestParseSettings, TestRoutingSettings) {
 }
 
 TEST(TestParseSettings, TestRedneringSettings) {
+  using namespace std;
   using namespace rm;
 
   struct TestCase {
-    std::string name;
+    string name;
     json::Dict input;
-    std::optional<RenderingSettings> want;
+    optional<RenderingSettings> want;
   };
 
   const auto test_item = json::Dict{{"width", 412.1},
@@ -86,12 +87,12 @@ TEST(TestParseSettings, TestRedneringSettings) {
                                                           "stop_points",
                                                           "bus_lines",
                                                           "stop_labels"}}};
-  auto test_item_without = [&](std::string field) {
+  auto test_item_without = [&](string field) {
     auto item = test_item;
     item.erase(field);
     return item;
   };
-  auto test_item_replace = [&](std::string field, json::Node node) {
+  auto test_item_replace = [&](string field, json::Node node) {
     auto item = test_item;
     item[field] = std::move(node);
     return item;
@@ -117,159 +118,159 @@ TEST(TestParseSettings, TestRedneringSettings) {
                  MapLayer::kStopLabels}
   };
 
-  auto settings_replace_layers_with = [&](std::vector<MapLayer> layers) {
+  auto settings_replace_layers_with = [&](vector<MapLayer> layers) {
     auto item = settings;
     item.layers = std::move(layers);
     return item;
   };
 
-  std::vector<TestCase> test_cases{
+  vector<TestCase> test_cases{
       TestCase{
           .name = "Wrong format: no <width>",
           .input = test_item_without("width"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <height>",
           .input = test_item_without("height"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <padding>",
           .input = test_item_without("padding"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <stop_radius>",
           .input = test_item_without("stop_radius"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <line_width>",
           .input = test_item_without("line_width"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <stop_label_font_size>",
           .input = test_item_without("stop_label_font_size"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <stop_label_offset>",
           .input = test_item_without("stop_label_offset"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <underlayer_color>",
           .input = test_item_without("underlayer_color"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <underlayer_width>",
           .input = test_item_without("underlayer_width"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <color_palette>",
           .input = test_item_without("color_palette"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <bus_label_font_size>",
           .input = test_item_without("bus_label_font_size"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <bus_label_offset>",
           .input = test_item_without("bus_label_offset"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: no <layers>",
           .input = test_item_without("layers"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <width> isn't double",
           .input = test_item_replace("width", "123.4"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <height> isn't double",
           .input = test_item_replace("height", "321"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <padding> isn't double",
           .input = test_item_replace("padding", "214.7"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <stop_radius> isn't double",
           .input = test_item_replace("stop_radius", "8152"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <line_width> isn't double",
           .input = test_item_replace("line_width", "1234"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <stop_label_font_size> isn't int",
           .input = test_item_replace("stop_label_font_size", "123.4"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <stop_label_offset> isn't array",
           .input = test_item_replace("stop_label_offset",
                                      json::Dict{{"key", "value"}}),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <underlayer_color> isn't color",
           .input = test_item_replace("underlayer_color", 381),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <underlayer_width> isn't double",
           .input = test_item_replace("underlayer_width", "937.5"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <color_palette> isn't array",
           .input = test_item_replace("color_palette", "color1"),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <underlayer_color> isn't color",
           .input = test_item_replace("underlayer_color", 185),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <color_palette> contains not color",
           .input = test_item_replace("color_palette",
                                      json::List{"red", "purple", 15}),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <bus_label_font_size> isn't int",
           .input = test_item_replace("bus_label_font_size", 12.3),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <bus_label_offset> isn't array",
           .input = test_item_replace("bus_label_offset", 14.5),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <layers> isn't array",
           .input = test_item_replace("layers", json::Dict{{"1", 1}, {"2", 2}}),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Wrong format: <layers> contains not string",
           .input = test_item_replace("layers", json::List{"1", "2", 3}),
-          .want = std::nullopt
+          .want = nullopt
       },
       TestCase{
           .name = "Empty layers",
