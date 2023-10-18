@@ -118,4 +118,10 @@ bool operator!=(const Color &lhs, const Color &rhs);
 std::ostream &operator<<(std::ostream &out, Point point);
 }
 
+namespace rm::sphere {
+bool operator==(const Coords &lhs, const Coords &rhs);
+bool operator!=(const Coords &lhs, const Coords &rhs);
+std::ostream &operator<<(std::ostream &out, const Coords &coords);
+}
+
 #endif // ROOT_MANAGER_TESTS_TEST_UTILS_H_
