@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 
 #include "src/coords_converter.h"
+#include "test_utils.h"
 
 using namespace std;
 
@@ -214,6 +215,52 @@ TEST(TestSpreadStops, TestSpreadStops) {
 
   for (auto &[name, layers, from, to, want] : test_cases) {
     auto got = rm::coords_converter::SpreadStops(layers, from, to);
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
+TEST(TestInterpolation, TestInterpolation) {
+  struct TestCase {
+    string name;
+    vector<string_view> route;
+    unordered_set<string_view> base_stops;
+    rm::renderer_utils::Stops stops;
+    rm::renderer_utils::Stops want;
+  };
+
+  vector<TestCase> test_cases{
+      TestCase{
+          .name = "1 stops between base_stops",
+          .route = {"1", "2", "3", "4", "3", "2", "1"},
+          .base_stops = {"1", "2", "4"},
+          .stops = {{"1", {10, 10}}, {"2", {20, 20}}, {"3", {25, 25}},
+                    {"4", {40, 0}}},
+          .want = {{"1", {10, 10}}, {"2", {20, 20}}, {"3", {30, 10}},
+                   {"4", {40, 0}}}
+      },
+      TestCase{
+          .name = "Several stops between base_stops",
+          .route = {"1", "2", "3", "4", "3", "2", "1"},
+          .base_stops = {"1", "4"},
+          .stops = {{"1", {10, 30}}, {"2", {20, 20}}, {"3", {25, 25}},
+                    {"4", {40, 0}}},
+          .want = {{"1", {10, 30}}, {"2", {20, 20}}, {"3", {30, 10}},
+                   {"4", {40, 0}}}
+      },
+      TestCase{
+          .name = "Several interpolation possibilities",
+          .route = {"1", "2", "3", "4", "3", "5", "1"},
+          .base_stops = {"1", "3", "4", "5"},
+          .stops = {{"1", {10, 10}}, {"2", {15, 15}}, {"3", {25, 25}},
+                    {"4", {30, 10}}, {"5", {10, 30}}},
+          .want = {{"1", {10, 10}}, {"2", {17.5, 17.5}}, {"3", {25, 25}},
+                   {"4", {30, 10}}, {"5", {10, 30}}},
+      },
+  };
+
+  for (auto &[name, route, base_stops, stops, want] : test_cases) {
+    auto got = rm::coords_converter::Interpolate(std::move(stops), route,
+                                                 base_stops);
     EXPECT_EQ(want, got) << name;
   }
 }

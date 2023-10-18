@@ -4,6 +4,7 @@
 #include <map>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -27,6 +28,39 @@ SortStops(const renderer_utils::Stops &stops, SortMode mode) {
   transform(begin(sorted_stops), end(sorted_stops), back_inserter(layers),
             [](auto &item) { return item.second; });
   return layers;
+}
+
+renderer_utils::Stops Interpolate(
+    renderer_utils::Stops stops,
+    const std::vector<std::string_view> &route,
+    const std::unordered_set<std::string_view> &base_stops) {
+  auto is_base =
+      [&](auto s) { return base_stops.find(s) != end(base_stops); };
+  auto find_next = [&](int i) {
+    auto it = find_if(begin(route) + i, end(route), is_base);
+    return it - begin(route);
+  };
+
+  int left = 0, right = 0;
+  for (int i = 0; i < route.size(); ++i) {
+    if (i == right) {
+      left = right;
+      right = find_next(right + 1);
+      continue;
+    }
+
+    auto stop = route[i];
+    auto lon_step = (stops[route[right]].longitude -
+        stops[route[left]].longitude) / (right - left);
+    auto lat_step = (stops[route[right]].latitude -
+        stops[route[left]].latitude) / (right - left);
+
+    stops[stop].longitude = stops[route[left]].longitude +
+        lon_step * (i - left);
+    stops[stop].latitude = stops[route[left]].latitude +
+        lat_step * (i - left);
+  }
+  return std::move(stops);
 }
 
 vector <pair<string_view, string_view>>
