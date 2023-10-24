@@ -21,6 +21,17 @@ struct Frame { double width, height, padding; };
 std::vector<std::string_view>
 SortStops(const renderer_utils::Stops &stops, SortMode mode);
 
+// IntersectionsWithinRoute returns stops that are present within the same route
+// at least `count` times.
+std::unordered_set<std::string_view>
+IntersectionsWithinRoute(const renderer_utils::Buses &buses, int count);
+
+std::unordered_set<std::string_view>
+EndPoints(const renderer_utils::Buses &buses);
+
+std::unordered_set<std::string_view>
+IntersectionsCrossRoute(const renderer_utils::Buses &buses);
+
 // Interpolates coordinates of the stops along the route:
 // distributes the non-base stops of the route at equal distances
 // from each other along the line between nearest preceding and
