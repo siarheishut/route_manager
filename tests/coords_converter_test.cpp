@@ -219,6 +219,108 @@ TEST(TestSpreadStops, TestSpreadStops) {
   }
 }
 
+TEST(TestEndPoints, TestEndPoints) {
+  struct TestCase {
+    std::string name;
+    rm::renderer_utils::Buses buses;
+    std::unordered_set<std::string_view> want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Roundtrip",
+          .buses = {{"bus1", {{"a", "b", "c", "a"}, true}}},
+          .want = {"a"}
+      },
+      TestCase{
+          .name = "Non-roundtrip with different end points",
+          .buses = {{"bus1", {{"a", "b", "c", "d"}, false}}},
+          .want = {"a", "d"}
+      },
+      TestCase{
+          .name = "Non-roundtrip with the same end points",
+          .buses = {{"bus1", {{"a", "b", "c", "a"}, false}}},
+          .want = {"a"}
+      },
+  };
+
+  for (auto &[name, buses, want] : test_cases) {
+    auto got = rm::coords_converter::EndPoints(buses);
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
+TEST(TestIntersectionsWithinRoute, TestIntersectionsWithinRoute) {
+  struct TestCase {
+    std::string name;
+    rm::renderer_utils::Buses buses;
+    struct Subcase {
+      int count;
+      std::unordered_set<std::string_view> want;
+    };
+    vector<Subcase> subcases;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Base cases",
+          .buses = {{"bus1", {{"a", "b", "c", "b", "a", "b", "a"}, true}},
+                    {"bus2", {{"d", "e", "f", "g", "e"}, false}},
+                    {"bus3", {{"h", "i", "j", "k"}, false}},
+                    {"bus4", {{"l", "m", "n", "o", "l"}, true}}},
+          .subcases = {
+              {.count = 1, .want = {"a", "b", "c", "d", "e", "f", "g", "h", "i",
+                                    "j", "k", "l", "m", "n", "o"}},
+              {.count = 2, .want = {"a", "b", "d", "e", "f", "g", "h", "i",
+                                    "j", "l"}},
+              {.count = 3, .want = {"a", "b", "e"}},
+              {.count = 4, .want = {}}},
+      },
+  };
+
+  for (auto &[name, buses, subcases] : test_cases) {
+    for (auto &subcase : subcases) {
+      auto got = rm::coords_converter::IntersectionsWithinRoute(buses,
+                                                                subcase.count);
+      auto &want = subcase.want;
+      EXPECT_EQ(want, got) << name << ". Count = " << subcase.count;
+    }
+  }
+}
+
+TEST(TestIntersectionsCrossRoute, TestIntersectionsCrossRoute) {
+  struct TestCase {
+    std::string name;
+    rm::renderer_utils::Buses buses;
+    std::unordered_set<std::string_view> want;
+  };
+
+  vector<TestCase> test_cases = {
+      TestCase{
+          .name = "Base request",
+          .buses = {
+              {"bus1", {{"a", "b", "c", "a"}, true}},
+              {"bus2", {{"d", "f", "c", "g"}, false}},
+              {"bus3", {{"k", "b", "c", "f"}, false}},
+              {"bus4", {{"x", "y", "z"}, false}}},
+          .want = {"b", "c", "f"}
+      },
+      TestCase{
+          .name = "Empty routes",
+          .buses = {
+              {"bus1", {{}, true}},
+              {"bus2", {{}, false}}
+          },
+          .want = {}
+      }
+  };
+
+  for (auto &[name, buses, want] : test_cases) {
+    auto got = rm::coords_converter::IntersectionsCrossRoute(buses);
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
 TEST(TestInterpolation, TestInterpolation) {
   struct TestCase {
     string name;
