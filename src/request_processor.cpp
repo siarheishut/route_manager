@@ -105,7 +105,7 @@ std::unique_ptr<Processor> Processor::Create(
   if (!bus_manager) return nullptr;
 
   auto [buses, stops] = MapRendererParams(requests);
-  auto map_renderer = MapRenderer::Create(std::move(buses), std::move(stops),
+  auto map_renderer = MapRenderer::Create(buses, std::move(stops),
                                           rendering_settings);
   if (!map_renderer) return nullptr;
 
