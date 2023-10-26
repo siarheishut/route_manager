@@ -19,13 +19,13 @@ class MapRenderer {
  public:
   static std::unique_ptr<MapRenderer> Create(
       const renderer_utils::Buses &buses,
-      const renderer_utils::Stops &stops,
+      renderer_utils::Stops stops,
       const RenderingSettings &settings);
 
   std::string GetMap() const;
  private:
   MapRenderer(const renderer_utils::Buses &buses,
-              const renderer_utils::Stops &stops,
+              renderer_utils::Stops stops,
               const RenderingSettings &settings);
 
   void AddBusLinesLayout(

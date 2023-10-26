@@ -6,16 +6,20 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <vector>
 
 #include "svg/figures.h"
 
+#include "common.h"
 #include "coords_converter.h"
 #include "map_renderer_utils.h"
 #include "request_types.h"
 #include "sphere.h"
 
 namespace {
+using BaseStops = std::unordered_set<std::string_view>;
+
 // Latitude value range is [-90, 90];
 // Longitude value range is [-180, 180].
 // We can read about it in the following article:
@@ -68,10 +72,18 @@ CombineCoords(
 
 std::unordered_map<std::string_view, svg::Point> TransformCoords(
     const rm::renderer_utils::Buses &buses,
-    const rm::renderer_utils::Stops &stops,
+    rm::renderer_utils::Stops &stops,
     const rm::renderer_utils::Frame &frame) {
   using namespace rm::coords_converter;
 
+  BaseStops base_stops;
+  rm::Combine(base_stops,
+              EndPoints(buses),
+              IntersectionsCrossRoute(buses),
+              IntersectionsWithinRoute(buses, 3));
+  for (auto &bus : buses) {
+    stops = Interpolate(std::move(stops), bus.second.route, base_stops);
+  }
   auto adjacent_stops = AdjacentStops(buses);
 
   auto stops_by_lon = SortStops(stops, SortMode::kByLongitude);
@@ -92,7 +104,7 @@ std::unordered_map<std::string_view, svg::Point> TransformCoords(
 namespace rm {
 std::unique_ptr<MapRenderer> MapRenderer::Create(
     const renderer_utils::Buses &buses,
-    const renderer_utils::Stops &stops,
+    renderer_utils::Stops stops,
     const RenderingSettings &settings) {
   if (settings.color_palette.empty()) return nullptr;
 
@@ -104,19 +116,22 @@ std::unique_ptr<MapRenderer> MapRenderer::Create(
   }
 
   for (auto &[bus, route] : buses) {
-    if (route.route.size() < 2) return nullptr;
+    if (route.route.size() < 2 ||
+        (route.is_roundtrip && route.route.front() != route.route.back()))
+      return nullptr;
     for (auto stop : route.route) {
       if (stops.find(stop) == stops.end())
         return nullptr;
     }
   }
 
-  return std::unique_ptr<MapRenderer>(new MapRenderer(buses, stops, settings));
+  return std::unique_ptr<MapRenderer>(new MapRenderer(buses, std::move(stops),
+                                                      settings));
 }
 
 MapRenderer::MapRenderer(
     const renderer_utils::Buses &buses,
-    const renderer_utils::Stops &stops,
+    renderer_utils::Stops stops,
     const RenderingSettings &settings) {
   auto stop_to_coords = TransformCoords(buses, stops, settings.frame);
 

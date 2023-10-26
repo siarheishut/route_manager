@@ -44,6 +44,11 @@ struct RouteInfo {
 
 using StopDict = std::unordered_map<std::string, StopInfo>;
 using BusDict = std::unordered_map<std::string, BusInfo>;
+
+template<typename C, typename ...Args>
+void Combine(C &container, Args... args) {
+  (container.insert(begin(args), end(args)), ...);
+}
 }
 
 #endif // ROOT_MANAGER_SRC_COMMON_H_
