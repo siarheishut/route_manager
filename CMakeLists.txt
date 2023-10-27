@@ -61,7 +61,7 @@ add_executable(route_manager_tests
         tests/coords_converter_test.cpp
 )
 
-target_link_libraries(route_manager_tests GTest::gtest_main json graph svg)
+target_link_libraries(route_manager_tests GTest::gtest_main GTest::gmock_main json graph svg)
 target_include_directories(route_manager_tests PUBLIC . tests)
 gtest_discover_tests(route_manager_tests)
 # tests end

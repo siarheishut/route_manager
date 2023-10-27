@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 
 #include "src/coords_converter.h"
 #include "test_utils.h"
@@ -86,7 +87,7 @@ TEST(TestAdjacentStops, TestAdjacentStops) {
   struct TestCase {
     string name;
     rm::renderer_utils::Buses buses;
-    vector<pair<string_view, string_view>> want;
+    rm::coords_converter::AdjacentList want;
   };
 
   vector<TestCase> test_cases{
@@ -95,16 +96,26 @@ TEST(TestAdjacentStops, TestAdjacentStops) {
           .want = {},
       },
       TestCase{
-          .name = "Non-empty buses",
-          .buses = {{"1", {{"1", "2", "3"}, false}},
-                    {"2", {{"3", "4", "5", "3"}, true}}},
-          .want = {{"1", "2"}, {"2", "3"}, {"3", "4"}, {"4", "5"}, {"5", "3"}},
+          .name = "One bus",
+          .buses = {{"bus 1", {{"a", "b", "c", "d", "a"}, true}}},
+          .want = {{"a", {"b", "d"}}, {"b", {"a", "c"}}, {"c", {"b", "d"}},
+                   {"d", {"a", "c"}}}
       },
       TestCase{
           .name = "Repeated stop",
-          .buses = {{"1", {{"1", "2", "2", "3"}, true}}},
-          .want = {{"1", "2"}, {"2", "3"}},
+          .buses = {{"bus 1", {{"a", "a", "c", "d", "a"}, true}}},
+          .want = {{"a", {"c", "d"}}, {"c", {"a", "d"}}, {"d", {"a", "c"}}}
       },
+      TestCase{
+          .name = "Several buses",
+          .buses = {{"bus 1", {{"a", "b", "c", "d", "a"}, true}},
+                    {"bus 2", {{"e", "f", "b", "g", "h"}, false}},
+                    {"bus 3", {{"a", "i", "g", "j", "b"}, false}}},
+          .want = {{"a", {"b", "d", "i"}}, {"b", {"a", "c", "f", "g", "j"}},
+                   {"c", {"b", "d"}}, {"d", {"a", "c"}}, {"e", {"f"}},
+                   {"f", {"b", "e"}}, {"g", {"b", "h", "i", "j"}}, {"h", {"g"}},
+                   {"i", {"a", "g"}}, {"j", {"b", "g"}}},
+      }
   };
 
   for (auto &[name, buses, want] : test_cases) {
@@ -113,42 +124,56 @@ TEST(TestAdjacentStops, TestAdjacentStops) {
   }
 }
 
-TEST(TestCompressCoords, TestCompressCoords) {
+MATCHER(WhenSortedEq, "") {
+  auto v1 = get<0>(arg);
+  auto v2 = get<1>(arg);
+  sort(begin(v1), end(v1));
+  sort(begin(v2), end(v2));
+  return v1 == v2;
+}
+
+TEST(TestCompressStops, TestCompressStops) {
   struct TestCase {
     string name;
     vector<string_view> stops;
-    vector<pair<string_view, string_view>> neighbors;
-    vector<vector<string_view>> want;
+    rm::coords_converter::AdjacentList adj_stops;
+    rm::coords_converter::StopLayers want;
   };
 
   vector<TestCase> test_cases{
       TestCase{
           .name = "Empty stops",
+          .adj_stops =  {{"a", {"b", "c"}}, {"b", {"a", "c"}},
+                         {"c", {"a", "b"}}},
           .want = {},
       },
       TestCase{
-          .name = "Empty neighbors",
-          .stops = {"3", "1", "4", "2"},
-          .want = {{"3", "1", "4", "2"}},
+          .name = "All stops on one layer",
+          .stops = {"a", "b", "d"},
+          .adj_stops = {},
+          .want = {{"a", "b", "d"}},
       },
       TestCase{
-          .name = "1 stop",
-          .stops = {"3"},
-          .neighbors = {{"1", "2"}},
-          .want = {{"3"}},
+          .name = "One stop on each layer",
+          .stops = {"a", "b", "c", "d"},
+          .adj_stops = {{"a", {"b", "c", "d"}}, {"b", {"a", "c", "d"}},
+                        {"c", {"a", "d", "b"}}, {"d", {"a", "b", "c"}}},
+          .want = {{"a"}, {"b"}, {"c"}, {"d"}}
       },
       TestCase{
-          .name = "Basic functionality",
-          .stops = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
-          .neighbors = {{"4", "5"}, {"7", "8"}, {"9", "10"}, {"2", "5"},
-                        {"1", "9"}, {"4", "8"}},
-          .want = {{"1", "2", "3", "4"}, {"5", "6", "7"}, {"8", "9"}, {"10"}},
-      }
+          .name = "Stop is not in adjacent_list",
+          .stops = {"a", "b", "d"},
+          .adj_stops = {{"a", {"b", "c"}}, {"b", {"a", "c"}},
+                        {"c", {"a", "b"}}},
+          .want = {{"a", "d"}, {"b"}},
+      },
   };
 
-  for (auto &[name, stops, neighbors, want] : test_cases) {
-    auto got = rm::coords_converter::CompressNonadjacent(stops, neighbors);
-    EXPECT_EQ(want, got) << name;
+  for (auto &[name, stops, adj_list, want] : test_cases) {
+    auto got = rm::coords_converter::CompressNonadjacent(stops, adj_list);
+
+    using namespace ::testing;
+    EXPECT_THAT(want, Pointwise(WhenSortedEq(), got)) << name;
   }
 }
 
