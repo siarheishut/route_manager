@@ -105,49 +105,45 @@ renderer_utils::Stops Interpolate(
   return std::move(stops);
 }
 
-vector <pair<string_view, string_view>>
-AdjacentStops(const renderer_utils::Buses &buses) {
-  vector<pair<string_view, string_view>> result;
-  for (auto &[_, route] : buses) {
-    for (int i = 1; i < route.route.size(); ++i) {
-      auto prev = route.route[i - 1];
-      auto curr = route.route[i];
-      if (prev == curr) continue;
-      result.emplace_back(prev, curr);
+AdjacentList AdjacentStops(const renderer_utils::Buses &buses) {
+  AdjacentList adj_stops;
+  for (auto &bus : buses) {
+    auto &route = bus.second.route;
+    for (int i = 1; i < route.size(); ++i) {
+      if (route[i] == route[i - 1]) continue;
+      adj_stops[route[i]].insert(route[i - 1]);
+      adj_stops[route[i - 1]].insert(route[i]);
     }
   }
-  return result;
+  return adj_stops;
 }
 
-vector <vector<string_view>> CompressNonadjacent(
-    const vector <string_view> &stops,
-    const vector <pair<string_view,
-                       string_view>> &neighbors) {
+StopLayers CompressNonadjacent(const std::vector<std::string_view> &stops,
+                               const AdjacentList &adj_stops) {
   unordered_map<string_view, int> stop_to_layer;
-  for (int i = 0; i < stops.size(); ++i)
-    stop_to_layer[stops[i]] = i;
-
-  vector<int> max_next(stops.size(), static_cast<int>(stops.size()) - 1);
-
-  for (auto &[prev, curr] : neighbors) {
-    auto prev_layer = stop_to_layer[prev];
-    auto curr_layer = stop_to_layer[curr];
-    if (prev_layer > curr_layer) swap(prev_layer, curr_layer);
-    max_next[prev_layer] = min(max_next[prev_layer], curr_layer - 1);
-  }
-
-  vector<vector<string_view>> res;
-  int last = -1;
-  for (int layer = 0; layer < stops.size(); ++layer) {
-    if (layer > last) {
-      res.push_back({stops[layer]});
-      last = max_next[layer];
-      continue;
+  for (auto &stop : stops) {
+    auto &layer = stop_to_layer[stop] = 0;
+    auto it = adj_stops.find(stop);
+    if (it == adj_stops.end()) continue;
+    for (auto &neighbor : it->second) {
+      auto found = stop_to_layer.find(neighbor);
+      if (found == stop_to_layer.end()) continue;
+      layer = max(layer, found->second + 1);
     }
-    last = min(last, max_next[layer]);
-    res.back().push_back(stops[layer]);
   }
-  return res;
+
+  if (stop_to_layer.empty()) return {};
+
+  auto layer_count = max_element(begin(stop_to_layer), end(stop_to_layer),
+                                 [](auto p1, auto p2) {
+                                   return p1.second < p2.second;
+                                 })->second + 1;
+
+  StopLayers result(layer_count);
+  for (auto [stop, idx] : stop_to_layer) {
+    result[idx].push_back(stop);
+  }
+  return result;
 }
 
 vector <pair<string_view, double>> SpreadStops(

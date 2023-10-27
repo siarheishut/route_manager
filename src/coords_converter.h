@@ -14,6 +14,11 @@
 #include "sphere.h"
 
 namespace rm::coords_converter {
+using AdjacentList = std::unordered_map<std::string_view,
+                                        std::unordered_set<std::string_view>>;
+
+using StopLayers = std::vector<std::vector<std::string_view>>;
+
 enum class SortMode { kByLatitude, kByLongitude };
 
 struct Frame { double width, height, padding; };
@@ -44,13 +49,10 @@ renderer_utils::Stops Interpolate(
     const std::vector<std::string_view> &route,
     const std::unordered_set<std::string_view> &base_stops);
 
-std::vector<std::pair<std::string_view, std::string_view>>
-AdjacentStops(const renderer_utils::Buses &buses);
+AdjacentList AdjacentStops(const renderer_utils::Buses &buses);
 
-std::vector<std::vector<std::string_view>> CompressNonadjacent(
-    const std::vector<std::string_view> &stops,
-    const std::vector<std::pair<std::string_view,
-                                std::string_view>> &neighbors);
+StopLayers CompressNonadjacent(const std::vector<std::string_view> &stops,
+                               const AdjacentList &adj_stops);
 
 std::vector<std::pair<std::string_view, double>> SpreadStops(
     const std::vector<std::vector<std::string_view>> &layers,
