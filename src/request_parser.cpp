@@ -95,6 +95,7 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
   auto bus_label_font_size = settings.find("bus_label_font_size");
   auto bus_label_offset = settings.find("bus_label_offset");
   auto layers = settings.find("layers");
+  auto outer_margin = settings.find("outer_margin");
 
   if (width == settings.end() || height == settings.end() ||
       padding == settings.end() || stop_radius == settings.end() ||
@@ -104,7 +105,7 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
       underlayer_width == settings.end() || color_palette == settings.end() ||
       bus_label_font_size == settings.end() ||
       bus_label_offset == settings.end() ||
-      layers == settings.end()) {
+      layers == settings.end() || outer_margin == settings.end()) {
     return std::nullopt;
   }
 
@@ -117,7 +118,7 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
       !IsPalette(color_palette->second) ||
       !bus_label_font_size->second.IsInt() ||
       !IsOffset(bus_label_offset->second) ||
-      !IsLayers(layers->second))
+      !IsLayers(layers->second) || !outer_margin->second.IsDouble())
     return std::nullopt;
 
   RenderingSettings rs;
@@ -136,6 +137,7 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
   rs.bus_label_font_size = bus_label_font_size->second.AsInt();
   rs.bus_label_offset = AsOffset(bus_label_offset->second);
   rs.layers = AsLayers(layers->second);
+  rs.outer_margin = outer_margin->second.AsDouble();
 
   return rs;
 }
