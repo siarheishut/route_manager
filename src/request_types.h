@@ -39,6 +39,7 @@ struct RenderingSettings {
   int bus_label_font_size;
   svg::Point bus_label_offset;
   std::vector<MapLayer> layers;
+  double outer_margin;
 };
 
 struct GetBusRequest {

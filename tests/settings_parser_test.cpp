@@ -86,7 +86,8 @@ TEST(TestParseSettings, TestRedneringSettings) {
                                     {"layers", json::List{"bus_labels",
                                                           "stop_points",
                                                           "bus_lines",
-                                                          "stop_labels"}}};
+                                                          "stop_labels"}},
+                                    {"outer_margin", 20.34}};
   auto test_item_without = [&](string field) {
     auto item = test_item;
     item.erase(field);
@@ -115,7 +116,8 @@ TEST(TestParseSettings, TestRedneringSettings) {
       .layers = {MapLayer::kBusLabels,
                  MapLayer::kStopPoints,
                  MapLayer::kBusLines,
-                 MapLayer::kStopLabels}
+                 MapLayer::kStopLabels},
+      .outer_margin = 20.34,
   };
 
   auto settings_replace_layers_with = [&](vector<MapLayer> layers) {
@@ -188,6 +190,11 @@ TEST(TestParseSettings, TestRedneringSettings) {
       TestCase{
           .name = "Wrong format: no <layers>",
           .input = test_item_without("layers"),
+          .want = nullopt
+      },
+      TestCase{
+          .name = "Wrong format: no <outer_margin>",
+          .input = test_item_without("outer_margin"),
           .want = nullopt
       },
       TestCase{
@@ -270,6 +277,11 @@ TEST(TestParseSettings, TestRedneringSettings) {
       TestCase{
           .name = "Wrong format: <layers> contains not string",
           .input = test_item_replace("layers", json::List{"1", "2", 3}),
+          .want = nullopt
+      },
+      TestCase{
+          .name = "Wrong format: <outer_margin> isn't double",
+          .input = test_item_replace("outer_margin", "42.1"),
           .want = nullopt
       },
       TestCase{
