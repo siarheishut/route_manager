@@ -143,6 +143,6 @@ json::Dict Processor::Process(const GetRouteRequest &request) const {
 }
 
 json::Dict Processor::Process(const GetMapRequest &request) const {
-  return ToJson(MapResponse{.map = map_renderer_->GetMap()}, request.id);
+  return ToJson(MapResponse{.map = map_renderer_->RenderMap()}, request.id);
 }
 }

@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-#include "svg/document.h"
+#include "svg/figures.h"
 
 #include "coords_converter.h"
 #include "map_renderer_utils.h"
@@ -22,35 +22,38 @@ class MapRenderer {
       renderer_utils::Stops stops,
       const RenderingSettings &settings);
 
-  std::string GetMap() const;
+  std::string RenderMap() const;
+
  private:
   MapRenderer(const renderer_utils::Buses &buses,
               renderer_utils::Stops stops,
               const RenderingSettings &settings);
 
-  void AddBusLinesLayout(
+  static void AddBusLinesLayout(
+      svg::SectionBuilder &builder,
       const renderer_utils::Buses &buses,
-      const renderer_utils::Stops &stops,
       const rm::RenderingSettings &settings,
       const renderer_utils::StopCoords &coords);
 
-  void AddBusLabelsLayout(
+  static void AddBusLabelsLayout(
+      svg::SectionBuilder &builder,
       const renderer_utils::Buses &buses,
+      const rm::RenderingSettings &settings,
+      const renderer_utils::StopCoords &coords);
+
+  static void AddStopPointsLayout(
+      svg::SectionBuilder &builder,
       const renderer_utils::Stops &stops,
       const rm::RenderingSettings &settings,
       const renderer_utils::StopCoords &coords);
 
-  void AddStopPointsLayout(
+  static void AddStopLabelsLayout(
+      svg::SectionBuilder &builder,
       const renderer_utils::Stops &stops,
       const rm::RenderingSettings &settings,
       const renderer_utils::StopCoords &coords);
 
-  void AddStopLabelsLayout(
-      const renderer_utils::Stops &stops,
-      const rm::RenderingSettings &settings,
-      const renderer_utils::StopCoords &coords);
-
-  svg::Document map_;
+  svg::Section map_;
 };
 }
 
