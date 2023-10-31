@@ -171,7 +171,7 @@ TEST(TestMapRenderer, TestInitializing) {
   }
 }
 
-TEST(TestMapRenderer, TestGetMap) {
+TEST(TestMapRenderer, TestRenderMap) {
   using namespace rm;
 
   auto layers_replace_with = [&](std::vector<MapLayer> layers) {
@@ -361,7 +361,7 @@ TEST(TestMapRenderer, TestGetMap) {
   };
 
   for (auto &[name, buses, stops, settings, want] : test_cases) {
-    std::string got = MapRenderer::Create(buses, stops, settings)->GetMap();
+    std::string got = MapRenderer::Create(buses, stops, settings)->RenderMap();
     EXPECT_EQ(want, got) << name;
   }
 }

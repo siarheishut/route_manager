@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "svg/document.h"
 #include "svg/figures.h"
 
 #include "common.h"
@@ -132,40 +133,45 @@ std::unique_ptr<MapRenderer> MapRenderer::Create(
 MapRenderer::MapRenderer(
     const renderer_utils::Buses &buses,
     renderer_utils::Stops stops,
-    const RenderingSettings &settings) {
+    const RenderingSettings &settings)
+    : map_(svg::SectionBuilder{}.Build()) {
   auto stop_to_coords = TransformCoords(buses, stops, settings.frame);
 
+  svg::SectionBuilder builder;
   for (auto layer : settings.layers) {
     switch (layer) {
       case MapLayer::kBusLines:
-        AddBusLinesLayout(buses,
-                          stops,
+        AddBusLinesLayout(builder,
+                          buses,
                           settings,
                           stop_to_coords);
         break;
       case MapLayer::kBusLabels:
-        AddBusLabelsLayout(buses,
-                           stops,
+        AddBusLabelsLayout(builder,
+                           buses,
                            settings,
                            stop_to_coords);
         break;
       case MapLayer::kStopPoints:
-        AddStopPointsLayout(stops,
+        AddStopPointsLayout(builder,
+                            stops,
                             settings,
                             stop_to_coords);
         break;
       case MapLayer::kStopLabels:
-        AddStopLabelsLayout(stops,
+        AddStopLabelsLayout(builder,
+                            stops,
                             settings,
                             stop_to_coords);
         break;
     }
   }
+  map_ = builder.Build();
 }
 
 void MapRenderer::AddBusLinesLayout(
+    svg::SectionBuilder &builder,
     const renderer_utils::Buses &buses,
-    const renderer_utils::Stops &stops,
     const rm::RenderingSettings &settings,
     const renderer_utils::StopCoords &coords) {
   int i = 0;
@@ -185,13 +191,13 @@ void MapRenderer::AddBusLinesLayout(
         bus_route.AddPoint(coords.at(route.route[j]));
       }
     }
-    map_.Add(std::move(bus_route));
+    builder.Add(std::move(bus_route));
   }
 }
 
 void MapRenderer::AddBusLabelsLayout(
+    svg::SectionBuilder &builder,
     const renderer_utils::Buses &buses,
-    const renderer_utils::Stops &stops,
     const rm::RenderingSettings &settings,
     const renderer_utils::StopCoords &coords) {
   int i = 0;
@@ -203,56 +209,60 @@ void MapRenderer::AddBusLabelsLayout(
     auto start_point = coords.at(start);
     auto end_point = coords.at(end);
 
-    map_.Add(BusNameUnderlayer(std::string(bus), start_point, settings));
-    map_.Add(BusNameText(std::string(bus), start_point, color, settings));
+    builder.Add(BusNameUnderlayer(std::string(bus), start_point, settings));
+    builder.Add(BusNameText(std::string(bus), start_point, color, settings));
 
     if (route.is_roundtrip || start == end) continue;
-    map_.Add(BusNameUnderlayer(std::string(bus), end_point, settings));
-    map_.Add(BusNameText(std::string(bus), end_point, color, settings));
+    builder.Add(BusNameUnderlayer(std::string(bus), end_point, settings));
+    builder.Add(BusNameText(std::string(bus), end_point, color, settings));
   }
 }
 
 void MapRenderer::AddStopPointsLayout(
+    svg::SectionBuilder &builder,
     const renderer_utils::Stops &stops,
     const rm::RenderingSettings &settings,
     const renderer_utils::StopCoords &coords) {
   for (auto [stop, _] : stops) {
-    map_.Add(std::move(svg::Circle{}
-                           .SetFillColor("white")
-                           .SetCenter(coords.at(stop))
-                           .SetRadius(settings.stop_radius)));
+    builder.Add(std::move(svg::Circle{}
+                              .SetFillColor("white")
+                              .SetCenter(coords.at(stop))
+                              .SetRadius(settings.stop_radius)));
   }
 }
 
 void MapRenderer::AddStopLabelsLayout(
+    svg::SectionBuilder &builder,
     const renderer_utils::Stops &stops,
     const rm::RenderingSettings &settings,
     const renderer_utils::StopCoords &coords) {
   for (auto [stop, _] : stops) {
-    map_.Add(std::move(svg::Text{}
-                           .SetPoint(coords.at(stop))
-                           .SetOffset(settings.stop_label_offset)
-                           .SetFontSize(settings.stop_label_font_size)
-                           .SetFontFamily("Verdana")
-                           .SetData(std::string(stop))
-                           .SetFillColor(settings.underlayer_color)
-                           .SetStrokeColor(settings.underlayer_color)
-                           .SetStrokeWidth(settings.underlayer_width)
-                           .SetStrokeLineCap("round")
-                           .SetStrokeLineJoin("round")));
-    map_.Add(std::move(svg::Text{}
-                           .SetPoint(coords.at(stop))
-                           .SetOffset(settings.stop_label_offset)
-                           .SetFontSize(settings.stop_label_font_size)
-                           .SetFontFamily("Verdana")
-                           .SetData(std::string(stop))
-                           .SetFillColor("black")));
+    builder.Add(std::move(svg::Text{}
+                              .SetPoint(coords.at(stop))
+                              .SetOffset(settings.stop_label_offset)
+                              .SetFontSize(settings.stop_label_font_size)
+                              .SetFontFamily("Verdana")
+                              .SetData(std::string(stop))
+                              .SetFillColor(settings.underlayer_color)
+                              .SetStrokeColor(settings.underlayer_color)
+                              .SetStrokeWidth(settings.underlayer_width)
+                              .SetStrokeLineCap("round")
+                              .SetStrokeLineJoin("round")));
+    builder.Add(std::move(svg::Text{}
+                              .SetPoint(coords.at(stop))
+                              .SetOffset(settings.stop_label_offset)
+                              .SetFontSize(settings.stop_label_font_size)
+                              .SetFontFamily("Verdana")
+                              .SetData(std::string(stop))
+                              .SetFillColor("black")));
   }
 }
 
-std::string MapRenderer::GetMap() const {
+std::string MapRenderer::RenderMap() const {
+  svg::Document doc;
+  doc.Add(map_);
   std::ostringstream out;
-  map_.Render(out);
+  doc.Render(out);
   return out.str();
 }
 }
