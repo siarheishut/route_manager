@@ -24,6 +24,8 @@ class MapRenderer {
 
   std::string RenderMap() const;
 
+  svg::Section GetSection() const;
+
  private:
   MapRenderer(const renderer_utils::Buses &buses,
               renderer_utils::Stops stops,

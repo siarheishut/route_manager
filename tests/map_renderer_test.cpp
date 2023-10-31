@@ -365,3 +365,36 @@ TEST(TestMapRenderer, TestRenderMap) {
     EXPECT_EQ(want, got) << name;
   }
 }
+
+TEST(TestGetSection, TestGetSection) {
+  rm::renderer_utils::Buses buses = {
+      {"bus 1", {{"Airport", "High Street", "Shop", "Airport"}, true}},
+      {"bus 2", {{"High Street", "Airport", "Shop",
+                  "RW station", "Shop", "Airport",
+                  "High Street"}, true}}};
+  rm::renderer_utils::Stops stops = {kAirport, kShop, kHighStreet, kRWStation};
+  auto settings = kTestRenderingSettings;
+
+  std::ostringstream ss;
+  rm::MapRenderer::Create(buses, stops, settings)->GetSection().Render(ss);
+  auto got = ss.str();
+  auto want = ROUTE("purple")
+              POINT(242.1, 225.7)NEXT_POINT(218.067, 197.85)
+              NEXT_POINT(194.033, 170)NEXT_POINT(242.1, 225.7)
+              ROUTE_END()
+              ROUTE("rgb(15,23,41)")
+              POINT(218.067, 197.85)
+              NEXT_POINT(242.1, 225.7) NEXT_POINT(194.033, 170)
+              NEXT_POINT(170, 225.7) NEXT_POINT(194.033, 170)
+              NEXT_POINT(242.1, 225.7) NEXT_POINT(218.067, 197.85)
+              ROUTE_END()
+              BUS_NAME(bus 1, 242.1, 225.7, "purple")
+              BUS_NAME(bus 2, 218.067, 197.85, "rgb(15,23,41)")
+              STOP(242.1, 225.7) STOP(218.067, 197.85)
+              STOP(170, 225.7) STOP(194.033, 170)
+              STOP_NAME(Airport, 242.1, 225.7)
+              STOP_NAME(High Street, 218.067, 197.85)
+              STOP_NAME(RW station, 170, 225.7)
+              STOP_NAME(Shop, 194.033, 170);
+  EXPECT_EQ(want, got) << "Base request";
+}

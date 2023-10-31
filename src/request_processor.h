@@ -19,7 +19,7 @@ struct MapResponse {
 json::Dict ToJson(std::optional<BusResponse> resp, int id);
 json::Dict ToJson(std::optional<StopResponse> resp, int id);
 json::List ToJson(std::vector<RouteResponse::Item> response_items);
-json::Dict ToJson(std::optional<RouteResponse> resp, int id);
+json::Dict ToJson(std::optional<RouteResponse> resp, std::string map, int id);
 json::Dict ToJson(MapResponse resp, int id);
 
 class Processor {

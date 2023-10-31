@@ -1,10 +1,13 @@
 #include "request_processor.h"
 
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <variant>
 #include <vector>
+
+#include "svg/document.h"
 
 #include "bus_manager.h"
 #include "map_renderer.h"
@@ -62,7 +65,8 @@ json::Dict ToJson(std::optional<StopResponse> response, int id) {
   return result;
 }
 
-json::Dict ToJson(std::optional<RouteResponse> response, int id) {
+json::Dict ToJson(std::optional<RouteResponse> response, std::string map,
+                  int id) {
   json::Dict result;
 
   result.emplace("request_id", id);
@@ -70,6 +74,7 @@ json::Dict ToJson(std::optional<RouteResponse> response, int id) {
     result.emplace("error_message", "not found");
     return result;
   }
+  result.emplace("map", std::move(map));
   result.emplace("total_time", response->time);
 
   json::List items;
@@ -139,7 +144,15 @@ json::Dict Processor::Process(const GetStopRequest &request) const {
 }
 
 json::Dict Processor::Process(const GetRouteRequest &request) const {
-  return ToJson(bus_manager_->GetRoute(request.from, request.to), request.id);
+  auto route_response = bus_manager_->GetRoute(request.from, request.to);
+
+  auto map = map_renderer_->GetSection();
+  svg::Document doc;
+  doc.Add(std::move(map));
+
+  std::ostringstream ss;
+  doc.Render(ss);
+  return ToJson(route_response, ss.str(), request.id);
 }
 
 json::Dict Processor::Process(const GetMapRequest &request) const {

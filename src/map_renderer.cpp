@@ -265,4 +265,8 @@ std::string MapRenderer::RenderMap() const {
   doc.Render(out);
   return out.str();
 }
+
+svg::Section MapRenderer::GetSection() const {
+  return map_;
+}
 }
