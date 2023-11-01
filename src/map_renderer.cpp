@@ -28,33 +28,62 @@ using BaseStops = std::unordered_set<std::string_view>;
 const double kMinLatitude = -90.0, kMaxLatitude = 90.0,
     kMinLongitude = -180.0, kMaxLongitude = 180.0;
 
-svg::Text BusNameUnderlayer(std::string name, svg::Point point,
-                            const rm::RenderingSettings &settings) {
-  return std::move(svg::Text{}
-                       .SetPoint(point)
-                       .SetOffset(settings.bus_label_offset)
-                       .SetFontSize(settings.bus_label_font_size)
-                       .SetFontFamily("Verdana")
-                       .SetFontWeight("bold")
-                       .SetData(std::move(name))
-                       .SetFillColor(settings.underlayer_color)
-                       .SetStrokeColor(settings.underlayer_color)
-                       .SetStrokeWidth(settings.underlayer_width)
-                       .SetStrokeLineCap("round")
-                       .SetStrokeLineJoin("round"));
+svg::Section BusName(std::string bus, svg::Point point,
+                     const svg::Color &color,
+                     const rm::RenderingSettings &settings) {
+  svg::SectionBuilder label;
+  label.Add(std::move(svg::Text{}
+                          .SetPoint(point)
+                          .SetOffset(settings.bus_label_offset)
+                          .SetFontSize(settings.bus_label_font_size)
+                          .SetFontFamily("Verdana")
+                          .SetFontWeight("bold")
+                          .SetData(bus)
+                          .SetFillColor(settings.underlayer_color)
+                          .SetStrokeColor(settings.underlayer_color)
+                          .SetStrokeWidth(settings.underlayer_width)
+                          .SetStrokeLineCap("round")
+                          .SetStrokeLineJoin("round")));
+  label.Add(std::move(svg::Text{}
+                          .SetPoint(point)
+                          .SetOffset(settings.bus_label_offset)
+                          .SetFontSize(settings.bus_label_font_size)
+                          .SetFontFamily("Verdana")
+                          .SetFontWeight("bold")
+                          .SetData(std::move(bus))
+                          .SetFillColor(color)));
+  return label.Build();
 }
 
-svg::Text BusNameText(std::string name, svg::Point point,
-                      const svg::Color &color,
+svg::Section StopName(std::string stop, svg::Point point,
                       const rm::RenderingSettings &settings) {
-  return std::move(svg::Text{}
-                       .SetPoint(point)
-                       .SetOffset(settings.bus_label_offset)
-                       .SetFontSize(settings.bus_label_font_size)
-                       .SetFontFamily("Verdana")
-                       .SetFontWeight("bold")
-                       .SetData(std::move(name))
-                       .SetFillColor(color));
+  svg::SectionBuilder label;
+  label.Add(std::move(svg::Text{}
+                          .SetPoint(point)
+                          .SetOffset(settings.stop_label_offset)
+                          .SetFontSize(settings.stop_label_font_size)
+                          .SetFontFamily("Verdana")
+                          .SetData(stop)
+                          .SetFillColor(settings.underlayer_color)
+                          .SetStrokeColor(settings.underlayer_color)
+                          .SetStrokeWidth(settings.underlayer_width)
+                          .SetStrokeLineCap("round")
+                          .SetStrokeLineJoin("round")));
+  label.Add(std::move(svg::Text{}
+                          .SetPoint(point)
+                          .SetOffset(settings.stop_label_offset)
+                          .SetFontSize(settings.stop_label_font_size)
+                          .SetFontFamily("Verdana")
+                          .SetData(std::move(stop))
+                          .SetFillColor("black")));
+  return label.Build();
+}
+
+svg::Circle StopPoint(svg::Point center, double radius) {
+  return svg::Circle{}
+      .SetFillColor("white")
+      .SetCenter(center)
+      .SetRadius(radius);
 }
 
 std::unordered_map<std::string_view, svg::Point>
@@ -209,12 +238,10 @@ void MapRenderer::AddBusLabelsLayout(
     auto start_point = coords.at(start);
     auto end_point = coords.at(end);
 
-    builder.Add(BusNameUnderlayer(std::string(bus), start_point, settings));
-    builder.Add(BusNameText(std::string(bus), start_point, color, settings));
-
-    if (route.is_roundtrip || start == end) continue;
-    builder.Add(BusNameUnderlayer(std::string(bus), end_point, settings));
-    builder.Add(BusNameText(std::string(bus), end_point, color, settings));
+    builder.Add(BusName(std::string(bus), start_point, color, settings));
+    if (!route.is_roundtrip && start != end) {
+      builder.Add(BusName(std::string(bus), end_point, color, settings));
+    }
   }
 }
 
@@ -224,10 +251,7 @@ void MapRenderer::AddStopPointsLayout(
     const rm::RenderingSettings &settings,
     const renderer_utils::StopCoords &coords) {
   for (auto [stop, _] : stops) {
-    builder.Add(std::move(svg::Circle{}
-                              .SetFillColor("white")
-                              .SetCenter(coords.at(stop))
-                              .SetRadius(settings.stop_radius)));
+    builder.Add(StopPoint(coords.at(stop), settings.stop_radius));
   }
 }
 
@@ -237,24 +261,7 @@ void MapRenderer::AddStopLabelsLayout(
     const rm::RenderingSettings &settings,
     const renderer_utils::StopCoords &coords) {
   for (auto [stop, _] : stops) {
-    builder.Add(std::move(svg::Text{}
-                              .SetPoint(coords.at(stop))
-                              .SetOffset(settings.stop_label_offset)
-                              .SetFontSize(settings.stop_label_font_size)
-                              .SetFontFamily("Verdana")
-                              .SetData(std::string(stop))
-                              .SetFillColor(settings.underlayer_color)
-                              .SetStrokeColor(settings.underlayer_color)
-                              .SetStrokeWidth(settings.underlayer_width)
-                              .SetStrokeLineCap("round")
-                              .SetStrokeLineJoin("round")));
-    builder.Add(std::move(svg::Text{}
-                              .SetPoint(coords.at(stop))
-                              .SetOffset(settings.stop_label_offset)
-                              .SetFontSize(settings.stop_label_font_size)
-                              .SetFontFamily("Verdana")
-                              .SetData(std::string(stop))
-                              .SetFillColor("black")));
+    builder.Add(StopName(std::string(stop), coords.at(stop), settings));
   }
 }
 
