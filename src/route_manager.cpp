@@ -49,6 +49,7 @@ void RouteManager::ReadBuses(const rm::BusDict &bus_dict,
         distance += ComputeRoadDistance({route[to - 1], route[to]}, stop_dict);
         edges_.emplace_back(RoadEdge{
             .bus = bus,
+            .start_idx = from,
             .span_count = to - from});
         const auto arrive = stop_ids_[route[to]].arrive;
         graph_.AddEdge(
@@ -85,6 +86,7 @@ std::optional<RouteInfo> RouteManager::FindRoute(const std::string &from,
       route_info.items.emplace_back(RouteInfo::RoadItem{
           .bus = ptr_r->bus,
           .time = edge.weight,
+          .start_idx = ptr_r->start_idx,
           .span_count = ptr_r->span_count});
     } else if (std::holds_alternative<WaitEdge>(edges_[edge_id])) {
       route_info.items.emplace_back(RouteInfo::WaitItem{
