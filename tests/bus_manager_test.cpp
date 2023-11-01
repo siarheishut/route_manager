@@ -582,15 +582,18 @@ TEST(TestBusManager, TestFindRouteInfo) {
                   .time = 11.235,
                   .items = {
                       WaitItem{.stop = "stop1", .time = 6},
-                      RoadItem{.bus = "Bus1", .time = 5.235, .span_count = 2}},
+                      RoadItem{.bus = "Bus1", .time = 5.235, .start_idx = 0,
+                          .span_count = 2}},
               },
               RouteResponse{
                   .time = 24.21,
                   .items = {
                       WaitItem{.stop = "stop1", .time = 6},
-                      RoadItem{.bus = "Bus1", .time = 5.235, .span_count = 2},
+                      RoadItem{.bus = "Bus1", .time = 5.235, .start_idx = 0,
+                          .span_count = 2},
                       WaitItem{.stop = "stop3", .time = 6},
-                      RoadItem{.bus = "Bus2", .time = 6.975, .span_count = 1},
+                      RoadItem{.bus = "Bus2", .time = 6.975, .start_idx = 1,
+                          .span_count = 1},
                   },
               },
           },

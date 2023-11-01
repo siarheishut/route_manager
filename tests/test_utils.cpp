@@ -97,7 +97,8 @@ bool operator==(const RouteResponse::WaitItem &lhs,
 bool operator==(const RouteResponse::RoadItem &lhs,
                 const RouteResponse::RoadItem &rhs) {
   if (!CompareLength(lhs.time, rhs.time, 9)) return false;
-  return tie(lhs.bus, lhs.span_count) == tie(rhs.bus, rhs.span_count);
+  return tie(lhs.bus, lhs.start_idx, lhs.span_count) ==
+      tie(rhs.bus, rhs.start_idx, rhs.span_count);
 }
 
 bool operator==(const RouteResponse &lhs, const RouteResponse &rhs) {
@@ -217,7 +218,8 @@ ostream &operator<<(ostream &out, const RenderingSettings &settings) {
 }
 
 ostream &operator<<(ostream &out, const RouteResponse::RoadItem &ri) {
-  return out << ri.bus << '-' << ri.time << '-' << ri.span_count;
+  return out << "Bus " << ri.bus << "; time: " << ri.time << "; start_idx: " <<
+             ri.start_idx << "; span_count: " << ri.span_count;
 }
 
 ostream &operator<<(ostream &out, const RouteResponse::WaitItem &wi) {
