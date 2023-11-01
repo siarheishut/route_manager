@@ -1,6 +1,7 @@
 #include "src/map_renderer.h"
 
 #include <map>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -44,6 +45,10 @@
  "<text fill=\"black\" stroke=\"none\" stroke-width=\"1\" "                    \
  "x=\""#x"\" y=\"" #y "\" dx=\"-5\" dy=\"2\" font-size=\"10\" font-family=\""  \
  "Verdana\">" #stop "</text>"
+
+#define UNDERLAY                                                               \
+"<rect x=\"-0\" y=\"-0\" width=\"412.1\" height=\"395.7\" "                    \
+"fill=\"rgba(1,100,20,0.1)\" stroke=\"none\" stroke-width=\"1\" />"
 
 #define PREFIX "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"                   \
                "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"
@@ -363,6 +368,271 @@ TEST(TestMapRenderer, TestRenderMap) {
 
   for (auto &[name, buses, stops, settings, want] : test_cases) {
     std::string got = MapRenderer::Create(buses, stops, settings)->RenderMap();
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
+TEST(TestMapRenderer, TestRenderRoute) {
+  using namespace rm;
+
+  const rm::renderer_utils::Buses kBuses = {
+      {"Bus 1", {
+          .route = {"a", "b", "c", "d", "a"},
+          .endpoints = {"a"}
+      }},
+      {"Bus 2", {
+          .route = {"a", "c", "d", "c", "a"},
+          .endpoints = {"a", "d"}
+      }},
+      {"Bus 3", {
+          .route = {"d", "e", "a", "b", "d"},
+          .endpoints = {"d"}
+      }}};
+
+  const rm::renderer_utils::Stops kStops = {
+      {"a", {1, 1}}, {"b", {2, 2}}, {"c", {3, 3}}, {"d", {4, 4}},
+      {"e", {5, 5}}};
+
+  struct TestCase {
+    std::string name;
+    RenderingSettings settings = kTestRenderingSettings;
+    RouteInfo route_info;
+    std::optional<std::string> want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Bus not found",
+          .route_info = {.items = {
+              RouteInfo::WaitItem{},
+              RouteInfo::RoadItem{.bus = "Bus 4", .start_idx = 1,
+                  .span_count = 2}}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "start_idx < 0",
+          .route_info = {.items = {
+              RouteInfo::WaitItem{},
+              RouteInfo::RoadItem{.bus = "Bus 2", .start_idx = -1,
+                  .span_count = 2}}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "span_count <= 0",
+          .route_info = {.items = {
+              RouteInfo::RoadItem{.bus = "Bus 2", .start_idx = 1,
+                  .span_count = 0}}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "start_idx > route size",
+          .route_info = {.items = {
+              RouteInfo::RoadItem{.bus = "Bus 2", .start_idx = 5,
+                  .span_count = 2}}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "span_count > route size",
+          .route_info = {.items = {
+              RouteInfo::RoadItem{.bus = "Bus 2", .start_idx = 1,
+                  .span_count = 5}}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "start_idx + span_count > route size",
+          .route_info = {.items = {
+              RouteInfo::RoadItem{.bus = "Bus 2", .start_idx = 3,
+                  .span_count = 2}}},
+          .want = std::nullopt
+      },
+      TestCase{
+          .name = "Common request",
+          .route_info = {.items = {
+              RouteInfo::WaitItem{},
+              RouteInfo::RoadItem{.bus = "Bus 1", .start_idx = 1,
+                  .span_count = 1},
+              RouteInfo::WaitItem{},
+              RouteInfo::RoadItem{.bus = "Bus 2", .start_idx = 1,
+                  .span_count = 1},
+              RouteInfo::WaitItem{},
+              RouteInfo::RoadItem{.bus = "Bus 3", .start_idx = 0,
+                  .span_count = 3},
+          }},
+          .want = SVG_DOC(
+                      ROUTE("purple") POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(218.067, 188.567)
+                      NEXT_POINT(242.1, 170) NEXT_POINT(170, 225.7)
+                      ROUTE_END()
+                      ROUTE("rgb(15,23,41)") POINT(170, 225.7)
+                      NEXT_POINT(218.067, 188.567) NEXT_POINT(242.1, 170)
+                      NEXT_POINT(218.067, 188.567) NEXT_POINT(170, 225.7)
+                      ROUTE_END()
+                      ROUTE("rgba(210,81,14,0.94)") POINT(242.1, 170)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(242.1, 170)
+                      ROUTE_END()
+                      BUS_NAME(Bus 1, 170, 225.7, "purple")
+                      BUS_NAME(Bus 2, 170, 225.7, "rgb(15,23,41)")
+                      BUS_NAME(Bus 2, 242.1, 170, "rgb(15,23,41)")
+                      BUS_NAME(Bus 3, 242.1, 170, "rgba(210,81,14,0.94)")
+                      STOP(170, 225.7) STOP(194.033, 207.133)
+                      STOP(218.067, 188.567) STOP(242.1, 170)
+                      STOP(194.033, 207.133)
+                      STOP_NAME(a, 170, 225.7) STOP_NAME(b, 194.033, 207.133)
+                      STOP_NAME(c, 218.067, 188.567) STOP_NAME(d, 242.1, 170)
+                      STOP_NAME(e, 194.033, 207.133)
+                      UNDERLAY
+                      ROUTE("purple") POINT(194.033, 207.133)
+                      NEXT_POINT(218.067, 188.567) ROUTE_END()
+                      ROUTE("rgb(15,23,41)") POINT(218.067, 188.567)
+                      NEXT_POINT(242.1, 170) ROUTE_END()
+                      ROUTE("rgba(210,81,14,0.94)") POINT(242.1, 170)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) ROUTE_END()
+                      BUS_NAME(Bus 2, 242.1, 170, "rgb(15,23,41)")
+                      BUS_NAME(Bus 3, 242.1, 170, "rgba(210,81,14,0.94)")
+                      STOP(194.033, 207.133) STOP(218.067, 188.567)
+                      STOP(218.067, 188.567) STOP(242.1, 170) STOP(242.1, 170)
+                      STOP(194.033, 207.133) STOP(170, 225.7)
+                      STOP(194.033, 207.133)
+                      STOP_NAME(b, 194.033, 207.133)
+                      STOP_NAME(c, 218.067, 188.567)
+                      STOP_NAME(d, 242.1, 170)
+                      STOP_NAME(b, 194.033, 207.133))
+      },
+      TestCase{
+          .name = "Different layers",
+          .settings = [&]() {
+            auto settings = kTestRenderingSettings;
+            settings.layers = {MapLayer::kBusLines, MapLayer::kBusLines,
+                               MapLayer::kStopLabels, MapLayer::kBusLabels,
+                               MapLayer::kStopLabels};
+            return settings;
+          }(),
+          .route_info = {.items = {
+              RouteInfo::WaitItem{},
+              RouteInfo::RoadItem{.bus = "Bus 1", .start_idx = 1,
+                  .span_count = 1},
+              RouteInfo::WaitItem{},
+              RouteInfo::RoadItem{.bus = "Bus 2", .start_idx = 1,
+                  .span_count = 1},
+              RouteInfo::WaitItem{},
+              RouteInfo::RoadItem{.bus = "Bus 3", .start_idx = 0,
+                  .span_count = 3},
+          }},
+          .want = SVG_DOC(
+                      ROUTE("purple") POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(218.067, 188.567)
+                      NEXT_POINT(242.1, 170) NEXT_POINT(170, 225.7)
+                      ROUTE_END()
+                      ROUTE("rgb(15,23,41)") POINT(170, 225.7)
+                      NEXT_POINT(218.067, 188.567) NEXT_POINT(242.1, 170)
+                      NEXT_POINT(218.067, 188.567) NEXT_POINT(170, 225.7)
+                      ROUTE_END()
+                      ROUTE("rgba(210,81,14,0.94)") POINT(242.1, 170)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(242.1, 170)
+                      ROUTE_END()
+                      ROUTE("purple") POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(218.067, 188.567)
+                      NEXT_POINT(242.1, 170) NEXT_POINT(170, 225.7)
+                      ROUTE_END()
+                      ROUTE("rgb(15,23,41)") POINT(170, 225.7)
+                      NEXT_POINT(218.067, 188.567) NEXT_POINT(242.1, 170)
+                      NEXT_POINT(218.067, 188.567) NEXT_POINT(170, 225.7)
+                      ROUTE_END()
+                      ROUTE("rgba(210,81,14,0.94)") POINT(242.1, 170)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(242.1, 170)
+                      ROUTE_END()
+                      STOP_NAME(a, 170, 225.7) STOP_NAME(b, 194.033, 207.133)
+                      STOP_NAME(c, 218.067, 188.567) STOP_NAME(d, 242.1, 170)
+                      STOP_NAME(e, 194.033, 207.133)
+                      BUS_NAME(Bus 1, 170, 225.7, "purple")
+                      BUS_NAME(Bus 2, 170, 225.7, "rgb(15,23,41)")
+                      BUS_NAME(Bus 2, 242.1, 170, "rgb(15,23,41)")
+                      BUS_NAME(Bus 3, 242.1, 170, "rgba(210,81,14,0.94)")
+                      STOP_NAME(a, 170, 225.7) STOP_NAME(b, 194.033, 207.133)
+                      STOP_NAME(c, 218.067, 188.567) STOP_NAME(d, 242.1, 170)
+                      STOP_NAME(e, 194.033, 207.133)
+                      UNDERLAY
+                      ROUTE("purple") POINT(194.033, 207.133)
+                      NEXT_POINT(218.067, 188.567) ROUTE_END()
+                      ROUTE("rgb(15,23,41)") POINT(218.067, 188.567)
+                      NEXT_POINT(242.1, 170) ROUTE_END()
+                      ROUTE("rgba(210,81,14,0.94)") POINT(242.1, 170)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) ROUTE_END()
+                      ROUTE("purple") POINT(194.033, 207.133)
+                      NEXT_POINT(218.067, 188.567) ROUTE_END()
+                      ROUTE("rgb(15,23,41)") POINT(218.067, 188.567)
+                      NEXT_POINT(242.1, 170) ROUTE_END()
+                      ROUTE("rgba(210,81,14,0.94)") POINT(242.1, 170)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) ROUTE_END()
+                      STOP_NAME(b, 194.033, 207.133)
+                      STOP_NAME(c, 218.067, 188.567)
+                      STOP_NAME(d, 242.1, 170)
+                      STOP_NAME(b, 194.033, 207.133)
+                      BUS_NAME(Bus 2, 242.1, 170, "rgb(15,23,41)")
+                      BUS_NAME(Bus 3, 242.1, 170, "rgba(210,81,14,0.94)")
+                      STOP_NAME(b, 194.033, 207.133)
+                      STOP_NAME(c, 218.067, 188.567)
+                      STOP_NAME(d, 242.1, 170)
+                      STOP_NAME(b, 194.033, 207.133))
+      },
+      TestCase{
+          .name = "WaitItem",
+          .route_info = {.items = {
+              RouteInfo::WaitItem{},
+              RouteInfo::WaitItem{},
+              RouteInfo::WaitItem{},
+              RouteInfo::WaitItem{},
+          }},
+          .want = SVG_DOC(
+                      ROUTE("purple") POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(218.067, 188.567)
+                      NEXT_POINT(242.1, 170) NEXT_POINT(170, 225.7)
+                      ROUTE_END()
+                      ROUTE("rgb(15,23,41)") POINT(170, 225.7)
+                      NEXT_POINT(218.067, 188.567) NEXT_POINT(242.1, 170)
+                      NEXT_POINT(218.067, 188.567) NEXT_POINT(170, 225.7)
+                      ROUTE_END()
+                      ROUTE("rgba(210,81,14,0.94)") POINT(242.1, 170)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(242.1, 170)
+                      ROUTE_END()
+                      ROUTE("purple") POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(218.067, 188.567)
+                      NEXT_POINT(242.1, 170) NEXT_POINT(170, 225.7)
+                      ROUTE_END()
+                      ROUTE("rgb(15,23,41)") POINT(170, 225.7)
+                      NEXT_POINT(218.067, 188.567) NEXT_POINT(242.1, 170)
+                      NEXT_POINT(218.067, 188.567) NEXT_POINT(170, 225.7)
+                      ROUTE_END()
+                      ROUTE("rgba(210,81,14,0.94)") POINT(242.1, 170)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(170, 225.7)
+                      NEXT_POINT(194.033, 207.133) NEXT_POINT(242.1, 170)
+                      ROUTE_END()
+                      STOP_NAME(a, 170, 225.7) STOP_NAME(b, 194.033, 207.133)
+                      STOP_NAME(c, 218.067, 188.567) STOP_NAME(d, 242.1, 170)
+                      STOP_NAME(e, 194.033, 207.133)
+                      BUS_NAME(Bus 1, 170, 225.7, "purple")
+                      BUS_NAME(Bus 2, 170, 225.7, "rgb(15,23,41)")
+                      BUS_NAME(Bus 2, 242.1, 170, "rgb(15,23,41)")
+                      BUS_NAME(Bus 3, 242.1, 170, "rgba(210,81,14,0.94)")
+                      STOP_NAME(a, 170, 225.7) STOP_NAME(b, 194.033, 207.133)
+                      STOP_NAME(c, 218.067, 188.567) STOP_NAME(d, 242.1, 170)
+                      STOP_NAME(e, 194.033, 207.133)
+                      UNDERLAY)
+      },
+  };
+
+  for (auto &[name, settings, route_info, want] : test_cases) {
+    auto map_renderer = rm::MapRenderer::Create(kBuses, kStops, settings);
+    EXPECT_TRUE(map_renderer != nullptr) << name << ": factory method failed";
+    if (!map_renderer) continue;
+    auto got = map_renderer->RenderRoute(route_info);
     EXPECT_EQ(want, got) << name;
   }
 }

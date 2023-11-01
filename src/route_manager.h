@@ -38,6 +38,7 @@ class RouteManager {
 
   struct RoadEdge {
     std::string bus;
+    int start_idx;
     int span_count;
   };
   struct WaitEdge {};

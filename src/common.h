@@ -35,6 +35,7 @@ struct RouteInfo {
   struct RoadItem {
     std::string bus;
     double time;
+    int start_idx;
     int span_count;
   };
   struct WaitItem {
