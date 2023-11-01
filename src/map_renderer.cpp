@@ -1,14 +1,18 @@
 #include "map_renderer.h"
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <unordered_set>
+#include <variant>
 #include <vector>
 
+#include "svg/common.h"
 #include "svg/document.h"
 #include "svg/figures.h"
 
@@ -99,21 +103,20 @@ svg::Circle StopPoint(svg::Point center, double radius) {
       .SetRadius(radius);
 }
 
-std::unordered_map<std::string_view, svg::Point>
-CombineCoords(
+std::unordered_map<std::string, svg::Point> CombineCoords(
     const std::vector<std::pair<std::string_view, double>> &x_coords,
     const std::vector<std::pair<std::string_view, double>> &y_coords) {
-  std::unordered_map<std::string_view, svg::Point> result;
+  std::unordered_map<std::string, svg::Point> result;
   for (auto &[stop, x_coord] : x_coords) {
-    result[stop].x = x_coord;
+    result[std::string(stop)].x = x_coord;
   }
   for (auto &[stop, y_coord] : y_coords) {
-    result[stop].y = y_coord;
+    result[std::string(stop)].y = y_coord;
   }
   return result;
 }
 
-std::unordered_map<std::string_view, svg::Point> TransformCoords(
+std::unordered_map<std::string, svg::Point> TransformCoords(
     const rm::renderer_utils::Buses &buses,
     rm::renderer_utils::Stops &stops,
     const rm::Frame &frame) {
@@ -141,6 +144,18 @@ std::unordered_map<std::string_view, svg::Point> TransformCoords(
                               frame.height - frame.padding, frame.padding);
 
   return CombineCoords(x_coords, y_coords);
+}
+
+template<typename Func>
+void ForEachRoadItem(const std::vector<rm::RouteInfo::Item> &items, Func func) {
+  bool first = true;
+  for (auto &item : items) {
+    if (std::holds_alternative<rm::RouteInfo::WaitItem>(item))
+      continue;
+
+    func(std::get<rm::RouteInfo::RoadItem>(item), first);
+    first = false;
+  }
 }
 }
 
@@ -182,9 +197,9 @@ MapRenderer::MapRenderer(
     renderer_utils::Stops stops,
     const RenderingSettings &settings)
     : map_(svg::SectionBuilder{}.Build()),
-      buses_(ConstructBuses(buses, settings)) {
-  auto stop_to_coords = TransformCoords(buses, stops, settings.frame);
-
+      buses_(ConstructBuses(buses, settings)),
+      stop_coords_(TransformCoords(buses, stops, settings.frame)),
+      settings_(settings) {
   svg::SectionBuilder builder;
   for (auto layer : settings.layers) {
     switch (layer) {
@@ -192,25 +207,25 @@ MapRenderer::MapRenderer(
         AddBusLinesLayout(builder,
                           buses_,
                           settings,
-                          stop_to_coords);
+                          stop_coords_);
         break;
       case MapLayer::kBusLabels:
         AddBusLabelsLayout(builder,
                            buses_,
                            settings,
-                           stop_to_coords);
+                           stop_coords_);
         break;
       case MapLayer::kStopPoints:
         AddStopPointsLayout(builder,
                             stops,
                             settings,
-                            stop_to_coords);
+                            stop_coords_);
         break;
       case MapLayer::kStopLabels:
         AddStopLabelsLayout(builder,
                             stops,
                             settings,
-                            stop_to_coords);
+                            stop_coords_);
         break;
     }
   }
@@ -257,7 +272,7 @@ MapRenderer::SortBusNames(const MapRenderer::Buses &buses) {
 
 std::vector<svg::Point> MapRenderer::Points(
     const std::vector<std::string> &route,
-    const renderer_utils::StopCoords &coords) {
+    const StopCoords &coords) {
   std::vector<svg::Point> points;
   points.reserve(route.size());
   for (auto &stop : route) {
@@ -266,11 +281,30 @@ std::vector<svg::Point> MapRenderer::Points(
   return points;
 }
 
+bool MapRenderer::ValidateRoute(const RouteInfo &route_info) const {
+  for (auto &item : route_info.items) {
+    if (std::holds_alternative<rm::RouteInfo::WaitItem>(item))
+      continue;
+    auto &route = std::get<rm::RouteInfo::RoadItem>(item);
+    if (buses_.find(route.bus) == buses_.end())
+      return false;
+    auto start = route.start_idx;
+    auto span_count = route.span_count;
+    if (start < 0 ||
+        span_count <= 0 ||
+        start >= buses_.at(route.bus).route.size() ||
+        span_count >= buses_.at(route.bus).route.size() ||
+        start + span_count >= buses_.at(route.bus).route.size())
+      return false;
+  }
+  return true;
+}
+
 void MapRenderer::AddBusLinesLayout(
     svg::SectionBuilder &builder,
     const MapRenderer::Buses &buses,
     const rm::RenderingSettings &settings,
-    const renderer_utils::StopCoords &coords) {
+    const StopCoords &coords) {
   for (auto &bus : SortBusNames(buses)) {
     auto &bus_info = buses.at(bus);
     builder.Add(BusLine(Points(bus_info.route, coords),
@@ -282,7 +316,7 @@ void MapRenderer::AddBusLabelsLayout(
     svg::SectionBuilder &builder,
     const Buses &buses,
     const rm::RenderingSettings &settings,
-    const renderer_utils::StopCoords &coords) {
+    const StopCoords &coords) {
   for (auto &bus : SortBusNames(buses)) {
     auto &bus_info = buses.at(bus);
     for (auto &endpoint : bus_info.endpoints) {
@@ -295,9 +329,9 @@ void MapRenderer::AddStopPointsLayout(
     svg::SectionBuilder &builder,
     const renderer_utils::Stops &stops,
     const rm::RenderingSettings &settings,
-    const renderer_utils::StopCoords &coords) {
+    const StopCoords &coords) {
   for (auto [stop, _] : stops) {
-    builder.Add(StopPoint(coords.at(stop), settings.stop_radius));
+    builder.Add(StopPoint(coords.at(std::string(stop)), settings.stop_radius));
   }
 }
 
@@ -305,10 +339,61 @@ void MapRenderer::AddStopLabelsLayout(
     svg::SectionBuilder &builder,
     const renderer_utils::Stops &stops,
     const rm::RenderingSettings &settings,
-    const renderer_utils::StopCoords &coords) {
+    const StopCoords &coords) {
   for (auto [stop, _] : stops) {
-    builder.Add(StopName(std::string(stop), coords.at(stop), settings));
+    builder.Add(StopName(std::string(stop),
+                         coords.at(std::string(stop)),
+                         settings));
   }
+}
+
+svg::Section MapRenderer::BusLinesFor(const RouteInfo::RoadItem &item) const {
+  auto &bus_info = buses_.at(item.bus);
+  return svg::SectionBuilder{}.Add(BusLine(
+          Points({begin(bus_info.route) + item.start_idx,
+                  begin(bus_info.route) + item.start_idx + item.span_count + 1},
+                 stop_coords_), bus_info.color, settings_.line_width))
+      .Build();
+}
+
+svg::Section MapRenderer::BusLabelsFor(const RouteInfo::RoadItem &item) const {
+  svg::SectionBuilder bus_names;
+
+  auto &bus_info = buses_.at(item.bus);
+  auto &endpoints = bus_info.endpoints;
+
+  auto &start_stop = bus_info.route[item.start_idx];
+  auto &end_stop = bus_info.route[item.start_idx + item.span_count];
+  for (auto &stop : {start_stop, end_stop}) {
+    if (std::find(begin(endpoints), end(endpoints), stop) != end(endpoints)) {
+      bus_names.Add(BusName(item.bus, stop_coords_.at(stop),
+                            bus_info.color, settings_));
+    }
+  }
+  return bus_names.Build();
+}
+
+svg::Section MapRenderer::StopPointsFor(const RouteInfo::RoadItem &item) const {
+  svg::SectionBuilder stop_points;
+  auto &bus_info = buses_.at(item.bus);
+  for (int i = item.start_idx; i <= item.start_idx + item.span_count; ++i) {
+    stop_points.Add(StopPoint(stop_coords_.at(bus_info.route[i]),
+                              settings_.stop_radius));
+  }
+  return stop_points.Build();
+}
+
+svg::Section MapRenderer::StopLabelsFor(
+    const RouteInfo::RoadItem &item, bool first) const {
+  auto &bus_info = buses_.at(item.bus);
+  svg::SectionBuilder stop_labels;
+  if (first) {
+    auto &deport = bus_info.route[item.start_idx];
+    stop_labels.Add(StopName(deport, stop_coords_.at(deport), settings_));
+  }
+  auto &arrival = bus_info.route[item.start_idx + item.span_count];
+  stop_labels.Add(StopName(arrival, stop_coords_.at(arrival), settings_));
+  return stop_labels.Build();
 }
 
 std::string MapRenderer::RenderMap() const {
@@ -317,5 +402,50 @@ std::string MapRenderer::RenderMap() const {
   std::ostringstream out;
   doc.Render(out);
   return out.str();
+}
+
+std::optional<std::string> MapRenderer::RenderRoute(
+    const RouteInfo &route_info) const {
+  if (!ValidateRoute(route_info))
+    return std::nullopt;
+
+  svg::Document doc;
+  doc.Add(map_);
+
+  doc.Add(std::move(
+      svg::Rectangle{}
+          .SetPoint({-settings_.outer_margin, -settings_.outer_margin})
+          .SetWidth(settings_.frame.width + 2 * settings_.outer_margin)
+          .SetHeight(settings_.frame.height + 2 * settings_.outer_margin)
+          .SetFillColor(settings_.underlayer_color)));
+
+  for (auto layer : settings_.layers) {
+    switch (layer) {
+      case MapLayer::kBusLines:
+        ForEachRoadItem(route_info.items, [&](auto &item, bool) {
+          doc.Add(BusLinesFor(item));
+        });
+        break;
+      case MapLayer::kBusLabels:
+        ForEachRoadItem(route_info.items, [&](auto &item, bool) {
+          doc.Add(BusLabelsFor(item));
+        });
+        break;
+      case MapLayer::kStopPoints:
+        ForEachRoadItem(route_info.items, [&](auto &item, bool) {
+          doc.Add(StopPointsFor(item));
+        });
+        break;
+      case MapLayer::kStopLabels:
+        ForEachRoadItem(route_info.items, [&](auto &item, bool first) {
+          doc.Add(StopLabelsFor(item, first));
+        });
+        break;
+    }
+  }
+
+  std::ostringstream ss;
+  doc.Render(ss);
+  return ss.str();
 }
 }

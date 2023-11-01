@@ -14,7 +14,6 @@
 namespace rm::renderer_utils {
 using Buses = std::map<std::string_view, rm::Route>;
 using Stops = std::map<std::string_view, rm::sphere::Coords>;
-using StopCoords = std::unordered_map<std::string_view, svg::Point>;
 }
 
 #endif // ROOT_MANAGER_SRC_MAP_RENDERER_UTILS_H_
