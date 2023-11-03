@@ -57,7 +57,7 @@ BusManager::BusManager(std::vector<PostRequest> requests,
   for (auto &request : requests) {
     if (std::holds_alternative<PostBusRequest>(request)) {
       auto &bus = std::get<PostBusRequest>(request);
-      AddBus(std::move(bus.bus), std::move(bus.stops), bus.is_roundtrip);
+      AddBus(std::move(bus.bus), std::move(bus.stops));
     } else if (std::holds_alternative<PostStopRequest>(request)) {
       auto &stop = std::get<PostStopRequest>(request);
       AddStop(stop.stop,
@@ -67,10 +67,8 @@ BusManager::BusManager(std::vector<PostRequest> requests,
   }
 
   for (auto &[bus, bus_info] : bus_info_) {
-    double geo_dist = ComputeGeoDistance(bus_info.stops, stop_info_,
-                                         !bus_info.is_roundtrip);
-    bus_info.distance = ComputeRoadDistance(bus_info.stops, stop_info_,
-                                            !bus_info.is_roundtrip);
+    double geo_dist = ComputeGeoDistance(bus_info.stops, stop_info_);
+    bus_info.distance = ComputeRoadDistance(bus_info.stops, stop_info_);
     bus_info.unique_stop_count = ComputeUniqueCount(bus_info.stops);
     bus_info.curvature = bus_info.distance / geo_dist;
   }
@@ -98,15 +96,12 @@ void BusManager::AddStop(const std::string &stop, sphere::Coords coords,
   }
 }
 
-void BusManager::AddBus(std::string bus,
-                        std::vector<std::string> stops,
-                        bool is_roundtrip) {
+void BusManager::AddBus(std::string bus, std::vector<std::string> stops) {
   for (auto &stop : stops)
     stop_info_[stop].buses.push_back(bus);
 
   BusInfo bus_info;
   bus_info.stops = std::move(stops);
-  bus_info.is_roundtrip = is_roundtrip;
   bus_info_[std::move(bus)] = bus_info;
 }
 
@@ -116,12 +111,10 @@ std::optional<BusResponse> BusManager::GetBusInfo(const std::string &bus) const 
 
   auto &b = it->second;
   return BusResponse{
-      .stop_count = static_cast<int>(b.is_roundtrip ? b.stops.size() :
-                                     (2 * b.stops.size() - 1)),
+      .stop_count = static_cast<int>(b.stops.size()),
       .unique_stop_count = b.unique_stop_count,
       .length = b.distance,
       .curvature = b.curvature,
-      .is_roundtrip = b.is_roundtrip,
   };
 }
 

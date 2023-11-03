@@ -4,12 +4,13 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <unordered_set>
+#include <vector>
 #include <variant>
 #include <vector>
 
 #include "svg/common.h"
 
-#include "map_renderer_utils.h"
 #include "sphere.h"
 
 namespace rm {
@@ -67,7 +68,7 @@ struct GetMapRequest {
 struct PostBusRequest {
   std::string bus;
   std::vector<std::string> stops;
-  bool is_roundtrip;
+  std::unordered_set<std::string> endpoints;
 };
 
 struct PostStopRequest {

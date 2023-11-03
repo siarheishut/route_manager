@@ -2,13 +2,20 @@
 #define ROOT_MANAGER_SRC_COMMON_H_
 
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "request_types.h"
 
 namespace rm {
+struct Route {
+  std::vector<std::string_view> route;
+  std::unordered_set<std::string_view> endpoints;
+};
+
 struct StopInfo {
   using Dists = std::unordered_map<std::string, int>;
   // Distances to other stops.
@@ -22,7 +29,6 @@ struct BusInfo {
   int unique_stop_count;
   double distance;
   double curvature;
-  bool is_roundtrip;
 };
 
 struct RouteInfo {

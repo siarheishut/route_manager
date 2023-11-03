@@ -9,18 +9,6 @@
 #include "distance_computer.h"
 #include "request_types.h"
 
-namespace {
-std::vector<std::string> Route(const rm::BusInfo &bus_info) {
-  auto route = bus_info.stops;
-  if (!bus_info.is_roundtrip) {
-    for (int i = static_cast<int>(route.size()) - 2; i >= 0; --i) {
-      route.push_back(route[i]);
-    }
-  }
-  return route;
-}
-}
-
 namespace rm {
 RouteManager::RouteManager(const rm::StopDict &stop_info,
                            const rm::BusDict &bus_info,
@@ -52,14 +40,13 @@ void RouteManager::ReadStops(const rm::StopDict &stop_dict) {
 void RouteManager::ReadBuses(const rm::BusDict &bus_dict,
                              const rm::StopDict &stop_dict) {
   for (auto &[bus, bus_info] : bus_dict) {
-    auto route = Route(bus_info);
+    auto &route = bus_info.stops;
     int stop_count = route.size();
     for (int from = 0; from + 1 < stop_count; ++from) {
       const auto depart = stop_ids_[route[from]].depart;
       double distance = 0.0;
       for (int to = from + 1; to < stop_count; ++to) {
-        distance += ComputeRoadDistance({route[to - 1], route[to]}, stop_dict,
-                                        false);
+        distance += ComputeRoadDistance({route[to - 1], route[to]}, stop_dict);
         edges_.emplace_back(RoadEdge{
             .bus = bus,
             .span_count = to - from});

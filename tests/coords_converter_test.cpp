@@ -35,7 +35,7 @@ TEST(TestSortStops, TestSortByLatitude) {
           .want = {},
       },
       TestCase{
-          .name = "Stop count == 1",
+          .name = "Stop count < 1",
           .stops = {kAirport},
           .want = {"Airport"},
       },
@@ -97,20 +97,30 @@ TEST(TestAdjacentStops, TestAdjacentStops) {
       },
       TestCase{
           .name = "One bus",
-          .buses = {{"bus 1", {{"a", "b", "c", "d", "a"}, true}}},
+          .buses = {{"bus 1", {
+              .route = {"a", "b", "c", "d", "a"},
+              .endpoints = {"a"}}}},
           .want = {{"a", {"b", "d"}}, {"b", {"a", "c"}}, {"c", {"b", "d"}},
                    {"d", {"a", "c"}}}
       },
       TestCase{
           .name = "Repeated stop",
-          .buses = {{"bus 1", {{"a", "a", "c", "d", "a"}, true}}},
+          .buses = {{"bus 1", {
+              .route = {"a", "a", "c", "d", "a"},
+              .endpoints = {"a"}}}},
           .want = {{"a", {"c", "d"}}, {"c", {"a", "d"}}, {"d", {"a", "c"}}}
       },
       TestCase{
           .name = "Several buses",
-          .buses = {{"bus 1", {{"a", "b", "c", "d", "a"}, true}},
-                    {"bus 2", {{"e", "f", "b", "g", "h"}, false}},
-                    {"bus 3", {{"a", "i", "g", "j", "b"}, false}}},
+          .buses = {{"bus 1", {
+              .route = {"a", "b", "c", "d", "a"},
+              .endpoints = {"a"}}},
+                    {"bus 2", {
+                        .route = {"e", "f", "b", "g", "h", "g", "b", "f", "e"},
+                        .endpoints = {"e", "h"}}},
+                    {"bus 3", {
+                        .route = {"a", "i", "g", "j", "b"},
+                        .endpoints = {"a", "b"}}}},
           .want = {{"a", {"b", "d", "i"}}, {"b", {"a", "c", "f", "g", "j"}},
                    {"c", {"b", "d"}}, {"d", {"a", "c"}}, {"e", {"f"}},
                    {"f", {"b", "e"}}, {"g", {"b", "h", "i", "j"}}, {"h", {"g"}},
@@ -253,19 +263,18 @@ TEST(TestEndPoints, TestEndPoints) {
 
   std::vector<TestCase> test_cases{
       TestCase{
-          .name = "Roundtrip",
-          .buses = {{"bus1", {{"a", "b", "c", "a"}, true}}},
-          .want = {"a"}
+          .name = "Route with empty endpoints",
+          .buses = {{"bus1", {
+              .route = {"a", "b", "c", "d", "c", "b", "a"},
+              .endpoints = {}}}},
+          .want = {}
       },
       TestCase{
-          .name = "Non-roundtrip with different end points",
-          .buses = {{"bus1", {{"a", "b", "c", "d"}, false}}},
-          .want = {"a", "d"}
-      },
-      TestCase{
-          .name = "Non-roundtrip with the same end points",
-          .buses = {{"bus1", {{"a", "b", "c", "a"}, false}}},
-          .want = {"a"}
+          .name = "Route with non-empty endpoints",
+          .buses = {{"bus1", {
+              .route = {"a", "b", "c", "a", "c", "b", "a"},
+              .endpoints = {"a", "b", "c", "d"}}}},
+          .want = {"a", "b", "c", "d"}
       },
   };
 
@@ -289,10 +298,19 @@ TEST(TestIntersectionsWithinRoute, TestIntersectionsWithinRoute) {
   std::vector<TestCase> test_cases{
       TestCase{
           .name = "Base cases",
-          .buses = {{"bus1", {{"a", "b", "c", "b", "a", "b", "a"}, true}},
-                    {"bus2", {{"d", "e", "f", "g", "e"}, false}},
-                    {"bus3", {{"h", "i", "j", "k"}, false}},
-                    {"bus4", {{"l", "m", "n", "o", "l"}, true}}},
+          .buses = {
+              {"bus1", {
+                  .route = {"a", "b", "c", "b", "a", "b", "a"},
+                  .endpoints = {"a"}}},
+              {"bus2", {
+                  .route = {"d", "e", "f", "g", "e", "g", "f", "e", "d"},
+                  .endpoints = {"d", "e"}}},
+              {"bus3", {
+                  .route = {"h", "i", "j", "k", "j", "i", "h"},
+                  .endpoints = {"h", "k"}}},
+              {"bus4", {
+                  .route = {"l", "m", "n", "o", "l"},
+                  .endpoints = {"l"}}}},
           .subcases = {
               {.count = 1, .want = {"a", "b", "c", "d", "e", "f", "g", "h", "i",
                                     "j", "k", "l", "m", "n", "o"}},
@@ -324,17 +342,26 @@ TEST(TestIntersectionsCrossRoute, TestIntersectionsCrossRoute) {
       TestCase{
           .name = "Base request",
           .buses = {
-              {"bus1", {{"a", "b", "c", "a"}, true}},
-              {"bus2", {{"d", "f", "c", "g"}, false}},
-              {"bus3", {{"k", "b", "c", "f"}, false}},
-              {"bus4", {{"x", "y", "z"}, false}}},
+              {"bus1", {
+                  .route = {"a", "b", "c", "a"},
+                  .endpoints = {"a"}}},
+              {"bus2", {
+                  .route = {"d", "f", "c", "g", "c", "f", "d"},
+                  .endpoints = {"d", "g"}}},
+              {"bus3", {
+                  .route = {"k", "b", "c", "f", "c", "b", "k"},
+                  .endpoints = {"k", "f"}}},
+              {"bus4", {
+                  .route = {"x", "y", "z", "y", "x"},
+                  .endpoints = {"x", "z"}}}},
           .want = {"b", "c", "f"}
       },
       TestCase{
           .name = "Empty routes",
           .buses = {
-              {"bus1", {{}, true}},
-              {"bus2", {{}, false}}
+              {"bus1", {.route = {}, .endpoints = {}}},
+              {"bus2", {.route = {"fake_stop"}, .endpoints = {}}},
+              {"bus3", {.route = {}, .endpoints = {"fake_stop"}}}
           },
           .want = {}
       }
