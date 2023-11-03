@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "svg/common.h"
@@ -70,6 +71,14 @@ bool operator!=(const RouteResponse::RoadItem &lhs,
 bool operator==(const RouteResponse &lhs, const RouteResponse &rhs);
 
 bool operator!=(const RouteResponse &lhs, const RouteResponse &rhs);
+
+template<typename T>
+std::ostream &operator<<(std::ostream &out,
+                         const std::unordered_set<T> &items) {
+  for (auto &item : items)
+    out << ' ' << item;
+  return out;
+}
 
 std::ostream &operator<<(std::ostream &out, const PostBusRequest &br);
 

@@ -13,7 +13,7 @@
 using namespace std;
 
 namespace rm::coords_converter {
-vector <string_view>
+vector<string_view>
 SortStops(const renderer_utils::Stops &stops, SortMode mode) {
   vector<pair<double, string_view>> sorted_stops;
   transform(begin(stops), end(stops), back_inserter(sorted_stops),
@@ -32,12 +32,11 @@ SortStops(const renderer_utils::Stops &stops, SortMode mode) {
 
 std::unordered_set<string_view>
 IntersectionsWithinRoute(const renderer_utils::Buses &buses, int count) {
-  unordered_set < string_view > base_stops;
+  unordered_set<string_view> base_stops;
   for (auto &[_, route] : buses) {
     unordered_map<string_view, int> stop_freqs;
     for (int i = 0; i < route.route.size(); ++i)
-      stop_freqs[route.route[i]] +=
-          (!route.is_roundtrip && i < route.route.size() - 1 ? 2 : 1);
+      ++stop_freqs[route.route[i]];
 
     for (auto &[stop, freq] : stop_freqs)
       if (freq >= count)
@@ -48,18 +47,18 @@ IntersectionsWithinRoute(const renderer_utils::Buses &buses, int count) {
 
 std::unordered_set<string_view>
 EndPoints(const renderer_utils::Buses &buses) {
-  unordered_set < string_view > base_stops;
+  unordered_set<string_view> base_stops;
   for (auto &[_, route] : buses) {
-    base_stops.insert(route.route.front());
-    if (!route.is_roundtrip)
-      base_stops.insert(route.route.back());
+    for (auto end_stop : route.endpoints) {
+      base_stops.insert(end_stop);
+    }
   }
   return base_stops;
 }
 
 std::unordered_set<string_view>
 IntersectionsCrossRoute(const renderer_utils::Buses &buses) {
-  unordered_set < string_view > base_stops, visited;
+  unordered_set<string_view> base_stops, visited;
   for (auto &[_, route] : buses) {
     for (auto stop : route.route)
       if (visited.find(stop) != visited.end())
@@ -146,8 +145,8 @@ StopLayers CompressNonadjacent(const std::vector<std::string_view> &stops,
   return result;
 }
 
-vector <pair<string_view, double>> SpreadStops(
-    const vector <vector<string_view>> &layers,
+vector<pair<string_view, double>> SpreadStops(
+    const vector<vector<string_view>> &layers,
     double from, double to) {
   int stop_count = layers.size();
   double step = (stop_count == 1) ? 0.0 : (to - from) / (stop_count - 1);

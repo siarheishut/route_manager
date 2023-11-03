@@ -85,7 +85,7 @@ const std::pair<std::string_view, rm::sphere::Coords> kClemens =
 TEST(TestMapRenderer, TestInitializing) {
   struct TestCase {
     std::string name;
-    std::map<std::string_view, rm::renderer_utils::Route> buses;
+    std::map<std::string_view, rm::Route> buses;
     std::map<std::string_view, rm::sphere::Coords> stops;
     rm::RenderingSettings settings;
     bool want_fail;
@@ -127,37 +127,46 @@ TEST(TestMapRenderer, TestInitializing) {
       },
       TestCase{
           .name = "Bus route has unknown stop",
-          .buses = {{"Bus 1", {{"Airport", "Dostoevsky", "Clemens"}, false}}},
-          .stops = {kAirport, kClemens, kRWStation},
+          .buses = {{"Bus 1", {
+              .route = {"Airport", "Dostoevsky", "Clemens", "Dostoevsky",
+                        "Airport"},
+              .endpoints = {"Airport", "Clemens"}}}},
+          .stops = {kAirport, kClemens},
           .settings = kTestRenderingSettings,
           .want_fail = true
       },
       TestCase{
-          .name = "Bus route has unknown stop",
-          .buses = {{"Bus 1", {{"Airport", "Dostoevsky", "Clemens",
-                                "Airport"}, true}}},
-          .stops = {kAirport, kClemens, kRWStation},
+          .name = "Bus route has less than 3 stops",
+          .buses = {{"Bus 1", {
+              .route = {"Airport", "Airport"},
+              .endpoints = {"Airport", "Airport"}}}},
+          .stops = {kAirport, kClemens},
           .settings = kTestRenderingSettings,
           .want_fail = true
       },
       TestCase{
-          .name = "Roundtrip route has different end points",
-          .buses = {{"Bus 1", {{"Airport", "RW station", "Clemens"}, true}}},
-          .stops = {kAirport, kClemens, kRWStation},
+          .name = "Endpoint isn't in the route",
+          .buses = {{"Bus 1", {
+              .route = {"Airport", "Clemens", "Airport"},
+              .endpoints = {"Airport", "Shop"}}}},
+          .stops = {kAirport, kClemens, kShop},
+          .settings = kTestRenderingSettings,
+          .want_fail = true
+      },
+      TestCase{
+          .name = "Different start and end of the route",
+          .buses = {{"Bus 1", {
+              .route = {"Airport", "Clemens", "Shop"},
+              .endpoints = {"Airport", "Shop"}}}},
+          .stops = {kAirport, kClemens, kShop},
           .settings = kTestRenderingSettings,
           .want_fail = true
       },
       TestCase{
           .name = "Valid config",
-          .buses = {{"Bus 1", {{"Airport", "Clemens street", "RW station",
-                                "High Street", "Airport"}, true}}},
-          .stops = {kAirport, kClemens, kRWStation, kHighStreet},
-          .settings = kTestRenderingSettings,
-          .want_fail = false
-      },
-      TestCase{
-          .name = "Valid config",
-          .buses = {{"Bus 1", {{"Airport", "RW station"}, false}}},
+          .buses = {{"Bus 1", {
+              .route = {"Airport", "RW station", "Airport"},
+              .endpoints = {"Airport", "RW station"}}}},
           .stops = {kAirport, kRWStation, kClemens},
           .settings = kTestRenderingSettings,
           .want_fail = false
@@ -182,7 +191,7 @@ TEST(TestMapRenderer, TestRenderMap) {
 
   struct TestCase {
     std::string name;
-    std::map<std::string_view, rm::renderer_utils::Route> buses;
+    std::map<std::string_view, rm::Route> buses;
     std::map<std::string_view, sphere::Coords> stops;
     RenderingSettings rendering_settings;
     std::string want;
@@ -191,7 +200,9 @@ TEST(TestMapRenderer, TestRenderMap) {
   std::vector<TestCase> test_cases{
       TestCase{
           .name = "Empty layers",
-          .buses = {{"1", {{"Shop", "Airport"}, false}}},
+          .buses = {{"1", {
+              .route = {"Shop", "Airport", "Shop"},
+              .endpoints = {"Shop"}}}},
           .stops = {kAirport, kShop},
           .rendering_settings = layers_replace_with({}),
           .want = SVG_DOC()
@@ -213,7 +224,9 @@ TEST(TestMapRenderer, TestRenderMap) {
       },
       TestCase{
           .name = "Random order",
-          .buses = {{"1", {{"Shop", "Airport"}, false}}},
+          .buses = {{"1", {
+              .route = {"Shop", "Airport", "Shop"},
+              .endpoints = {"Shop", "Airport"}}}},
           .stops = {kAirport, kShop},
           .rendering_settings =  layers_replace_with({MapLayer::kStopLabels,
                                                       MapLayer::kBusLines,
@@ -233,22 +246,10 @@ TEST(TestMapRenderer, TestRenderMap) {
                       STOP_NAME(Shop, 170, 170))
       },
       TestCase{
-          .name = "Roundtrip",
-          .buses = {{"1", {{"Shop", "Airport", "Shop"}, true}}},
-          .stops = {kAirport, kShop},
-          .rendering_settings = kTestRenderingSettings,
-          .want = SVG_DOC(
-                      ROUTE("purple")
-                      POINT(242.1, 170)NEXT_POINT(170, 225.7)
-                      NEXT_POINT(242.1, 170) ROUTE_END()
-                      BUS_NAME(1, 242.1, 170, "purple")
-                      STOP(170, 225.7)STOP(242.1, 170)
-                      STOP_NAME(Airport, 170, 225.7)
-                      STOP_NAME(Shop, 242.1, 170))
-      },
-      TestCase{
-          .name = "Non-roundrip with difference start and end stops",
-          .buses = {{"1", {{"Shop", "Airport"}, false}}},
+          .name = "Route with different start and end stops",
+          .buses = {{"1", {
+              .route = {"Shop", "Airport", "Shop"},
+              .endpoints = {"Shop", "Airport"}}}},
           .stops = {kAirport, kShop},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
@@ -260,21 +261,6 @@ TEST(TestMapRenderer, TestRenderMap) {
                       STOP(242.1, 225.7)STOP(170, 170)
                       STOP_NAME(Airport, 242.1, 225.7)
                       STOP_NAME(Shop, 170, 170))
-      },
-      TestCase{
-          .name = "Non-roundrip with the same start and end stops",
-          .buses = {{"1", {{"Shop", "Airport", "Shop"}, false}}},
-          .stops = {kAirport, kShop},
-          .rendering_settings = kTestRenderingSettings,
-          .want = SVG_DOC(
-                      ROUTE("purple")
-                      POINT(242.1, 170)NEXT_POINT(170, 225.7)
-                      NEXT_POINT(242.1, 170)NEXT_POINT(170, 225.7)
-                      NEXT_POINT(242.1, 170)ROUTE_END()
-                      BUS_NAME(1, 242.1, 170, "purple")
-                      STOP(170, 225.7)STOP(242.1, 170)
-                      STOP_NAME(Airport, 170, 225.7)
-                      STOP_NAME(Shop, 242.1, 170))
       },
       TestCase{
           .name = "Empty map",
@@ -294,10 +280,14 @@ TEST(TestMapRenderer, TestRenderMap) {
       TestCase{
           .name = "All stops are used",
           .buses = {
-              {"bus 1", {{"Airport", "High Street", "Shop", "Airport"}, true}},
-              {"bus 2", {{"High Street", "Airport", "Shop",
-                          "RW station", "Shop", "Airport",
-                          "High Street"}, true}}},
+              {"bus 1", {
+                  .route = {"Airport", "High Street", "Shop", "Airport"},
+                  .endpoints = {"Airport"}}},
+              {"bus 2", {
+                  .route = {"High Street", "Airport", "Shop",
+                            "RW station", "Shop", "Airport",
+                            "High Street"},
+                  .endpoints = {"High Street"}}}},
           .stops = {kAirport, kShop, kHighStreet, kRWStation},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
@@ -322,11 +312,22 @@ TEST(TestMapRenderer, TestRenderMap) {
       },
       TestCase{
           .name = "Route number is greater than palette size",
-          .buses = {{"Bus 1", {{"Shop", "Airport"}, false}},
-                    {"Bus 2", {{"Shop", "Airport", "Shop"}, true}},
-                    {"Bus 3", {{"Shop", "Airport"}, false}},
-                    {"Bus 4", {{"Shop", "Airport", "Shop"}, true}},
-                    {"Bus 5", {{"Shop", "Airport"}, false}}},
+          .buses = {
+              {"Bus 1", {
+                  .route = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop", "Airport"}}},
+              {"Bus 2", {
+                  .route = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop"}}},
+              {"Bus 3", {
+                  .route = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop", "Airport"}}},
+              {"Bus 4", {
+                  .route = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop"}}},
+              {"Bus 5", {
+                  .route = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop", "Airport"}}}},
           .stops = {kShop, kAirport},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(

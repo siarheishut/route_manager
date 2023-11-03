@@ -8,15 +8,11 @@
 
 #include "svg/common.h"
 
+#include "common.h"
 #include "sphere.h"
 
 namespace rm::renderer_utils {
-struct Route {
-  std::vector<std::string_view> route;
-  bool is_roundtrip;
-};
-
-using Buses = std::map<std::string_view, Route>;
+using Buses = std::map<std::string_view, rm::Route>;
 using Stops = std::map<std::string_view, rm::sphere::Coords>;
 using StopCoords = std::unordered_map<std::string_view, svg::Point>;
 }
