@@ -73,7 +73,7 @@ CombineCoords(
 std::unordered_map<std::string_view, svg::Point> TransformCoords(
     const rm::renderer_utils::Buses &buses,
     rm::renderer_utils::Stops &stops,
-    const rm::renderer_utils::Frame &frame) {
+    const rm::Frame &frame) {
   using namespace rm::coords_converter;
 
   BaseStops base_stops;

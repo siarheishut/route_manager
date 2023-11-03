@@ -102,6 +102,15 @@ bool operator==(const RouteResponse &lhs, const RouteResponse &rhs) {
   return tie(lhs.items, lhs.time) == tie(rhs.items, rhs.time);
 }
 
+bool operator==(const Frame &lhs, const Frame &rhs) {
+  return tie(lhs.width, lhs.height, lhs.padding) ==
+      tie(rhs.width, rhs.height, rhs.padding);
+}
+
+bool operator!=(const Frame &lhs, const Frame &rhs) {
+  return !(lhs == rhs);
+}
+
 bool operator!=(const GetBusRequest &lhs, const GetBusRequest &rhs) {
   return !(lhs == rhs);
 }
@@ -152,7 +161,7 @@ bool operator!=(const RouteResponse &lhs, const RouteResponse &rhs) {
 }
 
 template<typename T>
-ostream &operator<<(ostream &out, const vector <T> &str_v) {
+ostream &operator<<(ostream &out, const vector<T> &str_v) {
   for (auto &item : str_v)
     out << ' ' << item;
   return out;
@@ -192,6 +201,10 @@ ostream &operator<<(ostream &out, const RoutingSettings &settings) {
   return out << settings.bus_wait_time << ' ' << settings.bus_velocity;
 }
 
+ostream &operator<<(ostream &out, const Frame &frame) {
+  return out << frame.width << ' ' << frame.height << ' ' << frame.padding;
+}
+
 ostream &operator<<(ostream &out, const RenderingSettings &settings) {
   return out << settings.frame.width << ' ' << settings.frame.height << ' ' <<
              settings.frame.padding << ' ' << settings.stop_radius << ' ' <<
@@ -218,21 +231,6 @@ ostream &operator<<(ostream &out, const RouteResponse::Item &item) {
 
 ostream &operator<<(ostream &out, const RouteResponse &rr) {
   return out << rr.time << ' ' << rr.items;
-}
-}
-
-namespace rm::renderer_utils {
-bool operator==(const Frame &lhs, const Frame &rhs) {
-  return tie(lhs.width, lhs.height, lhs.padding) ==
-      tie(rhs.width, rhs.height, rhs.padding);
-}
-
-bool operator!=(const Frame &lhs, const Frame &rhs) {
-  return !(lhs == rhs);
-}
-
-ostream &operator<<(ostream &out, const Frame &frame) {
-  return out << frame.width << ' ' << frame.height << ' ' << frame.padding;
 }
 }
 

@@ -16,10 +16,6 @@ struct Route {
   bool is_roundtrip;
 };
 
-struct Frame {
-  double width, height, padding;
-};
-
 using Buses = std::map<std::string_view, Route>;
 using Stops = std::map<std::string_view, rm::sphere::Coords>;
 using StopCoords = std::unordered_map<std::string_view, svg::Point>;

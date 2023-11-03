@@ -121,7 +121,7 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
     return std::nullopt;
 
   RenderingSettings rs;
-  rs.frame = rm::renderer_utils::Frame{
+  rs.frame = rm::Frame{
       .width = width->second.AsDouble(),
       .height = height->second.AsDouble(),
       .padding = padding->second.AsDouble(),

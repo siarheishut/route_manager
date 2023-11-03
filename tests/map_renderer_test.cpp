@@ -53,7 +53,7 @@
 #define SVG_DOC(body) PREFIX body POSTFIX
 
 const rm::RenderingSettings kTestRenderingSettings{
-    .frame = rm::renderer_utils::Frame{
+    .frame = rm::Frame{
         .width = 412.1, .height = 395.7, .padding = 170,
     },
     .stop_radius = 4.2, .line_width = 11,
