@@ -4,11 +4,13 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <unordered_set>
 #include <vector>
 
 #include "svg/common.h"
 
 #include "src/map_renderer_utils.h"
+#include "src/request_types.h"
 
 using namespace std;
 
@@ -42,8 +44,8 @@ bool operator==(const BusResponse &lhs, const BusResponse &rhs) {
 }
 
 bool operator==(const PostBusRequest &lhs, const PostBusRequest &rhs) {
-  return tie(lhs.bus, lhs.stops, lhs.is_roundtrip)
-      == tie(rhs.bus, rhs.stops, rhs.is_roundtrip);
+  return tie(lhs.bus, lhs.stops, lhs.endpoints) ==
+      tie(rhs.bus, rhs.stops, rhs.endpoints);
 }
 
 bool operator==(const PostStopRequest &lhs, const PostStopRequest &rhs) {
@@ -168,7 +170,7 @@ ostream &operator<<(ostream &out, const vector<T> &str_v) {
 }
 
 ostream &operator<<(ostream &out, const PostBusRequest &br) {
-  return out << br.bus << ": " << br.stops << ' ' << br.is_roundtrip;
+  return out << br.bus << ": " << br.stops << ". Endpoints: " << br.endpoints;
 }
 
 ostream &operator<<(ostream &out, const PostStopRequest &sr) {

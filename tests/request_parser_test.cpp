@@ -168,7 +168,7 @@ TEST(TestInputRequest, TestPostBusRequest) {
           .want = PostBusRequest{
               .bus = "Bus 1",
               .stops = {"stop1", "stop2", "stop3", "stop1"},
-              .is_roundtrip = true
+              .endpoints = {"stop1"},
           },
       },
       TestCase{
@@ -188,8 +188,8 @@ TEST(TestInputRequest, TestPostBusRequest) {
                               {"is_roundtrip", false}},
           .want = PostBusRequest{
               .bus = "Bus 1",
-              .stops = {"stop1", "stop2", "stop3"},
-              .is_roundtrip = false
+              .stops = {"stop1", "stop2", "stop3", "stop2", "stop1"},
+              .endpoints = {"stop1", "stop3"},
           },
       },
       TestCase{
@@ -207,8 +207,8 @@ TEST(TestInputRequest, TestPostBusRequest) {
                               {"stops", json::List{"stop1", "stop2", "stop3"}}},
           .want = PostBusRequest{
               .bus = "Bus 1",
-              .stops = {"stop1", "stop2", "stop3"},
-              .is_roundtrip = false
+              .stops = {"stop1", "stop2", "stop3", "stop2", "stop1"},
+              .endpoints = {"stop1", "stop3"},
           },
       },
       TestCase{
@@ -227,8 +227,8 @@ TEST(TestInputRequest, TestPostBusRequest) {
                               {"is_roundtrip", false}},
           .want = PostBusRequest{
               .bus = "Bus 1",
-              .stops = {"stop1", "stop2"},
-              .is_roundtrip = false
+              .stops = {"stop1", "stop2", "stop1"},
+              .endpoints = {"stop1", "stop2"},
           },
       },
       TestCase{
@@ -240,8 +240,8 @@ TEST(TestInputRequest, TestPostBusRequest) {
                               {"is_roundtrip", false}},
           .want = PostBusRequest{
               .bus = "Bus1",
-              .stops = {"stop1", "stop2", "stop3"},
-              .is_roundtrip = false
+              .stops = {"stop1", "stop2", "stop3", "stop2", "stop1"},
+              .endpoints = {"stop1", "stop3"},
           },
       },
       TestCase{
@@ -255,7 +255,7 @@ TEST(TestInputRequest, TestPostBusRequest) {
           .want = PostBusRequest{
               .bus = "Bus1",
               .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
-              .is_roundtrip = true,
+              .endpoints = {"stop 1"},
           }
       },
       TestCase{
