@@ -21,8 +21,6 @@ using StopLayers = std::vector<std::vector<std::string_view>>;
 
 enum class SortMode { kByLatitude, kByLongitude };
 
-struct Frame { double width, height, padding; };
-
 std::vector<std::string_view>
 SortStops(const renderer_utils::Stops &stops, SortMode mode);
 

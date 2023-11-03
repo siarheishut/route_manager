@@ -99,7 +99,7 @@ TEST(TestParseSettings, TestRedneringSettings) {
   };
 
   const auto settings = RenderingSettings{
-      .frame = renderer_utils::Frame{
+      .frame = Frame{
           .width = 412.1, .height = 395.7, .padding = 210,
       },
       .stop_radius = 4.2, .line_width = 11, .stop_label_font_size = 10,

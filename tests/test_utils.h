@@ -47,6 +47,10 @@ bool operator==(const RoutingSettings &lhs, const RoutingSettings &rhs);
 
 bool operator!=(const RoutingSettings &lhs, const RoutingSettings &rhs);
 
+bool operator==(const Frame &lhs, const Frame &rhs);
+
+bool operator!=(const Frame &lhs, const Frame &rhs);
+
 bool operator==(const RenderingSettings &lhs, const RenderingSettings &rhs);
 
 bool operator!=(const RenderingSettings &lhs, const RenderingSettings &rhs);
@@ -79,6 +83,8 @@ std::ostream &operator<<(std::ostream &out, const BusResponse &br);
 
 std::ostream &operator<<(std::ostream &out, const RoutingSettings &settings);
 
+std::ostream &operator<<(std::ostream &out, const Frame &frame);
+
 std::ostream &operator<<(std::ostream &out, const RenderingSettings &settings);
 
 std::ostream &operator<<(std::ostream &out, const RouteResponse::RoadItem &ri);
@@ -88,14 +94,6 @@ std::ostream &operator<<(std::ostream &out, const RouteResponse::WaitItem &ri);
 std::ostream &operator<<(std::ostream &out, const RouteResponse::Item &item);
 
 std::ostream &operator<<(std::ostream &out, const RouteResponse &rr);
-}
-
-namespace rm::renderer_utils {
-bool operator==(const Frame &lhs, const Frame &rhs);
-
-bool operator!=(const Frame &lhs, const Frame &rhs);
-
-std::ostream &operator<<(std::ostream &out, const Frame &frame);
 }
 
 namespace svg {

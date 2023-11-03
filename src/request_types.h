@@ -27,8 +27,10 @@ enum class MapLayer {
   kStopLabels = 3,
 };
 
+struct Frame { double width, height, padding; };
+
 struct RenderingSettings {
-  renderer_utils::Frame frame;
+  Frame frame;
   double stop_radius;
   double line_width;
   int stop_label_font_size;
