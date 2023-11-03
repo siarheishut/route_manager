@@ -197,9 +197,15 @@ std::optional<PostBusRequest> ParsePostBusRequest(json::Dict dict) {
 
   PostBusRequest br;
   br.bus = name->second.ReleaseString();
-  br.is_roundtrip = is_roundtrip->second.AsBool();
   for (auto &stop : stops->second.ReleaseArray()) {
     br.stops.push_back(stop.ReleaseString());
+  }
+  br.endpoints.insert(br.stops.front());
+  if (!is_roundtrip->second.AsBool()) {
+    br.endpoints.insert(br.stops.back());
+    for (int i = static_cast<int>(br.stops.size()) - 2; i >= 0; --i) {
+      br.stops.push_back(br.stops[i]);
+    }
   }
 
   return br;

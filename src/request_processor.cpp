@@ -15,14 +15,15 @@ auto MapRendererParams(const std::vector<rm::PostRequest> &requests) {
   using namespace std;
   using namespace rm;
 
-  map<string_view, rm::renderer_utils::Route> buses;
+  map<string_view, rm::Route> buses;
   map<string_view, sphere::Coords> stops;
   for (auto &request : requests) {
     if (auto bus = get_if<PostBusRequest>(&request)) {
       buses.emplace(
           bus->bus,
-          rm::renderer_utils::Route{{begin(bus->stops), end(bus->stops)},
-                                    bus->is_roundtrip});
+          rm::Route{
+              .route = {begin(bus->stops), end(bus->stops)},
+              .endpoints = {begin(bus->endpoints), end(bus->endpoints)}});
     } else if (auto stop = get_if<PostStopRequest>(&request)) {
       stops[stop->stop] = stop->coords;
     }

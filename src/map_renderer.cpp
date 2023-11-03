@@ -146,11 +146,16 @@ std::unique_ptr<MapRenderer> MapRenderer::Create(
   }
 
   for (auto &[bus, route] : buses) {
-    if (route.route.size() < 2 ||
-        (route.is_roundtrip && route.route.front() != route.route.back()))
+    if (route.route.size() < 3 || route.route.front() != route.route.back())
       return nullptr;
     for (auto stop : route.route) {
       if (stops.find(stop) == stops.end())
+        return nullptr;
+    }
+    std::unordered_set<std::string_view> route_stops(route.route.begin(),
+                                                     route.route.end());
+    for (auto endpoint : route.endpoints) {
+      if (route_stops.find(endpoint) == route_stops.end())
         return nullptr;
     }
   }
@@ -215,11 +220,6 @@ void MapRenderer::AddBusLinesLayout(
     for (auto stop : route.route) {
       bus_route.AddPoint(coords.at(stop));
     }
-    if (!route.is_roundtrip) {
-      for (int j = static_cast<int>(route.route.size()) - 2; j >= 0; --j) {
-        bus_route.AddPoint(coords.at(route.route[j]));
-      }
-    }
     builder.Add(std::move(bus_route));
   }
 }
@@ -233,14 +233,10 @@ void MapRenderer::AddBusLabelsLayout(
   for (auto &[bus, route] : buses) {
     auto color = settings.color_palette[i];
     i = (i + 1) % settings.color_palette.size();
-    auto start = route.route.front();
-    auto end = route.route.back();
-    auto start_point = coords.at(start);
-    auto end_point = coords.at(end);
 
-    builder.Add(BusName(std::string(bus), start_point, color, settings));
-    if (!route.is_roundtrip && start != end) {
-      builder.Add(BusName(std::string(bus), end_point, color, settings));
+    for (auto end_stop : route.endpoints) {
+      builder.Add(BusName(std::string(bus), coords.at(end_stop), color,
+                          settings));
     }
   }
 }
