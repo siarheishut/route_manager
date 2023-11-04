@@ -25,19 +25,35 @@ class MapRenderer {
   std::string RenderMap() const;
 
  private:
+  struct BusInfo {
+    std::vector<std::string> route;
+    std::vector<std::string> endpoints;
+    svg::Color color;
+  };
+  using Buses = std::unordered_map<std::string, BusInfo>;
+
   MapRenderer(const renderer_utils::Buses &buses,
               renderer_utils::Stops stops,
               const RenderingSettings &settings);
 
+  static Buses ConstructBuses(const renderer_utils::Buses &buses,
+                              const RenderingSettings &settings);
+
+  static std::vector<std::string> SortBusNames(const Buses &buses);
+
+  static std::vector<svg::Point> Points(
+      const std::vector<std::string> &route,
+      const renderer_utils::StopCoords &coords);
+
   static void AddBusLinesLayout(
       svg::SectionBuilder &builder,
-      const renderer_utils::Buses &buses,
+      const Buses &buses,
       const rm::RenderingSettings &settings,
       const renderer_utils::StopCoords &coords);
 
   static void AddBusLabelsLayout(
       svg::SectionBuilder &builder,
-      const renderer_utils::Buses &buses,
+      const Buses &buses,
       const rm::RenderingSettings &settings,
       const renderer_utils::StopCoords &coords);
 
@@ -54,6 +70,7 @@ class MapRenderer {
       const renderer_utils::StopCoords &coords);
 
   svg::Section map_;
+  Buses buses_;
 };
 }
 
