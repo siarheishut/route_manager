@@ -28,6 +28,19 @@ using BaseStops = std::unordered_set<std::string_view>;
 const double kMinLatitude = -90.0, kMaxLatitude = 90.0,
     kMinLongitude = -180.0, kMaxLongitude = 180.0;
 
+svg::Polyline BusLine(const std::vector<svg::Point> &coords,
+                      const svg::Color &color, double line_width) {
+  auto bus_line = svg::Polyline{}
+      .SetStrokeColor(color)
+      .SetStrokeLineCap("round")
+      .SetStrokeLineJoin("round")
+      .SetStrokeWidth(line_width);
+  for (auto point : coords) {
+    bus_line.AddPoint(point);
+  }
+  return bus_line;
+}
+
 svg::Section BusName(std::string bus, svg::Point point,
                      const svg::Color &color,
                      const rm::RenderingSettings &settings) {
@@ -168,7 +181,8 @@ MapRenderer::MapRenderer(
     const renderer_utils::Buses &buses,
     renderer_utils::Stops stops,
     const RenderingSettings &settings)
-    : map_(svg::SectionBuilder{}.Build()) {
+    : map_(svg::SectionBuilder{}.Build()),
+      buses_(ConstructBuses(buses, settings)) {
   auto stop_to_coords = TransformCoords(buses, stops, settings.frame);
 
   svg::SectionBuilder builder;
@@ -176,13 +190,13 @@ MapRenderer::MapRenderer(
     switch (layer) {
       case MapLayer::kBusLines:
         AddBusLinesLayout(builder,
-                          buses,
+                          buses_,
                           settings,
                           stop_to_coords);
         break;
       case MapLayer::kBusLabels:
         AddBusLabelsLayout(builder,
-                           buses,
+                           buses_,
                            settings,
                            stop_to_coords);
         break;
@@ -203,40 +217,76 @@ MapRenderer::MapRenderer(
   map_ = builder.Build();
 }
 
-void MapRenderer::AddBusLinesLayout(
-    svg::SectionBuilder &builder,
-    const renderer_utils::Buses &buses,
-    const rm::RenderingSettings &settings,
-    const renderer_utils::StopCoords &coords) {
+MapRenderer::Buses MapRenderer::ConstructBuses(
+    const renderer_utils::Buses &buses, const RenderingSettings &settings) {
+  Buses result;
   int i = 0;
-  for (auto &[_, route] : buses) {
+  for (auto &[bus, route] : buses) {
     auto color = settings.color_palette[i];
     i = (i + 1) % settings.color_palette.size();
-    svg::Polyline bus_route;
-    bus_route.SetStrokeColor(color)
-        .SetStrokeLineCap("round")
-        .SetStrokeLineJoin("round")
-        .SetStrokeWidth(settings.line_width);
-    for (auto stop : route.route) {
-      bus_route.AddPoint(coords.at(stop));
-    }
-    builder.Add(std::move(bus_route));
+    auto &bus_info = result[std::string(bus)];
+    bus_info = {
+        .route = {route.route.begin(), route.route.end()},
+        .endpoints = [&r = route]() {
+          std::vector<std::string> res;
+          auto endpoints = r.endpoints;
+          for (auto &stop : r.route) {
+            if (auto found = endpoints.find(stop); found != endpoints.end()) {
+              res.emplace_back(*found);
+              endpoints.erase(found);
+            }
+          }
+          return res;
+        }(),
+        .color = color
+    };
+  }
+  return result;
+}
+
+std::vector<std::string>
+MapRenderer::SortBusNames(const MapRenderer::Buses &buses) {
+  std::vector<std::string> sorted;
+  sorted.reserve(buses.size());
+  for (auto &[bus, _] : buses) {
+    sorted.push_back(bus);
+  }
+  std::sort(begin(sorted), end(sorted));
+  return sorted;
+}
+
+std::vector<svg::Point> MapRenderer::Points(
+    const std::vector<std::string> &route,
+    const renderer_utils::StopCoords &coords) {
+  std::vector<svg::Point> points;
+  points.reserve(route.size());
+  for (auto &stop : route) {
+    points.push_back(coords.at(stop));
+  }
+  return points;
+}
+
+void MapRenderer::AddBusLinesLayout(
+    svg::SectionBuilder &builder,
+    const MapRenderer::Buses &buses,
+    const rm::RenderingSettings &settings,
+    const renderer_utils::StopCoords &coords) {
+  for (auto &bus : SortBusNames(buses)) {
+    auto &bus_info = buses.at(bus);
+    builder.Add(BusLine(Points(bus_info.route, coords),
+                        bus_info.color, settings.line_width));
   }
 }
 
 void MapRenderer::AddBusLabelsLayout(
     svg::SectionBuilder &builder,
-    const renderer_utils::Buses &buses,
+    const Buses &buses,
     const rm::RenderingSettings &settings,
     const renderer_utils::StopCoords &coords) {
-  int i = 0;
-  for (auto &[bus, route] : buses) {
-    auto color = settings.color_palette[i];
-    i = (i + 1) % settings.color_palette.size();
-
-    for (auto end_stop : route.endpoints) {
-      builder.Add(BusName(std::string(bus), coords.at(end_stop), color,
-                          settings));
+  for (auto &bus : SortBusNames(buses)) {
+    auto &bus_info = buses.at(bus);
+    for (auto &endpoint : bus_info.endpoints) {
+      builder.Add(BusName(bus, coords.at(endpoint), bus_info.color, settings));
     }
   }
 }
