@@ -63,7 +63,8 @@ json::Dict ToJson(std::optional<StopResponse> response, int id) {
   return result;
 }
 
-json::Dict ToJson(std::optional<RouteResponse> response, int id) {
+json::Dict ToJson(std::optional<RouteResponse> response,
+                  std::optional<std::string> map, int id) {
   json::Dict result;
 
   result.emplace("request_id", id);
@@ -91,6 +92,11 @@ json::Dict ToJson(std::optional<RouteResponse> response, int id) {
     };
   }
   result.emplace("items", std::move(items));
+  if (!map.has_value()) {
+    result.emplace("error_message", "invalid route info");
+  } else {
+    result.emplace("map", *map);
+  }
   return result;
 }
 
@@ -140,7 +146,11 @@ json::Dict Processor::Process(const GetStopRequest &request) const {
 }
 
 json::Dict Processor::Process(const GetRouteRequest &request) const {
-  return ToJson(bus_manager_->GetRoute(request.from, request.to), request.id);
+  auto route_info = bus_manager_->GetRoute(request.from, request.to);
+  if (!route_info.has_value())
+    return ToJson(std::nullopt, "", request.id);
+  auto map = map_renderer_->RenderRoute(*route_info);
+  return ToJson(*route_info, map, request.id);
 }
 
 json::Dict Processor::Process(const GetMapRequest &request) const {
