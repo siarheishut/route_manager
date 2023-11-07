@@ -93,6 +93,7 @@ TEST(TestProcessRequests, TestRouteResponseToJson) {
   struct TestCase {
     std::string name;
     ResponseOpt response;
+    std::optional<std::string> map;
     int id;
     json::Dict want;
   };
@@ -101,6 +102,7 @@ TEST(TestProcessRequests, TestRouteResponseToJson) {
       TestCase{
           .name = "Missing route",
           .response = std::nullopt,
+          .map = "some map",
           .id = 1234567,
           .want = json::Dict{{"request_id", 1234567},
                              {"error_message", "not found"}},
@@ -117,6 +119,7 @@ TEST(TestProcessRequests, TestRouteResponseToJson) {
                   rm::RouteResponse::RoadItem{
                       .bus = "bus 2", .time = 49.113, .span_count = 7}}
           },
+          .map = "some map",
           .id = 7421097,
           .want = json::Dict{
               {"total_time", 69.543},
@@ -144,14 +147,59 @@ TEST(TestProcessRequests, TestRouteResponseToJson) {
                       {"span_count", 7}
                   },
               }},
+              {"map", "some map"},
+              {"request_id", 7421097}
+          }
+      },
+      TestCase{
+          .name = "Invalid route info",
+          .response = rm::RouteResponse{
+              .time = 69.543,
+              .items = {
+                  rm::RouteResponse::WaitItem{.stop = "stop 1", .time = 5},
+                  rm::RouteResponse::RoadItem{
+                      .bus = "bus 1", .time = 10.43, .span_count = 4},
+                  rm::RouteResponse::WaitItem{.stop = "stop 2", .time = 5},
+                  rm::RouteResponse::RoadItem{
+                      .bus = "bus 2", .time = 49.113, .span_count = 7}}
+          },
+          .map = std::nullopt,
+          .id = 7421097,
+          .want = json::Dict{
+              {"total_time", 69.543},
+              {"items", json::List{
+                  json::Dict{
+                      {"type", "Wait"},
+                      {"stop_name", "stop 1"},
+                      {"time", 5}
+                  },
+                  json::Dict{
+                      {"type", "Bus"},
+                      {"bus", "bus 1"},
+                      {"time", 10.43},
+                      {"span_count", 4}
+                  },
+                  json::Dict{
+                      {"type", "Wait"},
+                      {"stop_name", "stop 2"},
+                      {"time", 5}
+                  },
+                  json::Dict{
+                      {"type", "Bus"},
+                      {"bus", "bus 2"},
+                      {"time", 49.113},
+                      {"span_count", 7}
+                  },
+              }},
+              {"error_message", "invalid route info"},
               {"request_id", 7421097}
           }
       },
   };
 
-  for (auto &[name, response, id, want] : test_cases) {
-    json::Dict got = rm::ToJson(response, id);
-    EXPECT_EQ(want, got);
+  for (auto &[name, response, map, id, want] : test_cases) {
+    json::Dict got = rm::ToJson(response, map, id);
+    EXPECT_EQ(want, got) << name;
   }
 }
 
