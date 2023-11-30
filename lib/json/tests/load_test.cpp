@@ -63,8 +63,8 @@ TEST(TestLoadFunctions, TestArray) {
                    "\t\"stop1\"\n"
                    "\t]",
           .want = Node{
-              List{{"stop1"}, {"stop 2"}, {"long stop name 1"},
-                   {"long  stop    namestop 4"}, {"stop1"}}},
+              List{Node{"stop1"}, Node{"stop 2"}, Node{"long stop name 1"},
+                   Node{"long  stop    namestop 4"}, Node{"stop1"}}},
       },
       TestCase{
           .name = "Array without end sign",
@@ -86,8 +86,8 @@ TEST(TestLoadFunctions, TestArray) {
                    "\t\"stop1\"\n"
                    "\t]",
           .want = Node{
-              List{{"stop1"}, {"stop 2"}, {"long stop name 1"},
-                   {"long  stop    namestop 4"}, {"stop1"}}},
+              List{Node{"stop1"}, Node{"stop 2"}, Node{"long stop name 1"},
+                   Node{"long  stop    namestop 4"}, Node{"stop1"}}},
       },
       TestCase{
           .name = "Redefinition in road_distances",
@@ -132,8 +132,8 @@ TEST(TestLoadFunctions, TestArray) {
                    "\t\"stop1\"\n"
                    "\t]",
           .want = Node{
-              List{{"stop1"}, {"stop 2"}, {"long stop name 1"},
-                   {"long  stop    namestop 4"}, {"stop1"}}},
+              List{Node{"stop1"}, Node{"stop 2"}, Node{"long stop name 1"},
+                   Node{"long  stop    namestop 4"}, Node{"stop1"}}},
       },
       TestCase{
           .name = "Array of maps",
