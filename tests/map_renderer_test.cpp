@@ -57,8 +57,10 @@
 
 #define SVG_DOC(body) PREFIX body POSTFIX
 
-const rm::RenderingSettings kTestRenderingSettings{
-    .frame = rm::Frame{
+using namespace rm::utils;
+
+const RenderingSettings kTestRenderingSettings{
+    .frame = Frame{
         .width = 412.1, .height = 395.7, .padding = 170,
     },
     .stop_radius = 4.2, .line_width = 11,
@@ -72,8 +74,8 @@ const rm::RenderingSettings kTestRenderingSettings{
         svg::Rgba{.red = 210, .green = 81, .blue = 14, .alpha = 0.94}},
     .bus_label_font_size = 6,
     .bus_label_offset = svg::Point{.x = 5, .y = -7},
-    .layers = {rm::MapLayer::kBusLines, rm::MapLayer::kBusLabels,
-               rm::MapLayer::kStopPoints, rm::MapLayer::kStopLabels}
+    .layers = {MapLayer::kBusLines, MapLayer::kBusLabels,
+               MapLayer::kStopPoints, MapLayer::kStopLabels}
 };
 
 const std::pair<std::string_view, rm::sphere::Coords> kAirport =
@@ -90,9 +92,9 @@ const std::pair<std::string_view, rm::sphere::Coords> kClemens =
 TEST(TestMapRenderer, TestInitializing) {
   struct TestCase {
     std::string name;
-    std::map<std::string_view, rm::Route> buses;
+    std::map<std::string_view, Route> buses;
     std::map<std::string_view, rm::sphere::Coords> stops;
-    rm::RenderingSettings settings;
+    RenderingSettings settings;
     bool want_fail;
   };
 
@@ -196,7 +198,7 @@ TEST(TestMapRenderer, TestRenderMap) {
 
   struct TestCase {
     std::string name;
-    std::map<std::string_view, rm::Route> buses;
+    std::map<std::string_view, Route> buses;
     std::map<std::string_view, sphere::Coords> stops;
     RenderingSettings rendering_settings;
     std::string want;

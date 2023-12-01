@@ -9,6 +9,8 @@
 #include "src/request_types.h"
 #include "tests/test_utils.h"
 
+using namespace rm::utils;
+
 TEST(TestParseSettings, TestRoutingSettings) {
   using namespace rm;
 

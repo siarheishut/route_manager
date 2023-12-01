@@ -25,11 +25,11 @@ class MapRenderer {
   static std::unique_ptr<MapRenderer> Create(
       const renderer_utils::Buses &buses,
       renderer_utils::Stops stops,
-      const RenderingSettings &settings);
+      const utils::RenderingSettings &settings);
 
   std::string RenderMap() const;
 
-  std::optional<std::string> RenderRoute(const RouteInfo &route_info) const;
+  std::optional<std::string> RenderRoute(const utils::RouteInfo &route_info) const;
 
  private:
   struct BusInfo {
@@ -43,14 +43,14 @@ class MapRenderer {
 
   MapRenderer(const renderer_utils::Buses &buses,
               renderer_utils::Stops stops,
-              const RenderingSettings &settings);
+              const utils::RenderingSettings &settings);
 
   static Buses ConstructBuses(const renderer_utils::Buses &buses,
-                              const RenderingSettings &settings);
+                              const utils::RenderingSettings &settings);
 
   static std::vector<std::string> SortBusNames(const Buses &buses);
 
-  bool ValidateRoute(const RouteInfo &route_info) const;
+  bool ValidateRoute(const utils::RouteInfo &route_info) const;
 
   static std::vector<svg::Point> Points(
       const std::vector<std::string> &route,
@@ -59,39 +59,40 @@ class MapRenderer {
   static void AddBusLinesLayout(
       svg::SectionBuilder &builder,
       const Buses &buses,
-      const rm::RenderingSettings &settings,
+      const rm::utils::RenderingSettings &settings,
       const StopCoords &coords);
 
   static void AddBusLabelsLayout(
       svg::SectionBuilder &builder,
       const Buses &buses,
-      const rm::RenderingSettings &settings,
+      const rm::utils::RenderingSettings &settings,
       const StopCoords &coords);
 
   static void AddStopPointsLayout(
       svg::SectionBuilder &builder,
       const renderer_utils::Stops &stops,
-      const rm::RenderingSettings &settings,
+      const rm::utils::RenderingSettings &settings,
       const StopCoords &coords);
 
   static void AddStopLabelsLayout(
       svg::SectionBuilder &builder,
       const renderer_utils::Stops &stops,
-      const rm::RenderingSettings &settings,
+      const rm::utils::RenderingSettings &settings,
       const StopCoords &coords);
 
-  svg::Section BusLinesFor(const RouteInfo::RoadItem &item) const;
+  svg::Section BusLinesFor(const utils::RouteInfo::RoadItem &item) const;
 
-  svg::Section BusLabelsFor(const RouteInfo::RoadItem &item) const;
+  svg::Section BusLabelsFor(const utils::RouteInfo::RoadItem &item) const;
 
-  svg::Section StopPointsFor(const RouteInfo::RoadItem &item) const;
+  svg::Section StopPointsFor(const utils::RouteInfo::RoadItem &item) const;
 
-  svg::Section StopLabelsFor(const RouteInfo::RoadItem &item, bool first) const;
+  svg::Section StopLabelsFor(const utils::RouteInfo::RoadItem &item,
+                             bool first) const;
 
   svg::Section map_;
   Buses buses_;
   StopCoords stop_coords_;
-  rm::RenderingSettings settings_;
+  rm::utils::RenderingSettings settings_;
 };
 }
 

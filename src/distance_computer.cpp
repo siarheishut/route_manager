@@ -7,7 +7,7 @@
 
 namespace rm {
 double ComputeGeoDistance(const std::vector<std::string> &stops,
-                          const StopDict &dict) {
+                          const utils::StopDict &dict) {
   double distance = 0;
   for (int i = 1; i < stops.size(); ++i) {
     distance += sphere::CalculateDistance(dict.at(stops[i - 1]).coords,
@@ -17,7 +17,7 @@ double ComputeGeoDistance(const std::vector<std::string> &stops,
 }
 
 double ComputeRoadDistance(const std::vector<std::string> &stops,
-                           const StopDict &dict) {
+                           const utils::StopDict &dict) {
   double distance = 0;
   for (int i = 1; i < stops.size(); ++i) {
     auto &dists = dict.at(stops[i - 1]).dists;

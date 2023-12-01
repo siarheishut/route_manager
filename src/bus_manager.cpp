@@ -13,6 +13,8 @@
 
 #include "distance_computer.h"
 
+using namespace rm::utils;
+
 namespace {
 int ComputeUniqueCount(std::vector<std::string> stops) {
   std::sort(begin(stops), end(stops));

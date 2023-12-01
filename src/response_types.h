@@ -6,7 +6,7 @@
 
 #include "common.h"
 
-namespace rm {
+namespace rm::utils {
 struct BusResponse {
   int stop_count;
   int unique_stop_count;

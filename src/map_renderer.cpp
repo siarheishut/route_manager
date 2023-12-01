@@ -22,6 +22,8 @@
 #include "request_types.h"
 #include "sphere.h"
 
+using namespace rm::utils;
+
 namespace {
 using BaseStops = std::unordered_set<std::string_view>;
 
@@ -47,7 +49,7 @@ svg::Polyline BusLine(const std::vector<svg::Point> &coords,
 
 svg::Section BusName(std::string bus, svg::Point point,
                      const svg::Color &color,
-                     const rm::RenderingSettings &settings) {
+                     const RenderingSettings &settings) {
   svg::SectionBuilder label;
   label.Add(std::move(svg::Text{}
                           .SetPoint(point)
@@ -73,7 +75,7 @@ svg::Section BusName(std::string bus, svg::Point point,
 }
 
 svg::Section StopName(std::string stop, svg::Point point,
-                      const rm::RenderingSettings &settings) {
+                      const RenderingSettings &settings) {
   svg::SectionBuilder label;
   label.Add(std::move(svg::Text{}
                           .SetPoint(point)
@@ -119,14 +121,14 @@ std::unordered_map<std::string, svg::Point> CombineCoords(
 std::unordered_map<std::string, svg::Point> TransformCoords(
     const rm::renderer_utils::Buses &buses,
     rm::renderer_utils::Stops &stops,
-    const rm::Frame &frame) {
+    const Frame &frame) {
   using namespace rm::coords_converter;
 
   BaseStops base_stops;
-  rm::Combine(base_stops,
-              EndPoints(buses),
-              IntersectionsCrossRoute(buses),
-              IntersectionsWithinRoute(buses, 3));
+  Combine(base_stops,
+          EndPoints(buses),
+          IntersectionsCrossRoute(buses),
+          IntersectionsWithinRoute(buses, 3));
   for (auto &bus : buses) {
     stops = Interpolate(std::move(stops), bus.second.route, base_stops);
   }
@@ -147,13 +149,13 @@ std::unordered_map<std::string, svg::Point> TransformCoords(
 }
 
 template<typename Func>
-void ForEachRoadItem(const std::vector<rm::RouteInfo::Item> &items, Func func) {
+void ForEachRoadItem(const std::vector<RouteInfo::Item> &items, Func func) {
   bool first = true;
   for (auto &item : items) {
-    if (std::holds_alternative<rm::RouteInfo::WaitItem>(item))
+    if (std::holds_alternative<RouteInfo::WaitItem>(item))
       continue;
 
-    func(std::get<rm::RouteInfo::RoadItem>(item), first);
+    func(std::get<RouteInfo::RoadItem>(item), first);
     first = false;
   }
 }
@@ -283,9 +285,9 @@ std::vector<svg::Point> MapRenderer::Points(
 
 bool MapRenderer::ValidateRoute(const RouteInfo &route_info) const {
   for (auto &item : route_info.items) {
-    if (std::holds_alternative<rm::RouteInfo::WaitItem>(item))
+    if (std::holds_alternative<RouteInfo::WaitItem>(item))
       continue;
-    auto &route = std::get<rm::RouteInfo::RoadItem>(item);
+    auto &route = std::get<RouteInfo::RoadItem>(item);
     if (buses_.find(route.bus) == buses_.end())
       return false;
     auto start = route.start_idx;
@@ -303,7 +305,7 @@ bool MapRenderer::ValidateRoute(const RouteInfo &route_info) const {
 void MapRenderer::AddBusLinesLayout(
     svg::SectionBuilder &builder,
     const MapRenderer::Buses &buses,
-    const rm::RenderingSettings &settings,
+    const RenderingSettings &settings,
     const StopCoords &coords) {
   for (auto &bus : SortBusNames(buses)) {
     auto &bus_info = buses.at(bus);
@@ -315,7 +317,7 @@ void MapRenderer::AddBusLinesLayout(
 void MapRenderer::AddBusLabelsLayout(
     svg::SectionBuilder &builder,
     const Buses &buses,
-    const rm::RenderingSettings &settings,
+    const RenderingSettings &settings,
     const StopCoords &coords) {
   for (auto &bus : SortBusNames(buses)) {
     auto &bus_info = buses.at(bus);
@@ -328,7 +330,7 @@ void MapRenderer::AddBusLabelsLayout(
 void MapRenderer::AddStopPointsLayout(
     svg::SectionBuilder &builder,
     const renderer_utils::Stops &stops,
-    const rm::RenderingSettings &settings,
+    const RenderingSettings &settings,
     const StopCoords &coords) {
   for (auto [stop, _] : stops) {
     builder.Add(StopPoint(coords.at(std::string(stop)), settings.stop_radius));
@@ -338,7 +340,7 @@ void MapRenderer::AddStopPointsLayout(
 void MapRenderer::AddStopLabelsLayout(
     svg::SectionBuilder &builder,
     const renderer_utils::Stops &stops,
-    const rm::RenderingSettings &settings,
+    const RenderingSettings &settings,
     const StopCoords &coords) {
   for (auto [stop, _] : stops) {
     builder.Add(StopName(std::string(stop),

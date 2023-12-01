@@ -12,7 +12,7 @@
 #include "sphere.h"
 
 namespace rm::renderer_utils {
-using Buses = std::map<std::string_view, rm::Route>;
+using Buses = std::map<std::string_view, rm::utils::Route>;
 using Stops = std::map<std::string_view, rm::sphere::Coords>;
 }
 

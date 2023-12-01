@@ -9,10 +9,12 @@
 #include "distance_computer.h"
 #include "request_types.h"
 
+using namespace rm::utils;
+
 namespace rm {
-RouteManager::RouteManager(const rm::StopDict &stop_info,
-                           const rm::BusDict &bus_info,
-                           const rm::RoutingSettings &routing_settings)
+RouteManager::RouteManager(const StopDict &stop_info,
+                           const BusDict &bus_info,
+                           const RoutingSettings &routing_settings)
     : settings_(routing_settings),
       graph_(stop_info.size() * 2),
       vertices_(stop_info.size() * 2) {
@@ -21,7 +23,7 @@ RouteManager::RouteManager(const rm::StopDict &stop_info,
   router_ = std::make_unique<Router>(graph_);
 }
 
-void RouteManager::ReadStops(const rm::StopDict &stop_dict) {
+void RouteManager::ReadStops(const StopDict &stop_dict) {
   int vertex_id = 0;
   for (auto &[stop, _] : stop_dict) {
     auto &[arrive, depart] = stop_ids_[stop];
@@ -37,8 +39,8 @@ void RouteManager::ReadStops(const rm::StopDict &stop_dict) {
   }
 }
 
-void RouteManager::ReadBuses(const rm::BusDict &bus_dict,
-                             const rm::StopDict &stop_dict) {
+void RouteManager::ReadBuses(const BusDict &bus_dict,
+                             const StopDict &stop_dict) {
   for (auto &[bus, bus_info] : bus_dict) {
     auto &route = bus_info.stops;
     int stop_count = route.size();

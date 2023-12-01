@@ -10,6 +10,8 @@
 
 #include "test_utils.h"
 
+using namespace rm::utils;
+
 TEST(TestInputRequest, TestCommonProperties) {
   using namespace rm;
 
