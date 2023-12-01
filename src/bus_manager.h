@@ -9,22 +9,10 @@
 
 #include "common.h"
 #include "request_types.h"
+#include "response_types.h"
 #include "route_manager.h"
 
 namespace rm {
-struct BusResponse {
-  int stop_count;
-  int unique_stop_count;
-  double length;
-  double curvature;
-};
-
-struct StopResponse {
-  std::vector<std::string> buses;
-};
-
-using RouteResponse = RouteInfo;
-
 class BusManager {
  public:
   static std::unique_ptr<BusManager> Create(
