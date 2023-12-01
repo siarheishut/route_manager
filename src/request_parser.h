@@ -10,22 +10,29 @@
 #include "request_types.h"
 
 namespace rm {
-std::optional<RoutingSettings> ParseRoutingSettings(json::Dict settings);
-std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings);
+std::optional<utils::RoutingSettings> ParseRoutingSettings(json::Dict settings);
+std::optional<utils::RenderingSettings> ParseRenderingSettings(
+    json::Dict settings);
 
-std::optional<std::vector<PostRequest>> ParseInput(json::List base_requests);
-std::optional<std::vector<GetRequest>> ParseOutput(json::List stat_requests);
+std::optional<std::vector<utils::PostRequest>> ParseInput(
+    json::List base_requests);
+std::optional<std::vector<utils::GetRequest>> ParseOutput(
+    json::List stat_requests);
 
-std::optional<PostRequest> ParseInputRequest(json::Dict request_data);
-std::optional<GetRequest> ParseOutputRequest(json::Dict request_data);
+std::optional<utils::PostRequest> ParseInputRequest(json::Dict request_data);
+std::optional<utils::GetRequest> ParseOutputRequest(json::Dict request_data);
 
-std::optional<PostStopRequest> ParsePostStopRequest(json::Dict request_data);
-std::optional<PostBusRequest> ParsePostBusRequest(json::Dict request_data);
+std::optional<utils::PostStopRequest> ParsePostStopRequest(
+    json::Dict request_data);
+std::optional<utils::PostBusRequest> ParsePostBusRequest(
+    json::Dict request_data);
 
-std::optional<GetStopRequest> ParseGetStopRequest(json::Dict request_data);
-std::optional<GetBusRequest> ParseGetBusRequest(json::Dict request_data);
-std::optional<GetRouteRequest> ParseGetRouteRequest(json::Dict request_data);
-std::optional<GetMapRequest> ParseGetMapRequest(json::Dict request_data);
+std::optional<utils::GetStopRequest> ParseGetStopRequest(
+    json::Dict request_data);
+std::optional<utils::GetBusRequest> ParseGetBusRequest(json::Dict request_data);
+std::optional<utils::GetRouteRequest> ParseGetRouteRequest(
+    json::Dict request_data);
+std::optional<utils::GetMapRequest> ParseGetMapRequest(json::Dict request_data);
 }
 
 #endif // ROOT_MANAGER_SRC_REQUEST_PARSER_H_

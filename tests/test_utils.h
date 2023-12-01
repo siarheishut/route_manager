@@ -15,7 +15,35 @@
 
 namespace rm {
 bool CompareLength(double lhs, double rhs, int precision);
+}
 
+namespace svg {
+bool operator==(Point lhs, Point rhs);
+
+bool operator!=(Point lhs, Point rhs);
+
+bool operator==(Rgb lhs, Rgb rhs);
+
+bool operator!=(Rgb lhs, Rgb rhs);
+
+bool operator==(Rgba lhs, Rgba rhs);
+
+bool operator!=(Rgba lhs, Rgba rhs);
+
+bool operator==(const Color &lhs, const Color &rhs);
+
+bool operator!=(const Color &lhs, const Color &rhs);
+
+std::ostream &operator<<(std::ostream &out, Point point);
+}
+
+namespace rm::sphere {
+bool operator==(const Coords &lhs, const Coords &rhs);
+bool operator!=(const Coords &lhs, const Coords &rhs);
+std::ostream &operator<<(std::ostream &out, const Coords &coords);
+}
+
+namespace rm::utils {
 bool operator==(const BusResponse &lhs, const BusResponse &rhs);
 
 bool operator!=(const BusResponse &lhs, const BusResponse &rhs);
@@ -56,6 +84,8 @@ bool operator==(const RenderingSettings &lhs, const RenderingSettings &rhs);
 
 bool operator!=(const RenderingSettings &lhs, const RenderingSettings &rhs);
 
+bool operator==(const BusResponse &lhs, const BusResponse &rhs);
+
 bool operator==(const RouteResponse::WaitItem &lhs,
                 const RouteResponse::WaitItem &rhs);
 
@@ -71,6 +101,13 @@ bool operator!=(const RouteResponse::RoadItem &lhs,
 bool operator==(const RouteResponse &lhs, const RouteResponse &rhs);
 
 bool operator!=(const RouteResponse &lhs, const RouteResponse &rhs);
+
+template<typename T>
+std::ostream &operator<<(std::ostream &out, const std::vector<T> &str_v) {
+  for (auto &item : str_v)
+    out << ' ' << item;
+  return out;
+}
 
 template<typename T>
 std::ostream &operator<<(std::ostream &out,
@@ -103,32 +140,6 @@ std::ostream &operator<<(std::ostream &out, const RouteResponse::WaitItem &ri);
 std::ostream &operator<<(std::ostream &out, const RouteResponse::Item &item);
 
 std::ostream &operator<<(std::ostream &out, const RouteResponse &rr);
-}
-
-namespace svg {
-bool operator==(Point lhs, Point rhs);
-
-bool operator!=(Point lhs, Point rhs);
-
-bool operator==(Rgb lhs, Rgb rhs);
-
-bool operator!=(Rgb lhs, Rgb rhs);
-
-bool operator==(Rgba lhs, Rgba rhs);
-
-bool operator!=(Rgba lhs, Rgba rhs);
-
-bool operator==(const Color &lhs, const Color &rhs);
-
-bool operator!=(const Color &lhs, const Color &rhs);
-
-std::ostream &operator<<(std::ostream &out, Point point);
-}
-
-namespace rm::sphere {
-bool operator==(const Coords &lhs, const Coords &rhs);
-bool operator!=(const Coords &lhs, const Coords &rhs);
-std::ostream &operator<<(std::ostream &out, const Coords &coords);
 }
 
 #endif // ROOT_MANAGER_TESTS_TEST_UTILS_H_

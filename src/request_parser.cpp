@@ -10,6 +10,8 @@
 
 #include "color_parser.h"
 
+using namespace rm::utils;
+
 namespace {
 bool IsOffset(const json::Node &node) {
   return node.IsArray() &&
@@ -46,19 +48,19 @@ bool IsLayers(const json::Node &node) {
       });
 }
 
-std::vector<rm::MapLayer> AsLayers(const json::Node &node) {
-  std::vector<rm::MapLayer> layers;
+std::vector<MapLayer> AsLayers(const json::Node &node) {
+  std::vector<MapLayer> layers;
   layers.reserve(node.AsArray().size());
   for (auto &item : node.AsArray()) {
     auto &layer = item.AsString();
     if (layer == "bus_lines") {
-      layers.push_back(rm::MapLayer::kBusLines);
+      layers.push_back(MapLayer::kBusLines);
     } else if (layer == "bus_labels") {
-      layers.push_back(rm::MapLayer::kBusLabels);
+      layers.push_back(MapLayer::kBusLabels);
     } else if (layer == "stop_points") {
-      layers.push_back(rm::MapLayer::kStopPoints);
+      layers.push_back(MapLayer::kStopPoints);
     } else if (layer == "stop_labels") {
-      layers.push_back(rm::MapLayer::kStopLabels);
+      layers.push_back(MapLayer::kStopLabels);
     }
   }
   return layers;
@@ -122,7 +124,7 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
     return std::nullopt;
 
   RenderingSettings rs;
-  rs.frame = rm::Frame{
+  rs.frame = Frame{
       .width = width->second.AsDouble(),
       .height = height->second.AsDouble(),
       .padding = padding->second.AsDouble(),
@@ -143,7 +145,7 @@ std::optional<RenderingSettings> ParseRenderingSettings(json::Dict settings) {
 }
 
 std::optional<std::vector<PostRequest>> ParseInput(json::List base_requests) {
-  std::vector<rm::PostRequest> input_requests;
+  std::vector<PostRequest> input_requests;
   for (auto &req : base_requests) {
     if (!req.IsMap()) return std::nullopt;
   }
@@ -240,8 +242,8 @@ std::optional<PostStopRequest> ParsePostStopRequest(json::Dict dict) {
   return sr;
 }
 
-std::optional<std::vector<rm::GetRequest>> ParseOutput(json::List stat_requests) {
-  std::vector<rm::GetRequest> output_requests;
+std::optional<std::vector<GetRequest>> ParseOutput(json::List stat_requests) {
+  std::vector<GetRequest> output_requests;
   for (auto &req : stat_requests) {
     if (!req.IsMap()) return std::nullopt;
   }

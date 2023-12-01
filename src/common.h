@@ -10,7 +10,7 @@
 
 #include "request_types.h"
 
-namespace rm {
+namespace rm::utils {
 struct Route {
   std::vector<std::string_view> route;
   std::unordered_set<std::string_view> endpoints;

@@ -10,7 +10,9 @@
 
 using namespace std;
 
-const rm::RoutingSettings kTestRoutingSettings{
+using namespace rm::utils;
+
+const RoutingSettings kTestRoutingSettings{
     .bus_wait_time = 7,
     .bus_velocity = 54.0
 };
@@ -502,8 +504,8 @@ TEST(TestBusManager, TestGetStopInfo) {
 TEST(TestBusManager, TestFindRouteInfo) {
   using namespace rm;
 
-  using WaitItem = rm::RouteInfo::WaitItem;
-  using RoadItem = rm::RouteInfo::RoadItem;
+  using WaitItem = RouteInfo::WaitItem;
+  using RoadItem = RouteInfo::RoadItem;
 
   struct TestCase {
     string name;

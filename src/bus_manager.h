@@ -16,19 +16,19 @@ namespace rm {
 class BusManager {
  public:
   static std::unique_ptr<BusManager> Create(
-      std::vector<PostRequest> requests,
-      const RoutingSettings &routing_setting);
+      std::vector<utils::PostRequest> requests,
+      const utils::RoutingSettings &routing_setting);
 
-  std::optional<BusResponse> GetBusInfo(const std::string &bus) const;
+  std::optional<utils::BusResponse> GetBusInfo(const std::string &bus) const;
 
-  std::optional<StopResponse> GetStopInfo(const std::string &stop) const;
+  std::optional<utils::StopResponse> GetStopInfo(const std::string &stop) const;
 
-  std::optional<RouteResponse> GetRoute(const std::string &from,
-                                        const std::string &to) const;
+  std::optional<utils::RouteResponse> GetRoute(const std::string &from,
+                                               const std::string &to) const;
 
  private:
-  explicit BusManager(std::vector<PostRequest> requests,
-                      const RoutingSettings &routing_settings);
+  explicit BusManager(std::vector<utils::PostRequest> requests,
+                      const utils::RoutingSettings &routing_settings);
 
   void AddStop(const std::string &stop, sphere::Coords coords,
                const std::map<std::string, int> &stops);
@@ -36,8 +36,8 @@ class BusManager {
   void AddBus(std::string bus, std::vector<std::string> stops);
 
  private:
-  StopDict stop_info_;
-  BusDict bus_info_;
+  utils::StopDict stop_info_;
+  utils::BusDict bus_info_;
   std::unique_ptr<RouteManager> route_manager_;
 };
 }
