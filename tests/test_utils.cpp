@@ -21,7 +21,75 @@ bool CompareLength(double lhs, double rhs, int precision) {
   ssr << setprecision(precision) << rhs;
   return ssl.str() == ssr.str();
 }
+}
 
+namespace svg {
+bool operator==(Point lhs, Point rhs) {
+  return tie(lhs.x, lhs.y) == tie(rhs.x, rhs.y);
+}
+
+bool operator!=(Point lhs, Point rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator==(Rgb lhs, Rgb rhs) {
+  return tuple<int, int, int>(lhs.red, lhs.green, lhs.blue)
+      == tuple<int, int, int>(rhs.red, rhs.green, rhs.blue);
+}
+
+bool operator!=(Rgb lhs, Rgb rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator==(Rgba lhs, Rgba rhs) {
+  return
+      tuple<int, int, int, double>(lhs.red, lhs.green, lhs.blue, lhs.alpha) ==
+          tuple<int, int, int, double>(rhs.red, rhs.green, rhs.blue, rhs.alpha);
+}
+
+bool operator!=(Rgba lhs, Rgba rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator==(const Color &lhs, const Color &rhs) {
+  if (holds_alternative<string>(lhs) && holds_alternative<string>(rhs)) {
+    return get<string>(lhs) == get<string>(rhs);
+  }
+  if (holds_alternative<Rgb>(lhs) && holds_alternative<Rgb>(rhs)) {
+    return get<Rgb>(lhs) == get<Rgb>(rhs);
+  }
+  if (holds_alternative<Rgba>(lhs) && holds_alternative<Rgba>(rhs)) {
+    return get<Rgba>(lhs) == get<Rgba>(rhs);
+  }
+  return holds_alternative<monostate>(lhs) && holds_alternative<monostate>(rhs);
+}
+
+bool operator!=(const Color &lhs, const Color &rhs) {
+  return !(lhs == rhs);
+}
+
+ostream &operator<<(ostream &out, const Point point) {
+  return out << '{' << point.x << ',' << point.y << '}';
+}
+}
+
+namespace rm::sphere {
+bool operator==(const Coords &lhs, const Coords &rhs) {
+  return std::tie(lhs.longitude, lhs.latitude) ==
+      std::tie(rhs.longitude, rhs.latitude);
+}
+
+bool operator!=(const Coords &lhs, const Coords &rhs) {
+  return !(lhs == rhs);
+}
+
+std::ostream &operator<<(std::ostream &out, const Coords &coords) {
+  return out << "{lon = " << coords.longitude << ", lat = " << coords.latitude
+             << '}';
+}
+}
+
+namespace rm::utils {
 bool operator==(const GetBusRequest &lhs, const GetBusRequest &rhs) {
   return lhs.bus == rhs.bus;
 }
@@ -163,13 +231,6 @@ bool operator!=(const RouteResponse &lhs, const RouteResponse &rhs) {
   return !(lhs == rhs);
 }
 
-template<typename T>
-ostream &operator<<(ostream &out, const vector<T> &str_v) {
-  for (auto &item : str_v)
-    out << ' ' << item;
-  return out;
-}
-
 ostream &operator<<(ostream &out, const PostBusRequest &br) {
   return out << br.bus << ": " << br.stops << ". Endpoints: " << br.endpoints;
 }
@@ -235,71 +296,5 @@ ostream &operator<<(ostream &out, const RouteResponse::Item &item) {
 
 ostream &operator<<(ostream &out, const RouteResponse &rr) {
   return out << rr.time << ' ' << rr.items;
-}
-}
-
-namespace svg {
-bool operator==(Point lhs, Point rhs) {
-  return tie(lhs.x, lhs.y) == tie(rhs.x, rhs.y);
-}
-
-bool operator!=(Point lhs, Point rhs) {
-  return !(lhs == rhs);
-}
-
-bool operator==(Rgb lhs, Rgb rhs) {
-  return tuple<int, int, int>(lhs.red, lhs.green, lhs.blue)
-      == tuple<int, int, int>(rhs.red, rhs.green, rhs.blue);
-}
-
-bool operator!=(Rgb lhs, Rgb rhs) {
-  return !(lhs == rhs);
-}
-
-bool operator==(Rgba lhs, Rgba rhs) {
-  return
-      tuple<int, int, int, double>(lhs.red, lhs.green, lhs.blue, lhs.alpha) ==
-          tuple<int, int, int, double>(rhs.red, rhs.green, rhs.blue, rhs.alpha);
-}
-
-bool operator!=(Rgba lhs, Rgba rhs) {
-  return !(lhs == rhs);
-}
-
-bool operator==(const Color &lhs, const Color &rhs) {
-  if (holds_alternative<string>(lhs) && holds_alternative<string>(rhs)) {
-    return get<string>(lhs) == get<string>(rhs);
-  }
-  if (holds_alternative<Rgb>(lhs) && holds_alternative<Rgb>(rhs)) {
-    return get<Rgb>(lhs) == get<Rgb>(rhs);
-  }
-  if (holds_alternative<Rgba>(lhs) && holds_alternative<Rgba>(rhs)) {
-    return get<Rgba>(lhs) == get<Rgba>(rhs);
-  }
-  return holds_alternative<monostate>(lhs) && holds_alternative<monostate>(rhs);
-}
-
-bool operator!=(const Color &lhs, const Color &rhs) {
-  return !(lhs == rhs);
-}
-
-ostream &operator<<(ostream &out, const Point point) {
-  return out << '{' << point.x << ',' << point.y << '}';
-}
-}
-
-namespace rm::sphere {
-bool operator==(const Coords &lhs, const Coords &rhs) {
-  return std::tie(lhs.longitude, lhs.latitude) ==
-      std::tie(rhs.longitude, rhs.latitude);
-}
-
-bool operator!=(const Coords &lhs, const Coords &rhs) {
-  return !(lhs == rhs);
-}
-
-std::ostream &operator<<(std::ostream &out, const Coords &coords) {
-  return out << "{lon = " << coords.longitude << ", lat = " << coords.latitude
-             << '}';
 }
 }

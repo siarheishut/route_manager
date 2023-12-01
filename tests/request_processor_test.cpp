@@ -6,8 +6,10 @@
 
 #include "gtest/gtest.h"
 
+using namespace rm::utils;
+
 TEST(TestProcessRequests, TestStopResponseToJson) {
-  using ResponseOpt = std::optional<rm::StopResponse>;
+  using ResponseOpt = std::optional<StopResponse>;
 
   struct TestCase {
     std::string name;
@@ -33,7 +35,7 @@ TEST(TestProcessRequests, TestStopResponseToJson) {
       },
       TestCase{
           .name = "Buses found",
-          .response = rm::StopResponse{{"Bus1", "12464", "Bus 2"}},
+          .response = StopResponse{{"Bus1", "12464", "Bus 2"}},
           .id = 12,
           .want = json::Dict{{"request_id", 12},
                              {"buses", json::List{"Bus1", "12464", "Bus 2"}}},
@@ -47,7 +49,7 @@ TEST(TestProcessRequests, TestStopResponseToJson) {
 }
 
 TEST(TestProcessRequests, TestBusResponseToJson) {
-  using ResponseOpt = std::optional<rm::BusResponse>;
+  using ResponseOpt = std::optional<BusResponse>;
 
   struct TestCase {
     std::string name;
@@ -66,7 +68,7 @@ TEST(TestProcessRequests, TestBusResponseToJson) {
       },
       TestCase{
           .name = "Bus Found",
-          .response = rm::BusResponse{
+          .response = BusResponse{
               .stop_count = 5,
               .unique_stop_count = 4,
               .length = 194271.1,
@@ -88,7 +90,7 @@ TEST(TestProcessRequests, TestBusResponseToJson) {
 }
 
 TEST(TestProcessRequests, TestRouteResponseToJson) {
-  using ResponseOpt = std::optional<rm::RouteResponse>;
+  using ResponseOpt = std::optional<RouteResponse>;
 
   struct TestCase {
     std::string name;
@@ -109,14 +111,14 @@ TEST(TestProcessRequests, TestRouteResponseToJson) {
       },
       TestCase{
           .name = "Route Found",
-          .response = rm::RouteResponse{
+          .response = RouteResponse{
               .time = 69.543,
               .items = {
-                  rm::RouteResponse::WaitItem{.stop = "stop 1", .time = 5},
-                  rm::RouteResponse::RoadItem{
+                  RouteResponse::WaitItem{.stop = "stop 1", .time = 5},
+                  RouteResponse::RoadItem{
                       .bus = "bus 1", .time = 10.43, .span_count = 4},
-                  rm::RouteResponse::WaitItem{.stop = "stop 2", .time = 5},
-                  rm::RouteResponse::RoadItem{
+                  RouteResponse::WaitItem{.stop = "stop 2", .time = 5},
+                  RouteResponse::RoadItem{
                       .bus = "bus 2", .time = 49.113, .span_count = 7}}
           },
           .map = "some map",
@@ -153,14 +155,14 @@ TEST(TestProcessRequests, TestRouteResponseToJson) {
       },
       TestCase{
           .name = "Invalid route info",
-          .response = rm::RouteResponse{
+          .response = RouteResponse{
               .time = 69.543,
               .items = {
-                  rm::RouteResponse::WaitItem{.stop = "stop 1", .time = 5},
-                  rm::RouteResponse::RoadItem{
+                  RouteResponse::WaitItem{.stop = "stop 1", .time = 5},
+                  RouteResponse::RoadItem{
                       .bus = "bus 1", .time = 10.43, .span_count = 4},
-                  rm::RouteResponse::WaitItem{.stop = "stop 2", .time = 5},
-                  rm::RouteResponse::RoadItem{
+                  RouteResponse::WaitItem{.stop = "stop 2", .time = 5},
+                  RouteResponse::RoadItem{
                       .bus = "bus 2", .time = 49.113, .span_count = 7}}
           },
           .map = std::nullopt,
@@ -205,6 +207,6 @@ TEST(TestProcessRequests, TestRouteResponseToJson) {
 
 TEST(TestProcessRequests, TestMapResponseToJson) {
   auto want = json::Dict{{"map", "My map"}, {"request_id", 12}};
-  json::Dict got = rm::ToJson(rm::MapResponse{.map = "My map"}, 12);
+  json::Dict got = rm::ToJson(MapResponse{.map = "My map"}, 12);
   EXPECT_EQ(want, got);
 }

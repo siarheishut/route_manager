@@ -11,18 +11,20 @@
 #include "map_renderer_utils.h"
 #include "response_types.h"
 
+using namespace rm::utils;
+
 namespace {
-auto MapRendererParams(const std::vector<rm::PostRequest> &requests) {
+auto MapRendererParams(const std::vector<PostRequest> &requests) {
   using namespace std;
   using namespace rm;
 
-  map<string_view, rm::Route> buses;
+  map<string_view, Route> buses;
   map<string_view, sphere::Coords> stops;
   for (auto &request : requests) {
     if (auto bus = get_if<PostBusRequest>(&request)) {
       buses.emplace(
           bus->bus,
-          rm::Route{
+          Route{
               .route = {begin(bus->stops), end(bus->stops)},
               .endpoints = {begin(bus->endpoints), end(bus->endpoints)}});
     } else if (auto stop = get_if<PostStopRequest>(&request)) {

@@ -13,7 +13,7 @@
 
 #include "sphere.h"
 
-namespace rm {
+namespace rm::utils {
 struct RoutingSettings {
   // measured in minutes.
   int bus_wait_time;
