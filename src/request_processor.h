@@ -10,12 +10,9 @@
 #include "bus_manager.h"
 #include "map_renderer.h"
 #include "request_types.h"
+#include "response_types.h"
 
 namespace rm {
-struct MapResponse {
-  std::string map;
-};
-
 json::Dict ToJson(std::optional<BusResponse> resp, int id);
 json::Dict ToJson(std::optional<StopResponse> resp, int id);
 json::List ToJson(std::vector<RouteResponse::Item> response_items);

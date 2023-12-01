@@ -9,6 +9,7 @@
 #include "bus_manager.h"
 #include "map_renderer.h"
 #include "map_renderer_utils.h"
+#include "response_types.h"
 
 namespace {
 auto MapRendererParams(const std::vector<rm::PostRequest> &requests) {
