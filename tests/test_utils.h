@@ -4,6 +4,7 @@
 #include <ostream>
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
 #include <vector>
 
 #include "svg/common.h"
@@ -84,6 +85,14 @@ bool operator==(const RenderingSettings &lhs, const RenderingSettings &rhs);
 
 bool operator!=(const RenderingSettings &lhs, const RenderingSettings &rhs);
 
+bool operator==(const StopInfo &lhs, const StopInfo &rhs);
+
+bool operator!=(const StopInfo &lhs, const StopInfo &rhs);
+
+bool operator==(const BusInfo &lhs, const BusInfo &rhs);
+
+bool operator!=(const BusInfo &lhs, const BusInfo &rhs);
+
 bool operator==(const BusResponse &lhs, const BusResponse &rhs);
 
 bool operator==(const RouteResponse::WaitItem &lhs,
@@ -117,6 +126,20 @@ std::ostream &operator<<(std::ostream &out,
   return out;
 }
 
+template<typename Key, typename Value>
+std::ostream &operator<<(std::ostream &out,
+                         const std::unordered_map<Key, Value> &items) {
+  out << "{";
+  bool first = true;
+  for (auto &[k, v] : items) {
+    if (!first) {
+      out << ", ";
+    }
+    out << "{" << k << ", " << v << "}";
+  }
+  return out;
+}
+
 std::ostream &operator<<(std::ostream &out, const PostBusRequest &br);
 
 std::ostream &operator<<(std::ostream &out, const PostStopRequest &sr);
@@ -140,6 +163,10 @@ std::ostream &operator<<(std::ostream &out, const RouteResponse::WaitItem &ri);
 std::ostream &operator<<(std::ostream &out, const RouteResponse::Item &item);
 
 std::ostream &operator<<(std::ostream &out, const RouteResponse &rr);
+
+std::ostream &operator<<(std::ostream &out, const StopInfo &si);
+
+std::ostream &operator<<(std::ostream &out, const BusInfo &bi);
 }
 
 #endif // ROOT_MANAGER_TESTS_TEST_UTILS_H_

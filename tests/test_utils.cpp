@@ -178,6 +178,31 @@ bool operator==(const Frame &lhs, const Frame &rhs) {
       tie(rhs.width, rhs.height, rhs.padding);
 }
 
+bool operator==(const StopInfo &lhs, const StopInfo &rhs) {
+  return std::tie(lhs.dists, lhs.coords, lhs.buses) ==
+      std::tie(rhs.dists, rhs.coords, rhs.buses);
+}
+
+bool operator==(const BusInfo &lhs, const BusInfo &rhs) {
+  return (std::tie(lhs.stops,
+                   lhs.endpoints,
+                   lhs.unique_stop_count)
+      == std::tie(rhs.stops,
+                  rhs.endpoints,
+                  rhs.unique_stop_count) &&
+      CompareLength(lhs.distance, rhs.distance, 6) &&
+      CompareLength(lhs.curvature, rhs.curvature, 6)
+  );
+}
+
+bool operator!=(const BusInfo &lhs, const BusInfo &rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(const StopInfo &lhs, const StopInfo &rhs) {
+  return !(lhs == rhs);
+}
+
 bool operator!=(const Frame &lhs, const Frame &rhs) {
   return !(lhs == rhs);
 }
@@ -296,5 +321,16 @@ ostream &operator<<(ostream &out, const RouteResponse::Item &item) {
 
 ostream &operator<<(ostream &out, const RouteResponse &rr) {
   return out << rr.time << ' ' << rr.items;
+}
+
+ostream &operator<<(ostream &out, const StopInfo &si) {
+  return out << "Dists: " << si.dists << ". Coords: {" << si.coords
+             << "}. Buses: [" << si.buses << "].";
+}
+
+ostream &operator<<(ostream &out, const BusInfo &bi) {
+  return out << "Stops: [" << bi.stops << "]. Endpoints: [" << bi.endpoints <<
+             "]. Unique_count: " << bi.unique_stop_count << ". Distance: " <<
+             bi.distance << ". Curvature: " << bi.curvature << '.';
 }
 }
