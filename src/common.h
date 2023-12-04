@@ -26,6 +26,7 @@ struct StopInfo {
 
 struct BusInfo {
   std::vector<std::string> stops;
+  std::unordered_set<std::string> endpoints;
   int unique_stop_count;
   double distance;
   double curvature;
@@ -49,8 +50,8 @@ struct RouteInfo {
   std::vector<Item> items;
 };
 
-using StopDict = std::unordered_map<std::string, StopInfo>;
-using BusDict = std::unordered_map<std::string, BusInfo>;
+using StopDict = std::map<std::string, StopInfo>;
+using BusDict = std::map<std::string, BusInfo>;
 
 template<typename C, typename ...Args>
 void Combine(C &container, Args... args) {
