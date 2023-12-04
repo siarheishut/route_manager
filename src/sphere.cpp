@@ -8,15 +8,16 @@ namespace rm::sphere {
 // with asin expressed with atan2 for better accuracy.
 double CalculateDistance(Coords lhs, Coords rhs) {
   constexpr double earth_radius_m = 6371.0 * 1000.0;
+  constexpr double k = 3.1415926535 / 180;
 
-  const double d_lat = rhs.latitude - lhs.latitude;
-  const double d_long = rhs.longitude - lhs.longitude;
+  const double d_lat = (rhs.latitude - lhs.latitude) * k;
+  const double d_long = (rhs.longitude - lhs.longitude) * k;
 
   double a =
       std::sin(d_lat / 2) * std::sin(d_lat / 2) + std::sin(d_long / 2) *
           std::sin(d_long / 2) *
-          std::cos(lhs.latitude) *
-          std::cos(rhs.latitude);
+          std::cos(lhs.latitude * k) *
+          std::cos(rhs.latitude * k);
   double c = earth_radius_m * 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
 
   return c;

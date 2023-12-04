@@ -86,9 +86,8 @@ BusManager::BusManager(std::vector<PostRequest> requests,
 
 void BusManager::AddStop(const std::string &stop, sphere::Coords coords,
                          const std::map<std::string, int> &stops) {
-  constexpr double k = 3.1415926535 / 180;
   auto &info = stop_info_[stop];
-  info.coords = {coords.latitude * k, coords.longitude * k};
+  info.coords = {coords.latitude, coords.longitude};
   for (auto &[stop_to, dist] : stops) {
     auto &stop_to_dists = stop_info_[stop_to].dists;
     if (auto it = stop_to_dists.find(stop); it == stop_to_dists.end()) {
