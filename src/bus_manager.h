@@ -11,13 +11,13 @@
 #include "request_types.h"
 #include "response_types.h"
 #include "route_manager.h"
+#include "transport_catalog.h"
 
 namespace rm {
 class BusManager {
  public:
-  static std::unique_ptr<BusManager> Create(
-      std::vector<utils::PostRequest> requests,
-      const utils::RoutingSettings &routing_setting);
+  explicit BusManager(std::shared_ptr<TransportCatalog> transport_catalog,
+                      const utils::RoutingSettings &routing_setting);
 
   std::optional<utils::BusResponse> GetBusInfo(const std::string &bus) const;
 
@@ -27,17 +27,7 @@ class BusManager {
                                                const std::string &to) const;
 
  private:
-  explicit BusManager(std::vector<utils::PostRequest> requests,
-                      const utils::RoutingSettings &routing_settings);
-
-  void AddStop(const std::string &stop, sphere::Coords coords,
-               const std::map<std::string, int> &stops);
-
-  void AddBus(std::string bus, std::vector<std::string> stops);
-
- private:
-  utils::StopDict stop_info_;
-  utils::BusDict bus_info_;
+  std::shared_ptr<TransportCatalog> transport_catalog_;
   std::unique_ptr<RouteManager> route_manager_;
 };
 }
