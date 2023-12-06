@@ -17,304 +17,6 @@ const RoutingSettings kTestRoutingSettings{
     .bus_velocity = 54.0
 };
 
-TEST(TestFactoryMethod, TestInitializing) {
-  using namespace rm;
-
-  struct TestCase {
-    std::string name;
-    std::vector<PostRequest> config;
-    RoutingSettings routing_settings;
-    bool want;
-  };
-
-  std::vector<TestCase> test_cases{
-      TestCase{
-          .name = "Bus redefinition",
-          .config = {
-              PostBusRequest{
-                  .bus = "Bus 1",
-                  .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
-              },
-              PostBusRequest{
-                  .bus = "Bus 1",
-                  .stops = {"stop 2", "stop 3", "stop 1", "stop 3", "stop 2"},
-              },
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-                  .stop_distances = {{"stop 2", 10000}, {"stop 3", 20000}}
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-                  .stop_distances = {{"stop 3", 7000}},
-              },
-              PostStopRequest{
-                  .stop = "stop 3",
-                  .coords = {33.333333, 33.333333},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = false,
-      },
-      TestCase{
-          .name = "Fixed \"Bus redefinition\"",
-          .config = {
-              PostBusRequest{
-                  .bus = "Bus 1",
-                  .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
-              },
-              PostBusRequest{
-                  .bus = "Bus 2",
-                  .stops = {"stop 2", "stop 3", "stop 1", "stop 3", "stop 2"},
-              },
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-                  .stop_distances = {{"stop 2", 10000}, {"stop 3", 20000}}
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-                  .stop_distances = {{"stop 3", 7000}},
-              },
-              PostStopRequest{
-                  .stop = "stop 3",
-                  .coords = {33.333333, 33.333333},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = true,
-      },
-      TestCase{
-          .name = "Stop redefinition",
-          .config = {
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {44.444444, 44.444444},
-              },
-              PostStopRequest{
-                  .stop = "stop 3",
-                  .coords = {33.333333, 33.333333},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = false,
-      },
-      TestCase{
-          .name = "Fixed \"Stop redefinition\"",
-          .config = {
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-              },
-              PostStopRequest{
-                  .stop = "stop 4",
-                  .coords = {44.444444, 44.444444},
-              },
-              PostStopRequest{
-                  .stop = "stop 3",
-                  .coords = {33.333333, 33.333333},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = true,
-      },
-      TestCase{
-          .name = "Unknown stop along the route",
-          .config = {
-              PostBusRequest{
-                  .bus = "Bus 1",
-                  .stops = {"stop 1", "stop 2", "stop 4", "stop 2", "stop 1"},
-              },
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-              },
-              PostStopRequest{
-                  .stop = "stop 3",
-                  .coords = {33.333333, 33.333333},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = false,
-      },
-      TestCase{
-          .name = "Fixed \"Unknown stop along the route\"",
-          .config = {
-              PostBusRequest{
-                  .bus = "Bus 1",
-                  .stops = {"stop 1", "stop 2", "stop 4", "stop 2", "stop 1"},
-              },
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-              },
-              PostStopRequest{
-                  .stop = "stop 4",
-                  .coords = {33.333333, 33.333333},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = true,
-      },
-      TestCase{
-          .name = "Unknown stop among road_distances",
-          .config = {
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-                  .stop_distances = {{"stop 2", 2000},},
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-                  .stop_distances = {{"stop 4", 5000}},
-              },
-              PostStopRequest{
-                  .stop = "stop 3",
-                  .coords = {33.333333, 33.333333},
-                  .stop_distances = {{"stop 1", 4000}},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = false,
-      },
-      TestCase{
-          .name = "Fixed \"Unknown stop among road_distances\"",
-          .config = {
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-                  .stop_distances = {{"stop 2", 2000},},
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-                  .stop_distances = {{"stop 3", 5000}},
-              },
-              PostStopRequest{
-                  .stop = "stop 3",
-                  .coords = {33.333333, 33.333333},
-                  .stop_distances = {{"stop 1", 4000}},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = true,
-      },
-      TestCase{
-          .name = "Unused stop",
-          .config = {
-              PostBusRequest{
-                  .bus = "Bus 1",
-                  .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
-              },
-              PostBusRequest{
-                  .bus = "Bus 2",
-                  .stops = {"stop 2", "stop 1", "stop 3", "stop 1", "stop 2"},
-              },
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-                  .stop_distances = {{"stop 2", 2000},},
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-                  .stop_distances = {{"stop 3", 2000},},
-              },
-              PostStopRequest{
-                  .stop = "stop 3",
-                  .coords = {33.333333, 33.333333},
-                  .stop_distances = {{"stop 4", 5000}},
-              },
-              PostStopRequest{
-                  .stop = "stop 4",
-                  .coords = {44.444444, 44.444444},
-                  .stop_distances = {{"stop 1", 4000}},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = true,
-      },
-      TestCase{
-          .name = "Empty route",
-          .config = {
-              PostBusRequest{
-                  .bus = "Bus 1",
-                  .stops = {},
-              },
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-                  .stop_distances = {{"stop 2", 2000},},
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-                  .stop_distances = {{"stop 3", 2000},},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = false,
-      },
-      TestCase{
-          .name = "Correct data",
-          .config = {
-              PostBusRequest{
-                  .bus = "Bus 1",
-                  .stops = {"stop 1", "stop 2", "stop 3", "stop 1"},
-              },
-              PostBusRequest{
-                  .bus = "Bus 2",
-                  .stops = {"stop 2", "stop 3", "stop 1", "stop 2"},
-              },
-              PostStopRequest{
-                  .stop = "stop 1",
-                  .coords = {11.111111, 11.111111},
-                  .stop_distances = {{"stop 2", 10000}, {"stop 3", 20000}}
-              },
-              PostStopRequest{
-                  .stop = "stop 2",
-                  .coords = {22.222222, 22.222222},
-                  .stop_distances = {{"stop 3", 7000}},
-              },
-              PostStopRequest{
-                  .stop = "stop 3",
-                  .coords = {33.333333, 33.333333},
-              },
-          },
-          .routing_settings = kTestRoutingSettings,
-          .want = true,
-      },
-  };
-
-  for (auto &[name, config, routing_settings, want] : test_cases) {
-    bool got = BusManager::Create(config, routing_settings) != nullptr;
-    EXPECT_EQ(want, got) << name;
-  }
-}
-
 TEST(TestBusManager, TestGetBusInfo) {
   using namespace rm;
 
@@ -387,13 +89,15 @@ TEST(TestBusManager, TestGetBusInfo) {
       },
   };
 
-  for (auto &[name, test_item, routing_settings, requests, want] : test_cases) {
-    auto bm = BusManager::Create(test_item, routing_settings);
-    EXPECT_TRUE(bm) << name;
-    if (!bm) continue;
+  for (auto &[name, config, routing_settings, requests, want] : test_cases) {
+    auto catalog = TransportCatalog::Create(config);
+    EXPECT_TRUE(catalog) << name;
+    if (!catalog) continue;
+
+    auto bm = BusManager(std::move(catalog), routing_settings);
 
     for (int i = 0; i < requests.size(); ++i) {
-      auto got = bm->GetBusInfo(requests[i].bus);
+      auto got = bm.GetBusInfo(requests[i].bus);
 
       if (!want[i].has_value()) {
         EXPECT_TRUE(!got.has_value()) << name;
@@ -485,13 +189,15 @@ TEST(TestBusManager, TestGetStopInfo) {
       },
   };
 
-  for (auto &[name, test_item, routing_settings, requests, want] : test_cases) {
-    auto bm = BusManager::Create(test_item, routing_settings);
-    EXPECT_TRUE(bm) << name;
-    if (!bm) continue;
+  for (auto &[name, config, routing_settings, requests, want] : test_cases) {
+    auto catalog = TransportCatalog::Create(config);
+    EXPECT_TRUE(catalog) << name;
+    if (!catalog) continue;
+
+    auto bm = BusManager(std::move(catalog), routing_settings);
 
     for (int i = 0; i < requests.size(); ++i) {
-      auto got = bm->GetStopInfo(requests[i].stop);
+      auto got = bm.GetStopInfo(requests[i].stop);
 
       EXPECT_EQ(want[i].has_value(), got.has_value()) << name;
       if (!got) continue;
@@ -703,12 +409,14 @@ TEST(TestBusManager, TestFindRouteInfo) {
   };
 
   for (auto &[name, config, routing_settings, requests, want] : test_cases) {
-    auto bm = BusManager::Create(std::move(config), routing_settings);
-    EXPECT_TRUE(bm) << name;
-    if (!bm) continue;
+    auto catalog = TransportCatalog::Create(config);
+    EXPECT_TRUE(catalog) << name;
+    if (!catalog) continue;
+
+    auto bm = BusManager(std::move(catalog), routing_settings);
 
     for (int i = 0; i < requests.size(); ++i) {
-      auto got = bm->GetRoute(requests[i].from, requests[i].to);
+      auto got = bm.GetRoute(requests[i].from, requests[i].to);
 
       EXPECT_EQ(want[i].has_value(), got.has_value()) << name;
       if (!got || !want[i]) continue;
@@ -717,3 +425,4 @@ TEST(TestBusManager, TestFindRouteInfo) {
     }
   }
 }
+
