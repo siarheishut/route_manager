@@ -18,7 +18,6 @@
 
 #include "common.h"
 #include "coords_converter.h"
-#include "map_renderer_utils.h"
 #include "request_types.h"
 #include "sphere.h"
 
@@ -119,8 +118,8 @@ std::unordered_map<std::string, svg::Point> CombineCoords(
 }
 
 std::unordered_map<std::string, svg::Point> TransformCoords(
-    const rm::renderer_utils::Buses &buses,
-    const rm::renderer_utils::Stops &stops,
+    const rm::utils::BusDict &buses,
+    const rm::utils::StopDict &stops,
     const Frame &frame) {
   using namespace rm::coords_converter;
 
@@ -132,11 +131,13 @@ std::unordered_map<std::string, svg::Point> TransformCoords(
 
   StopCoords coords;
   for (auto &[stop, info] : stops) {
-    coords[stop] = info;
+    coords.emplace(stop, info.coords);
   }
 
   for (auto &bus : buses) {
-    coords = Interpolate(std::move(coords), bus.second.route, base_stops);
+    coords = Interpolate(std::move(coords),
+                         {bus.second.stops.begin(), bus.second.stops.end()},
+                         base_stops);
   }
   auto adjacent_stops = AdjacentStops(buses);
 
@@ -169,44 +170,22 @@ void ForEachRoadItem(const std::vector<RouteInfo::Item> &items, Func func) {
 
 namespace rm {
 std::unique_ptr<MapRenderer> MapRenderer::Create(
-    const renderer_utils::Buses &buses,
-    renderer_utils::Stops stops,
+    std::shared_ptr<TransportCatalog> catalog,
     const RenderingSettings &settings) {
   if (settings.color_palette.empty()) return nullptr;
 
-  for (auto [_, points] : stops) {
-    auto lat = points.latitude, lon = points.longitude;
-    if (lat < kMinLatitude || lat > kMaxLatitude ||
-        lon < kMinLongitude || lon > kMaxLongitude)
-      return nullptr;
-  }
-
-  for (auto &[bus, route] : buses) {
-    if (route.route.size() < 3 || route.route.front() != route.route.back())
-      return nullptr;
-    for (auto stop : route.route) {
-      if (stops.find(stop) == stops.end())
-        return nullptr;
-    }
-    std::unordered_set<std::string_view> route_stops(route.route.begin(),
-                                                     route.route.end());
-    for (auto endpoint : route.endpoints) {
-      if (route_stops.find(endpoint) == route_stops.end())
-        return nullptr;
-    }
-  }
-
-  return std::unique_ptr<MapRenderer>(new MapRenderer(buses, std::move(stops),
+  return std::unique_ptr<MapRenderer>(new MapRenderer(std::move(catalog),
                                                       settings));
 }
 
 MapRenderer::MapRenderer(
-    const renderer_utils::Buses &buses,
-    renderer_utils::Stops stops,
+    std::shared_ptr<TransportCatalog> catalog,
     const RenderingSettings &settings)
-    : map_(svg::SectionBuilder{}.Build()),
-      buses_(ConstructBuses(buses, settings)),
-      stop_points_(TransformCoords(buses, stops, settings.frame)),
+    : catalog_(std::move(catalog)),
+      map_(svg::SectionBuilder{}.Build()),
+      buses_(ConstructBuses(catalog_->Buses(), settings)),
+      stop_points_(TransformCoords(catalog_->Buses(), catalog_->Stops(),
+                                   settings.frame)),
       settings_(settings) {
   svg::SectionBuilder builder;
   for (auto layer : settings.layers) {
@@ -225,13 +204,13 @@ MapRenderer::MapRenderer(
         break;
       case MapLayer::kStopPoints:
         AddStopPointsLayout(builder,
-                            stops,
+                            catalog_->Stops(),
                             settings,
                             stop_points_);
         break;
       case MapLayer::kStopLabels:
         AddStopLabelsLayout(builder,
-                            stops,
+                            catalog_->Stops(),
                             settings,
                             stop_points_);
         break;
@@ -241,19 +220,19 @@ MapRenderer::MapRenderer(
 }
 
 MapRenderer::Buses MapRenderer::ConstructBuses(
-    const renderer_utils::Buses &buses, const RenderingSettings &settings) {
+    const utils::BusDict &buses, const RenderingSettings &settings) {
   Buses result;
   int i = 0;
-  for (auto &[bus, route] : buses) {
+  for (auto &[bus, info] : buses) {
     auto color = settings.color_palette[i];
     i = (i + 1) % settings.color_palette.size();
     auto &bus_info = result[std::string(bus)];
     bus_info = {
-        .route = {route.route.begin(), route.route.end()},
-        .endpoints = [&r = route]() {
+        .route = {info.stops.begin(), info.stops.end()},
+        .endpoints = [&r = info]() {
           std::vector<std::string> res;
           auto endpoints = r.endpoints;
-          for (auto &stop : r.route) {
+          for (auto &stop : r.stops) {
             if (auto found = endpoints.find(stop); found != endpoints.end()) {
               res.emplace_back(*found);
               endpoints.erase(found);
@@ -335,7 +314,7 @@ void MapRenderer::AddBusLabelsLayout(
 
 void MapRenderer::AddStopPointsLayout(
     svg::SectionBuilder &builder,
-    const renderer_utils::Stops &stops,
+    const utils::StopDict &stops,
     const RenderingSettings &settings,
     const StopPoints &points) {
   for (auto [stop, _] : stops) {
@@ -345,7 +324,7 @@ void MapRenderer::AddStopPointsLayout(
 
 void MapRenderer::AddStopLabelsLayout(
     svg::SectionBuilder &builder,
-    const renderer_utils::Stops &stops,
+    const utils::StopDict &stops,
     const RenderingSettings &settings,
     const StopPoints &points) {
   for (auto [stop, _] : stops) {

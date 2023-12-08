@@ -9,7 +9,7 @@
 
 #include "svg/common.h"
 
-#include "map_renderer_utils.h"
+#include "common.h"
 #include "request_types.h"
 #include "sphere.h"
 
@@ -27,13 +27,13 @@ SortStops(const utils::StopCoords &stops, SortMode mode);
 // IntersectionsWithinRoute returns stops that are present within the same route
 // at least `count` times.
 std::unordered_set<std::string_view>
-IntersectionsWithinRoute(const renderer_utils::Buses &buses, int count);
+IntersectionsWithinRoute(const utils::BusDict &buses, int count);
 
 std::unordered_set<std::string_view>
-EndPoints(const renderer_utils::Buses &buses);
+EndPoints(const utils::BusDict &buses);
 
 std::unordered_set<std::string_view>
-IntersectionsCrossRoute(const renderer_utils::Buses &buses);
+IntersectionsCrossRoute(const utils::BusDict &buses);
 
 // Interpolates coordinates of the stops along the route:
 // distributes the non-base stops of the route at equal distances
@@ -47,7 +47,7 @@ utils::StopCoords Interpolate(
     const std::vector<std::string_view> &route,
     const std::unordered_set<std::string_view> &base_stops);
 
-AdjacentList AdjacentStops(const renderer_utils::Buses &buses);
+AdjacentList AdjacentStops(const utils::BusDict &buses);
 
 StopLayers CompressNonadjacent(const std::vector<std::string_view> &stops,
                                const AdjacentList &adj_stops);
