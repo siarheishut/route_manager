@@ -14,7 +14,7 @@ using namespace std;
 
 namespace rm::coords_converter {
 vector<string_view>
-SortStops(const renderer_utils::Stops &stops, SortMode mode) {
+SortStops(const utils::StopCoords &stops, SortMode mode) {
   vector<pair<double, string_view>> sorted_stops;
   transform(begin(stops), end(stops), back_inserter(sorted_stops),
             [mode](auto &item) {
@@ -31,12 +31,12 @@ SortStops(const renderer_utils::Stops &stops, SortMode mode) {
 }
 
 std::unordered_set<string_view>
-IntersectionsWithinRoute(const renderer_utils::Buses &buses, int count) {
+IntersectionsWithinRoute(const utils::BusDict &buses, int count) {
   unordered_set<string_view> base_stops;
   for (auto &[_, route] : buses) {
     unordered_map<string_view, int> stop_freqs;
-    for (int i = 0; i < route.route.size(); ++i)
-      ++stop_freqs[route.route[i]];
+    for (int i = 0; i < route.stops.size(); ++i)
+      ++stop_freqs[route.stops[i]];
 
     for (auto &[stop, freq] : stop_freqs)
       if (freq >= count)
@@ -46,7 +46,7 @@ IntersectionsWithinRoute(const renderer_utils::Buses &buses, int count) {
 }
 
 std::unordered_set<string_view>
-EndPoints(const renderer_utils::Buses &buses) {
+EndPoints(const utils::BusDict &buses) {
   unordered_set<string_view> base_stops;
   for (auto &[_, route] : buses) {
     for (auto end_stop : route.endpoints) {
@@ -57,22 +57,22 @@ EndPoints(const renderer_utils::Buses &buses) {
 }
 
 std::unordered_set<string_view>
-IntersectionsCrossRoute(const renderer_utils::Buses &buses) {
+IntersectionsCrossRoute(const utils::BusDict &buses) {
   unordered_set<string_view> base_stops, visited;
   for (auto &[_, route] : buses) {
-    for (auto stop : route.route)
+    for (auto stop : route.stops)
       if (visited.find(stop) != visited.end())
         base_stops.insert(stop);
 
-    for (auto stop : route.route) {
+    for (auto stop : route.stops) {
       visited.insert(stop);
     }
   }
   return base_stops;
 }
 
-renderer_utils::Stops Interpolate(
-    renderer_utils::Stops stops,
+utils::StopCoords Interpolate(
+    utils::StopCoords stops,
     const std::vector<std::string_view> &route,
     const std::unordered_set<std::string_view> &base_stops) {
   auto is_base =
@@ -104,10 +104,10 @@ renderer_utils::Stops Interpolate(
   return std::move(stops);
 }
 
-AdjacentList AdjacentStops(const renderer_utils::Buses &buses) {
+AdjacentList AdjacentStops(const utils::BusDict &buses) {
   AdjacentList adj_stops;
   for (auto &bus : buses) {
-    auto &route = bus.second.route;
+    auto &route = bus.second.stops;
     for (int i = 1; i < route.size(); ++i) {
       if (route[i] == route[i - 1]) continue;
       adj_stops[route[i]].insert(route[i - 1]);

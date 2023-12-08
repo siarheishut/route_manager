@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "src/coords.h"
 #include "src/coords_converter.h"
 #include "test_utils.h"
 
@@ -24,7 +25,7 @@ const std::pair<std::string_view, rm::sphere::Coords> kClemens =
 TEST(TestSortStops, TestSortByLatitude) {
   struct TestCase {
     string name;
-    rm::renderer_utils::Stops stops;
+    rm::utils::StopCoords stops;
     vector<string_view> want;
   };
 
@@ -55,7 +56,7 @@ TEST(TestSortStops, TestSortByLatitude) {
 TEST(TestSortStops, TestSortByLongitude) {
   struct TestCase {
     string name;
-    rm::renderer_utils::Stops stops;
+    rm::utils::StopCoords stops;
     vector<string_view> want;
   };
 
@@ -86,7 +87,7 @@ TEST(TestSortStops, TestSortByLongitude) {
 TEST(TestAdjacentStops, TestAdjacentStops) {
   struct TestCase {
     string name;
-    rm::renderer_utils::Buses buses;
+    rm::utils::BusDict buses;
     rm::coords_converter::AdjacentList want;
   };
 
@@ -97,29 +98,26 @@ TEST(TestAdjacentStops, TestAdjacentStops) {
       },
       TestCase{
           .name = "One bus",
-          .buses = {{"bus 1", {
-              .route = {"a", "b", "c", "d", "a"},
-              .endpoints = {"a"}}}},
+          .buses = {{"bus 1",
+                     {.stops = {"a", "b", "c", "d", "a"}, .endpoints = {"a"}}}},
           .want = {{"a", {"b", "d"}}, {"b", {"a", "c"}}, {"c", {"b", "d"}},
                    {"d", {"a", "c"}}}
       },
       TestCase{
           .name = "Repeated stop",
           .buses = {{"bus 1", {
-              .route = {"a", "a", "c", "d", "a"},
-              .endpoints = {"a"}}}},
+              .stops = {"a", "a", "c", "d", "a"}, .endpoints = {"a"}}}},
           .want = {{"a", {"c", "d"}}, {"c", {"a", "d"}}, {"d", {"a", "c"}}}
       },
       TestCase{
           .name = "Several buses",
           .buses = {{"bus 1", {
-              .route = {"a", "b", "c", "d", "a"},
-              .endpoints = {"a"}}},
+              .stops = {"a", "b", "c", "d", "a"}, .endpoints = {"a"}}},
                     {"bus 2", {
-                        .route = {"e", "f", "b", "g", "h", "g", "b", "f", "e"},
+                        .stops = {"e", "f", "b", "g", "h", "g", "b", "f", "e"},
                         .endpoints = {"e", "h"}}},
                     {"bus 3", {
-                        .route = {"a", "i", "g", "j", "b"},
+                        .stops = {"a", "i", "g", "j", "b"},
                         .endpoints = {"a", "b"}}}},
           .want = {{"a", {"b", "d", "i"}}, {"b", {"a", "c", "f", "g", "j"}},
                    {"c", {"b", "d"}}, {"d", {"a", "c"}}, {"e", {"f"}},
@@ -257,7 +255,7 @@ TEST(TestSpreadStops, TestSpreadStops) {
 TEST(TestEndPoints, TestEndPoints) {
   struct TestCase {
     std::string name;
-    rm::renderer_utils::Buses buses;
+    rm::utils::BusDict buses;
     std::unordered_set<std::string_view> want;
   };
 
@@ -265,14 +263,14 @@ TEST(TestEndPoints, TestEndPoints) {
       TestCase{
           .name = "Route with empty endpoints",
           .buses = {{"bus1", {
-              .route = {"a", "b", "c", "d", "c", "b", "a"},
+              .stops = {"a", "b", "c", "d", "c", "b", "a"},
               .endpoints = {}}}},
           .want = {}
       },
       TestCase{
           .name = "Route with non-empty endpoints",
           .buses = {{"bus1", {
-              .route = {"a", "b", "c", "a", "c", "b", "a"},
+              .stops = {"a", "b", "c", "a", "c", "b", "a"},
               .endpoints = {"a", "b", "c", "d"}}}},
           .want = {"a", "b", "c", "d"}
       },
@@ -287,7 +285,7 @@ TEST(TestEndPoints, TestEndPoints) {
 TEST(TestIntersectionsWithinRoute, TestIntersectionsWithinRoute) {
   struct TestCase {
     std::string name;
-    rm::renderer_utils::Buses buses;
+    rm::utils::BusDict buses;
     struct Subcase {
       int count;
       std::unordered_set<std::string_view> want;
@@ -300,16 +298,16 @@ TEST(TestIntersectionsWithinRoute, TestIntersectionsWithinRoute) {
           .name = "Base cases",
           .buses = {
               {"bus1", {
-                  .route = {"a", "b", "c", "b", "a", "b", "a"},
+                  .stops = {"a", "b", "c", "b", "a", "b", "a"},
                   .endpoints = {"a"}}},
               {"bus2", {
-                  .route = {"d", "e", "f", "g", "e", "g", "f", "e", "d"},
+                  .stops = {"d", "e", "f", "g", "e", "g", "f", "e", "d"},
                   .endpoints = {"d", "e"}}},
               {"bus3", {
-                  .route = {"h", "i", "j", "k", "j", "i", "h"},
+                  .stops = {"h", "i", "j", "k", "j", "i", "h"},
                   .endpoints = {"h", "k"}}},
               {"bus4", {
-                  .route = {"l", "m", "n", "o", "l"},
+                  .stops = {"l", "m", "n", "o", "l"},
                   .endpoints = {"l"}}}},
           .subcases = {
               {.count = 1, .want = {"a", "b", "c", "d", "e", "f", "g", "h", "i",
@@ -334,7 +332,7 @@ TEST(TestIntersectionsWithinRoute, TestIntersectionsWithinRoute) {
 TEST(TestIntersectionsCrossRoute, TestIntersectionsCrossRoute) {
   struct TestCase {
     std::string name;
-    rm::renderer_utils::Buses buses;
+    rm::utils::BusDict buses;
     std::unordered_set<std::string_view> want;
   };
 
@@ -343,25 +341,25 @@ TEST(TestIntersectionsCrossRoute, TestIntersectionsCrossRoute) {
           .name = "Base request",
           .buses = {
               {"bus1", {
-                  .route = {"a", "b", "c", "a"},
+                  .stops = {"a", "b", "c", "a"},
                   .endpoints = {"a"}}},
               {"bus2", {
-                  .route = {"d", "f", "c", "g", "c", "f", "d"},
+                  .stops = {"d", "f", "c", "g", "c", "f", "d"},
                   .endpoints = {"d", "g"}}},
               {"bus3", {
-                  .route = {"k", "b", "c", "f", "c", "b", "k"},
+                  .stops = {"k", "b", "c", "f", "c", "b", "k"},
                   .endpoints = {"k", "f"}}},
               {"bus4", {
-                  .route = {"x", "y", "z", "y", "x"},
+                  .stops = {"x", "y", "z", "y", "x"},
                   .endpoints = {"x", "z"}}}},
           .want = {"b", "c", "f"}
       },
       TestCase{
           .name = "Empty routes",
           .buses = {
-              {"bus1", {.route = {}, .endpoints = {}}},
-              {"bus2", {.route = {"fake_stop"}, .endpoints = {}}},
-              {"bus3", {.route = {}, .endpoints = {"fake_stop"}}}
+              {"bus1", {.stops = {}, .endpoints = {}}},
+              {"bus2", {.stops = {"fake_stop"}, .endpoints = {}}},
+              {"bus3", {.stops = {}, .endpoints = {"fake_stop"}}}
           },
           .want = {}
       }
@@ -378,8 +376,8 @@ TEST(TestInterpolation, TestInterpolation) {
     string name;
     vector<string_view> route;
     unordered_set<string_view> base_stops;
-    rm::renderer_utils::Stops stops;
-    rm::renderer_utils::Stops want;
+    rm::utils::StopCoords stops;
+    rm::utils::StopCoords want;
   };
 
   vector<TestCase> test_cases{

@@ -52,6 +52,7 @@ struct RouteInfo {
 
 using StopDict = std::map<std::string, StopInfo>;
 using BusDict = std::map<std::string, BusInfo>;
+using StopCoords = std::unordered_map<std::string_view, sphere::Coords>;
 
 template<typename C, typename ...Args>
 void Combine(C &container, Args... args) {
