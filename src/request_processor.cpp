@@ -111,8 +111,8 @@ std::unique_ptr<Processor> Processor::Create(
     std::vector<PostRequest> requests,
     const RoutingSettings &routing_settings,
     const RenderingSettings &rendering_settings) {
-  auto bus_manager = BusManager::Create(requests, routing_settings);
-  if (!bus_manager) return nullptr;
+  auto bus_manager = std::make_unique<BusManager>(
+      TransportCatalog::Create(requests), routing_settings);
 
   auto [buses, stops] = MapRendererParams(requests);
   auto map_renderer = MapRenderer::Create(buses, std::move(stops),
