@@ -9,7 +9,6 @@
 
 #include "svg/common.h"
 
-#include "src/map_renderer_utils.h"
 #include "src/request_types.h"
 
 using namespace std;

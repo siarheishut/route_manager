@@ -15,16 +15,15 @@
 
 #include "common.h"
 #include "coords_converter.h"
-#include "map_renderer_utils.h"
 #include "request_types.h"
 #include "sphere.h"
+#include "transport_catalog.h"
 
 namespace rm {
 class MapRenderer {
  public:
   static std::unique_ptr<MapRenderer> Create(
-      const renderer_utils::Buses &buses,
-      renderer_utils::Stops stops,
+      std::shared_ptr<TransportCatalog> catalog,
       const utils::RenderingSettings &settings);
 
   std::string RenderMap() const;
@@ -41,11 +40,10 @@ class MapRenderer {
 
   using StopPoints = std::unordered_map<std::string, svg::Point>;
 
-  MapRenderer(const renderer_utils::Buses &buses,
-              renderer_utils::Stops stops,
+  MapRenderer(std::shared_ptr<TransportCatalog> catalog,
               const utils::RenderingSettings &settings);
 
-  static Buses ConstructBuses(const renderer_utils::Buses &buses,
+  static Buses ConstructBuses(const utils::BusDict &buses,
                               const utils::RenderingSettings &settings);
 
   static std::vector<std::string> SortBusNames(const Buses &buses);
@@ -70,13 +68,13 @@ class MapRenderer {
 
   static void AddStopPointsLayout(
       svg::SectionBuilder &builder,
-      const renderer_utils::Stops &stops,
+      const utils::StopDict &stops,
       const rm::utils::RenderingSettings &settings,
       const StopPoints &points);
 
   static void AddStopLabelsLayout(
       svg::SectionBuilder &builder,
-      const renderer_utils::Stops &stops,
+      const utils::StopDict &stops,
       const rm::utils::RenderingSettings &settings,
       const StopPoints &points);
 
@@ -89,6 +87,7 @@ class MapRenderer {
   svg::Section StopLabelsFor(const utils::RouteInfo::RoadItem &item,
                              bool first) const;
 
+  std::shared_ptr<TransportCatalog> catalog_;
   svg::Section map_;
   Buses buses_;
   StopPoints stop_points_;

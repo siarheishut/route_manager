@@ -11,7 +11,6 @@
 
 #include "src/bus_manager.h"
 #include "svg/common.h"
-#include "src/map_renderer_utils.h"
 #include "src/request_types.h"
 
 namespace rm {

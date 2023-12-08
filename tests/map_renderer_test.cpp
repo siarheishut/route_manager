@@ -1,16 +1,14 @@
 #include "src/map_renderer.h"
 
-#include <map>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "gtest/gtest.h"
 #include "svg/common.h"
 
-#include "src/map_renderer_utils.h"
+#include "src/common.h"
 #include "src/request_types.h"
 #include "src/sphere.h"
 
@@ -78,113 +76,38 @@ const RenderingSettings kTestRenderingSettings{
                MapLayer::kStopPoints, MapLayer::kStopLabels}
 };
 
-const std::pair<std::string_view, rm::sphere::Coords> kAirport =
-    {"Airport", {.latitude = 12.312245, .longitude = 52.119401}};
-const std::pair<std::string_view, rm::sphere::Coords> kShop =
-    {"Shop", {.latitude = 73.132015, .longitude = -46.132028}};
-const std::pair<std::string_view, rm::sphere::Coords> kHighStreet =
-    {"High Street", {.latitude = 42.111111, .longitude = 19.291527}};
-const std::pair<std::string_view, rm::sphere::Coords> kRWStation =
-    {"RW station", {.latitude = 63.015232, .longitude = -35.621022}};
-const std::pair<std::string_view, rm::sphere::Coords> kClemens =
-    {"Clemens street", {.latitude = 49.102842, .longitude = 39.845290}};
+const rm::utils::PostStopRequest kAirport =
+    {.stop = "Airport",
+        .coords = {.latitude = 12.312245, .longitude = 52.119401}};
+const rm::utils::PostStopRequest kShop =
+    {.stop = "Shop", .coords = {.latitude = 73.132015, .longitude = -46.132028}};
+const rm::utils::PostStopRequest kHighStreet =
+    {.stop = "High Street",
+        .coords = {.latitude = 42.111111, .longitude = 19.291527}};
+const rm::utils::PostStopRequest kRWStation =
+    {.stop = "RW station",
+        .coords = {.latitude = 63.015232, .longitude = -35.621022}};
+const rm::utils::PostStopRequest kClemens =
+    {.stop = "Clemens street",
+        .coords = {.latitude = 49.102842, .longitude = 39.845290}};
 
-TEST(TestMapRenderer, TestInitializing) {
-  struct TestCase {
-    std::string name;
-    std::map<std::string_view, Route> buses;
-    std::map<std::string_view, rm::sphere::Coords> stops;
-    RenderingSettings settings;
-    bool want_fail;
-  };
+TEST(TestMapRenderer, TestInitializingValid) {
+  auto catalog = rm::TransportCatalog::Create({});
+  ASSERT_TRUE(catalog) << "Valid config";
+  auto got =
+      rm::MapRenderer::Create(std::move(catalog), kTestRenderingSettings);
+  EXPECT_NE(got, nullptr) << "Valid config";
+}
 
-  std::vector<TestCase> test_cases{
-      TestCase{
-          .name = "Empty color palette",
-          .settings = [] {
-            auto item = kTestRenderingSettings;
-            item.color_palette = {};
-            return item;
-          }(),
-          .want_fail = true
-      },
-      TestCase{
-          .name = "Latitude out of range(below)",
-          .stops = {{"Airport", {.latitude = -91, .longitude = 0}}},
-          .settings = kTestRenderingSettings,
-          .want_fail = true
-      },
-      TestCase{
-          .name = "Latitude out of range(above)",
-          .stops = {{"Airport", {.latitude = 91, .longitude = 0}}},
-          .settings = kTestRenderingSettings,
-          .want_fail = true
-      },
-      TestCase{
-          .name = "Longitude out of range(below)",
-          .stops = {{"Airport", {.latitude = 0, .longitude = -184}}},
-          .settings = kTestRenderingSettings,
-          .want_fail = true
-      },
-      TestCase{
-          .name = "Longitude out of range(above)",
-          .stops = {{"Airport", {.latitude = 0, .longitude = 197}}},
-          .settings = kTestRenderingSettings,
-          .want_fail = true
-      },
-      TestCase{
-          .name = "Bus route has unknown stop",
-          .buses = {{"Bus 1", {
-              .route = {"Airport", "Dostoevsky", "Clemens", "Dostoevsky",
-                        "Airport"},
-              .endpoints = {"Airport", "Clemens"}}}},
-          .stops = {kAirport, kClemens},
-          .settings = kTestRenderingSettings,
-          .want_fail = true
-      },
-      TestCase{
-          .name = "Bus route has less than 3 stops",
-          .buses = {{"Bus 1", {
-              .route = {"Airport", "Airport"},
-              .endpoints = {"Airport", "Airport"}}}},
-          .stops = {kAirport, kClemens},
-          .settings = kTestRenderingSettings,
-          .want_fail = true
-      },
-      TestCase{
-          .name = "Endpoint isn't in the route",
-          .buses = {{"Bus 1", {
-              .route = {"Airport", "Clemens", "Airport"},
-              .endpoints = {"Airport", "Shop"}}}},
-          .stops = {kAirport, kClemens, kShop},
-          .settings = kTestRenderingSettings,
-          .want_fail = true
-      },
-      TestCase{
-          .name = "Different start and end of the route",
-          .buses = {{"Bus 1", {
-              .route = {"Airport", "Clemens", "Shop"},
-              .endpoints = {"Airport", "Shop"}}}},
-          .stops = {kAirport, kClemens, kShop},
-          .settings = kTestRenderingSettings,
-          .want_fail = true
-      },
-      TestCase{
-          .name = "Valid config",
-          .buses = {{"Bus 1", {
-              .route = {"Airport", "RW station", "Airport"},
-              .endpoints = {"Airport", "RW station"}}}},
-          .stops = {kAirport, kRWStation, kClemens},
-          .settings = kTestRenderingSettings,
-          .want_fail = false
-      },
-  };
-
-  for (auto &[name, buses, stops, settings, want_fail] : test_cases) {
-    auto want = !want_fail;
-    auto got = (rm::MapRenderer::Create(buses, stops, settings) != nullptr);
-    EXPECT_EQ(want, got) << name;
-  }
+TEST(TestMapRenderer, TestInitializingInvalid) {
+  auto catalog = rm::TransportCatalog::Create({});
+  ASSERT_TRUE(catalog) << "Invalid config";
+  auto got = [&] {
+    auto settings = kTestRenderingSettings;
+    settings.color_palette = {};
+    return rm::MapRenderer::Create(std::move(catalog), settings);
+  }();
+  EXPECT_EQ(got, nullptr) << "Invalid config";
 }
 
 TEST(TestMapRenderer, TestRenderMap) {
@@ -198,8 +121,7 @@ TEST(TestMapRenderer, TestRenderMap) {
 
   struct TestCase {
     std::string name;
-    std::map<std::string_view, Route> buses;
-    std::map<std::string_view, sphere::Coords> stops;
+    std::vector<PostRequest> config;
     RenderingSettings rendering_settings;
     std::string want;
   };
@@ -207,16 +129,18 @@ TEST(TestMapRenderer, TestRenderMap) {
   std::vector<TestCase> test_cases{
       TestCase{
           .name = "Empty layers",
-          .buses = {{"1", {
-              .route = {"Shop", "Airport", "Shop"},
-              .endpoints = {"Shop"}}}},
-          .stops = {kAirport, kShop},
+          .config = {
+              PostBusRequest{
+                  .bus = "1",
+                  .stops = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop"}},
+              kAirport, kShop},
           .rendering_settings = layers_replace_with({}),
           .want = SVG_DOC()
       },
       TestCase{
           .name = "Repetitive layers",
-          .stops = {kAirport, kShop},
+          .config = {kAirport, kShop},
           .rendering_settings = layers_replace_with({MapLayer::kStopLabels,
                                                      MapLayer::kStopLabels,
                                                      MapLayer::kStopPoints,
@@ -231,10 +155,12 @@ TEST(TestMapRenderer, TestRenderMap) {
       },
       TestCase{
           .name = "Random order",
-          .buses = {{"1", {
-              .route = {"Shop", "Airport", "Shop"},
-              .endpoints = {"Shop", "Airport"}}}},
-          .stops = {kAirport, kShop},
+          .config = {
+              PostBusRequest{
+                  .bus = "1",
+                  .stops = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop", "Airport"}},
+              kAirport, kShop},
           .rendering_settings =  layers_replace_with({MapLayer::kStopLabels,
                                                       MapLayer::kBusLines,
                                                       MapLayer::kStopPoints,
@@ -254,10 +180,12 @@ TEST(TestMapRenderer, TestRenderMap) {
       },
       TestCase{
           .name = "Route with different start and end stops",
-          .buses = {{"1", {
-              .route = {"Shop", "Airport", "Shop"},
-              .endpoints = {"Shop", "Airport"}}}},
-          .stops = {kAirport, kShop},
+          .config = {
+              PostBusRequest{
+                  .bus = "1",
+                  .stops = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop", "Airport"}},
+              kAirport, kShop},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       ROUTE("purple")
@@ -276,7 +204,7 @@ TEST(TestMapRenderer, TestRenderMap) {
       },
       TestCase{
           .name = "No routes",
-          .stops = {kAirport, kShop, kHighStreet},
+          .config = {kAirport, kShop, kHighStreet},
           .rendering_settings = kTestRenderingSettings,
           .want =  SVG_DOC(
                        STOP(170, 225.7)STOP(170, 225.7)STOP(170, 225.7)
@@ -286,16 +214,17 @@ TEST(TestMapRenderer, TestRenderMap) {
       },
       TestCase{
           .name = "All stops are used",
-          .buses = {
-              {"bus 1", {
-                  .route = {"Airport", "High Street", "Shop", "Airport"},
-                  .endpoints = {"Airport"}}},
-              {"bus 2", {
-                  .route = {"High Street", "Airport", "Shop",
+          .config = {
+              PostBusRequest{
+                  .bus = "bus 1",
+                  .stops = {"Airport", "High Street", "Shop", "Airport"},
+                  .endpoints = {"Airport"}},
+              PostBusRequest{.bus = "bus 2",
+                  .stops = {"High Street", "Airport", "Shop",
                             "RW station", "Shop", "Airport",
                             "High Street"},
-                  .endpoints = {"High Street"}}}},
-          .stops = {kAirport, kShop, kHighStreet, kRWStation},
+                  .endpoints = {"High Street"}},
+              kAirport, kShop, kHighStreet, kRWStation},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       ROUTE("purple")
@@ -319,23 +248,28 @@ TEST(TestMapRenderer, TestRenderMap) {
       },
       TestCase{
           .name = "Route number is greater than palette size",
-          .buses = {
-              {"Bus 1", {
-                  .route = {"Shop", "Airport", "Shop"},
-                  .endpoints = {"Shop", "Airport"}}},
-              {"Bus 2", {
-                  .route = {"Shop", "Airport", "Shop"},
-                  .endpoints = {"Shop"}}},
-              {"Bus 3", {
-                  .route = {"Shop", "Airport", "Shop"},
-                  .endpoints = {"Shop", "Airport"}}},
-              {"Bus 4", {
-                  .route = {"Shop", "Airport", "Shop"},
-                  .endpoints = {"Shop"}}},
-              {"Bus 5", {
-                  .route = {"Shop", "Airport", "Shop"},
-                  .endpoints = {"Shop", "Airport"}}}},
-          .stops = {kShop, kAirport},
+          .config = {
+              PostBusRequest{
+                  .bus = "Bus 1",
+                  .stops = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop", "Airport"}},
+              PostBusRequest{
+                  .bus = "Bus 2",
+                  .stops = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop"}},
+              PostBusRequest{
+                  .bus = "Bus 3",
+                  .stops = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop", "Airport"}},
+              PostBusRequest{
+                  .bus = "Bus 4",
+                  .stops = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop"}},
+              PostBusRequest{
+                  .bus = "Bus 5",
+                  .stops = {"Shop", "Airport", "Shop"},
+                  .endpoints = {"Shop", "Airport"}},
+              kShop, kAirport},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(
                       ROUTE("purple")POINT(170, 170)NEXT_POINT(242.1, 225.7)
@@ -362,14 +296,24 @@ TEST(TestMapRenderer, TestRenderMap) {
       },
       TestCase{
           .name = "Empty stop name",
-          .stops = {{"", {.latitude = 10, .longitude = 10}}},
+          .config = {
+              PostStopRequest{
+                  .stop = "", .coords = {.latitude = 10, .longitude = 10}}},
           .rendering_settings = kTestRenderingSettings,
           .want = SVG_DOC(STOP(170, 225.7)STOP_NAME(, 170, 225.7))
       },
   };
 
-  for (auto &[name, buses, stops, settings, want] : test_cases) {
-    std::string got = MapRenderer::Create(buses, stops, settings)->RenderMap();
+  for (auto &[name, config, settings, want] : test_cases) {
+    auto catalog = rm::TransportCatalog::Create(config);
+    EXPECT_TRUE(catalog) << name;
+    if (!catalog) continue;
+
+    auto map_renderer = MapRenderer::Create(std::move(catalog), settings);
+    EXPECT_TRUE(map_renderer) << name;
+    if (!map_renderer) continue;
+
+    std::string got = map_renderer->RenderMap();
     EXPECT_EQ(want, got) << name;
   }
 }
@@ -377,23 +321,25 @@ TEST(TestMapRenderer, TestRenderMap) {
 TEST(TestMapRenderer, TestRenderRoute) {
   using namespace rm;
 
-  const rm::renderer_utils::Buses kBuses = {
-      {"Bus 1", {
-          .route = {"a", "b", "c", "d", "a"},
+  const std::vector<utils::PostRequest> kTestConfig = {
+      PostBusRequest{
+          .bus = "Bus 1",
+          .stops = {"a", "b", "c", "d", "a"},
           .endpoints = {"a"}
-      }},
-      {"Bus 2", {
-          .route = {"a", "c", "d", "c", "a"},
+      },
+      PostBusRequest{
+          .bus = "Bus 2",
+          .stops = {"a", "c", "d", "c", "a"},
           .endpoints = {"a", "d"}
-      }},
-      {"Bus 3", {
-          .route = {"d", "e", "a", "b", "d"},
+      },
+      PostBusRequest{
+          .bus = "Bus 3",
+          .stops = {"d", "e", "a", "b", "d"},
           .endpoints = {"d"}
-      }}};
-
-  const rm::renderer_utils::Stops kStops = {
-      {"a", {1, 1}}, {"b", {2, 2}}, {"c", {3, 3}}, {"d", {4, 4}},
-      {"e", {5, 5}}};
+      },
+      PostStopRequest{"a", {1, 1}}, PostStopRequest{"b", {2, 2}},
+      PostStopRequest{"c", {3, 3}}, PostStopRequest{"d", {4, 4}},
+      PostStopRequest{"e", {5, 5}}};
 
   struct TestCase {
     std::string name;
@@ -619,7 +565,11 @@ TEST(TestMapRenderer, TestRenderRoute) {
   };
 
   for (auto &[name, settings, route_info, want] : test_cases) {
-    auto map_renderer = rm::MapRenderer::Create(kBuses, kStops, settings);
+    auto catalog = TransportCatalog::Create(kTestConfig);
+    EXPECT_TRUE(catalog) << name;
+    if (!catalog) continue;
+
+    auto map_renderer = rm::MapRenderer::Create(std::move(catalog), settings);
     EXPECT_TRUE(map_renderer != nullptr) << name << ": factory method failed";
     if (!map_renderer) continue;
     auto got = map_renderer->RenderRoute(route_info);
