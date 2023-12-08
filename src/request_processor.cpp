@@ -8,7 +8,6 @@
 
 #include "bus_manager.h"
 #include "map_renderer.h"
-#include "map_renderer_utils.h"
 #include "response_types.h"
 
 using namespace rm::utils;
@@ -111,15 +110,14 @@ std::unique_ptr<Processor> Processor::Create(
     std::vector<PostRequest> requests,
     const RoutingSettings &routing_settings,
     const RenderingSettings &rendering_settings) {
-  auto catalog = TransportCatalog::Create(requests);
+  std::shared_ptr<TransportCatalog> catalog =
+      TransportCatalog::Create(requests);
   if (!catalog) return nullptr;
 
-  auto bus_manager = std::make_unique<BusManager>(std::move(catalog),
-                                                  routing_settings);
+  auto bus_manager = std::make_unique<BusManager>(catalog, routing_settings);
 
   auto [buses, stops] = MapRendererParams(requests);
-  auto map_renderer = MapRenderer::Create(buses, std::move(stops),
-                                          rendering_settings);
+  auto map_renderer = MapRenderer::Create(catalog, rendering_settings);
   if (!map_renderer) return nullptr;
 
   return std::unique_ptr<Processor>(new Processor(std::move(bus_manager),
