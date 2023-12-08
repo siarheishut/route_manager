@@ -316,7 +316,7 @@ TEST(TestBusManager, TestFindRouteInfo) {
               },
               PostBusRequest{
                   .bus = "Bus2",
-                  .stops = {"stop4", "stop5", "stop6", "stop4", "stop5"},
+                  .stops = {"stop4", "stop5", "stop6", "stop5", "stop4"},
               },
               PostStopRequest{
                   .stop = "stop1",
@@ -342,7 +342,7 @@ TEST(TestBusManager, TestFindRouteInfo) {
                   .stop_distances = {}},
               PostStopRequest{
                   .stop = "stop6",
-                  .coords = {90.041255, 12.305861},
+                  .coords = {80.041255, 12.305861},
                   .stop_distances = {}},
           },
           .routing_settings = kTestRoutingSettings,
