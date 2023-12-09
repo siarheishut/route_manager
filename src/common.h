@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "sphere.h"
 #include "request_types.h"
 
 namespace rm::utils {
@@ -52,6 +53,7 @@ struct RouteInfo {
 
 using StopDict = std::map<std::string, StopInfo>;
 using BusDict = std::map<std::string, BusInfo>;
+using StopCoords = std::unordered_map<std::string_view, sphere::Coords>;
 
 template<typename C, typename ...Args>
 void Combine(C &container, Args... args) {

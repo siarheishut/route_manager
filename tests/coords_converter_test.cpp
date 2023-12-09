@@ -24,7 +24,7 @@ const std::pair<std::string_view, rm::sphere::Coords> kClemens =
 TEST(TestSortStops, TestSortByLatitude) {
   struct TestCase {
     string name;
-    rm::renderer_utils::Stops stops;
+    rm::utils::StopCoords stops;
     vector<string_view> want;
   };
 
@@ -55,7 +55,7 @@ TEST(TestSortStops, TestSortByLatitude) {
 TEST(TestSortStops, TestSortByLongitude) {
   struct TestCase {
     string name;
-    rm::renderer_utils::Stops stops;
+    rm::utils::StopCoords stops;
     vector<string_view> want;
   };
 
@@ -378,8 +378,8 @@ TEST(TestInterpolation, TestInterpolation) {
     string name;
     vector<string_view> route;
     unordered_set<string_view> base_stops;
-    rm::renderer_utils::Stops stops;
-    rm::renderer_utils::Stops want;
+    rm::utils::StopCoords stops;
+    rm::utils::StopCoords want;
   };
 
   vector<TestCase> test_cases{

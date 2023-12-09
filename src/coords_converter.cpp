@@ -14,7 +14,7 @@ using namespace std;
 
 namespace rm::coords_converter {
 vector<string_view>
-SortStops(const renderer_utils::Stops &stops, SortMode mode) {
+SortStops(const utils::StopCoords &stops, SortMode mode) {
   vector<pair<double, string_view>> sorted_stops;
   transform(begin(stops), end(stops), back_inserter(sorted_stops),
             [mode](auto &item) {
@@ -71,8 +71,8 @@ IntersectionsCrossRoute(const renderer_utils::Buses &buses) {
   return base_stops;
 }
 
-renderer_utils::Stops Interpolate(
-    renderer_utils::Stops stops,
+utils::StopCoords Interpolate(
+    utils::StopCoords stops,
     const std::vector<std::string_view> &route,
     const std::unordered_set<std::string_view> &base_stops) {
   auto is_base =

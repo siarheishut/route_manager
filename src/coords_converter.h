@@ -22,7 +22,7 @@ using StopLayers = std::vector<std::vector<std::string_view>>;
 enum class SortMode { kByLatitude, kByLongitude };
 
 std::vector<std::string_view>
-SortStops(const renderer_utils::Stops &stops, SortMode mode);
+SortStops(const utils::StopCoords &stops, SortMode mode);
 
 // IntersectionsWithinRoute returns stops that are present within the same route
 // at least `count` times.
@@ -42,8 +42,8 @@ IntersectionsCrossRoute(const renderer_utils::Buses &buses);
 // Doesn't modify base stops' coordinates.
 // The base_stops must contain the first and the last route's stop.
 // Empty route is always valid and leaves stops unmodified.
-renderer_utils::Stops Interpolate(
-    renderer_utils::Stops stops,
+utils::StopCoords Interpolate(
+    utils::StopCoords stops,
     const std::vector<std::string_view> &route,
     const std::unordered_set<std::string_view> &base_stops);
 
