@@ -39,7 +39,7 @@ class MapRenderer {
   };
   using Buses = std::unordered_map<std::string, BusInfo>;
 
-  using StopCoords = std::unordered_map<std::string, svg::Point>;
+  using StopPoints = std::unordered_map<std::string, svg::Point>;
 
   MapRenderer(const renderer_utils::Buses &buses,
               renderer_utils::Stops stops,
@@ -54,31 +54,31 @@ class MapRenderer {
 
   static std::vector<svg::Point> Points(
       const std::vector<std::string> &route,
-      const StopCoords &coords);
+      const StopPoints &points);
 
   static void AddBusLinesLayout(
       svg::SectionBuilder &builder,
       const Buses &buses,
       const rm::utils::RenderingSettings &settings,
-      const StopCoords &coords);
+      const StopPoints &points);
 
   static void AddBusLabelsLayout(
       svg::SectionBuilder &builder,
       const Buses &buses,
       const rm::utils::RenderingSettings &settings,
-      const StopCoords &coords);
+      const StopPoints &points);
 
   static void AddStopPointsLayout(
       svg::SectionBuilder &builder,
       const renderer_utils::Stops &stops,
       const rm::utils::RenderingSettings &settings,
-      const StopCoords &coords);
+      const StopPoints &points);
 
   static void AddStopLabelsLayout(
       svg::SectionBuilder &builder,
       const renderer_utils::Stops &stops,
       const rm::utils::RenderingSettings &settings,
-      const StopCoords &coords);
+      const StopPoints &points);
 
   svg::Section BusLinesFor(const utils::RouteInfo::RoadItem &item) const;
 
@@ -91,7 +91,7 @@ class MapRenderer {
 
   svg::Section map_;
   Buses buses_;
-  StopCoords stop_coords_;
+  StopPoints stop_points_;
   rm::utils::RenderingSettings settings_;
 };
 }
