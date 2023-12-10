@@ -120,7 +120,8 @@ std::unique_ptr<Processor> Processor::Create(
   auto map_renderer = MapRenderer::Create(catalog, rendering_settings);
   if (!map_renderer) return nullptr;
 
-  return std::unique_ptr<Processor>(new Processor(std::move(bus_manager),
+  return std::unique_ptr<Processor>(new Processor(std::move(catalog),
+                                                  std::move(bus_manager),
                                                   std::move(map_renderer)));
 }
 
@@ -136,9 +137,11 @@ json::List Processor::Process(const std::vector<GetRequest> &requests) const {
   return responses;
 }
 
-Processor::Processor(std::unique_ptr<BusManager> bus_manager,
+Processor::Processor(std::shared_ptr<TransportCatalog> catalog,
+                     std::unique_ptr<BusManager> bus_manager,
                      std::unique_ptr<MapRenderer> map_renderer)
-    : bus_manager_(std::move(bus_manager)),
+    : catalog_(std::move(catalog)),
+      bus_manager_(std::move(bus_manager)),
       map_renderer_(std::move(map_renderer)) {}
 
 json::Dict Processor::Process(const GetBusRequest &request) const {

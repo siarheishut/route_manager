@@ -30,7 +30,8 @@ class Processor {
   json::List Process(const std::vector<utils::GetRequest> &requests) const;
 
  private:
-  Processor(std::unique_ptr<BusManager> bus_manager,
+  Processor(std::shared_ptr<TransportCatalog> catalog,
+            std::unique_ptr<BusManager> bus_manager,
             std::unique_ptr<MapRenderer> map_renderer);
 
   json::Dict Process(const utils::GetBusRequest &request) const;
@@ -38,6 +39,7 @@ class Processor {
   json::Dict Process(const utils::GetRouteRequest &request) const;
   json::Dict Process(const utils::GetMapRequest &request) const;
 
+  std::shared_ptr<TransportCatalog> catalog_;
   std::unique_ptr<BusManager> bus_manager_;
   std::unique_ptr<MapRenderer> map_renderer_;
 };
