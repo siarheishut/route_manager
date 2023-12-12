@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package TransportCatalog;
+
+message BusInfo {
+  int32 stop_count = 1;
+  int32 unique_stop_count = 2;
+  double length = 3;
+  double curvature = 4;
+}
+
+message StopInfo {
+  repeated string buses = 1;
+}
+
+message TransportCatalog {
+  map<string, BusInfo> buses = 1;
+  map<string, StopInfo> stops = 2;
+}
