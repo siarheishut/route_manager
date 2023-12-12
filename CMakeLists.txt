@@ -19,6 +19,43 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(svg)
 
+set(protobuf_BUILD_TESTS OFF)
+set(ABSL_PROPAGATE_CXX_STD ON)
+FetchContent_Declare(
+        Protobuf
+        GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
+        GIT_TAG v25.0
+)
+FetchContent_MakeAvailable(Protobuf)
+
+FetchContent_GetProperties(Protobuf SOURCE_DIR Protobuf_SOURCE_DIR)
+include(${Protobuf_SOURCE_DIR}/cmake/protobuf-generate.cmake)
+
+include_directories(
+        ${Protobuf_SOURCE_DIR}/src
+        ${Protobuf_SOURCE_DIR}/third_party/abseil-cpp
+)
+
+add_library(my_proto
+        OBJECT
+        ${CMAKE_SOURCE_DIR}/proto/transport_catalog.proto
+)
+target_link_libraries(my_proto PRIVATE libprotobuf)
+
+target_include_directories(
+        my_proto PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/proto>
+        $<INSTALL_INTERFACE:include>
+        ${INCLUDE_DIRECTORIES}
+)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto)
+protobuf_generate(
+        TARGET my_proto
+        LANGUAGE cpp
+        IMPORT_DIRS ${CMAKE_SOURCE_DIR}/proto
+        PROTOC_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/proto
+)
+
 add_subdirectory(lib/json)
 add_subdirectory(lib/graph)
 
@@ -37,7 +74,7 @@ add_executable(root_manager
         src/transport_catalog.cpp
 )
 
-target_link_libraries(root_manager json graph svg)
+target_link_libraries(root_manager PUBLIC json graph svg PRIVATE my_proto)
 target_include_directories(root_manager PUBLIC .)
 # root_manager config end
 
