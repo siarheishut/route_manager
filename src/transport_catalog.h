@@ -30,7 +30,6 @@ class TransportCatalog {
   void AddBus(std::string bus, std::vector<std::string> stops,
               std::unordered_set<std::string> endpoints);
 
-  std::unordered_set<std::string> names_;
   utils::StopDict stops_;
   utils::BusDict buses_;
 };

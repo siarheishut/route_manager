@@ -119,31 +119,30 @@ TransportCatalog::TransportCatalog(std::vector<PostRequest> requests) {
 
 void TransportCatalog::AddStop(std::string stop, sphere::Coords coords,
                                const std::map<std::string, int> &stops) {
-  auto [stop_it, _] = names_.insert(std::move(stop));
-  auto &info = stops_[*stop_it];
+  auto [stop_it, _] = stops_.emplace(std::move(stop), StopInfo{});
 
-  info.coords = {coords.latitude, coords.longitude};
+  stop_it->second.coords = {coords.latitude, coords.longitude};
   for (auto &[stop_to, dist] : stops) {
     auto &stop_to_dists = stops_[stop_to].dists;
-    if (auto it = stop_to_dists.find(*stop_it); it == stop_to_dists.end()) {
-      stop_to_dists[*stop_it] = dist;
+    if (auto it = stop_to_dists.find(stop_it->first);
+        it == stop_to_dists.end()) {
+      stop_to_dists[stop_it->first] = dist;
     }
-    info.dists[stop_to] = dist;
+    stop_it->second.dists[stop_to] = dist;
   }
 }
 
 void TransportCatalog::AddBus(std::string bus,
                               std::vector<std::string> stops,
                               std::unordered_set<std::string> endpoints) {
-  auto [bus_it, _] = names_.insert(std::move(bus));
-  auto &info = buses_[*bus_it];
+  auto [bus_it, _] = buses_.emplace(std::move(bus), BusInfo{});
 
   for (auto &stop : stops)
-    stops_[stop].buses.push_back(*bus_it);
+    stops_[stop].buses.push_back(bus_it->first);
 
-  info.stops = {std::make_move_iterator(stops.begin()),
-                std::make_move_iterator(stops.end())};
+  bus_it->second.stops = {std::make_move_iterator(stops.begin()),
+                          std::make_move_iterator(stops.end())};
 
-  info.endpoints = std::move(endpoints);
+  bus_it->second.endpoints = std::move(endpoints);
 }
 }
