@@ -4,8 +4,10 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <iostream>
 #include <iterator>
 #include <optional>
+#include <stack>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -13,14 +15,20 @@
 #include "graph.h"
 
 namespace graph {
+struct Route { VertexId from, to; EdgeId prev_edge; };
+
 template<typename Weight>
 class Router {
  private:
   using Graph = DirectedWeightedGraph<Weight>;
-
  public:
   // Time: O(V^3+E), Mem: O(V^2), V - number of vertices, E - number of edges.
   explicit Router(const Graph &graph);
+
+  static std::unique_ptr<Router> Deserialize(const Graph &graph,
+                                             const std::vector<Route> &routes);
+
+  std::vector<Route> Serialize() const;
 
   using RouteId = uint64_t;
 
@@ -48,22 +56,30 @@ class Router {
       RouteInternalData>>>;
 
   using ExpandedRoute = std::vector<EdgeId>;
+
+  Router(const Graph &graph, RoutesInternalData routes);
+
   mutable RouteId next_route_id_ = 0;
   mutable std::unordered_map<RouteId, ExpandedRoute> expanded_routes_cache_;
 
-  void InitializeRoutesInternalData() {
-    const size_t vertex_count = graph_.GetVertexCount();
+  static RoutesInternalData InitializeRoutesInternalData(const Graph &graph) {
+    RoutesInternalData routes_internal_data(
+        graph.GetVertexCount(),
+        std::vector<std::optional<RouteInternalData>>(graph.GetVertexCount()));
+
+    const size_t vertex_count = graph.GetVertexCount();
     for (VertexId vertex = 0; vertex < vertex_count; ++vertex) {
-      routes_internal_data_[vertex][vertex] =
+      routes_internal_data[vertex][vertex] =
           RouteInternalData{0, std::nullopt};
-      for (const EdgeId edge_id : graph_.GetIncidentEdges(vertex)) {
-        const auto &edge = graph_.GetEdge(edge_id);
-        auto &route_internal_data = routes_internal_data_[vertex][edge.to];
+      for (const EdgeId edge_id : graph.GetIncidentEdges(vertex)) {
+        const auto &edge = graph.GetEdge(edge_id);
+        auto &route_internal_data = routes_internal_data[vertex][edge.to];
         if (!route_internal_data || route_internal_data->weight > edge.weight) {
           route_internal_data = RouteInternalData{edge.weight, edge_id};
         }
       }
     }
+    return routes_internal_data;
   }
 
   void RelaxRoute(VertexId vertex_from,
@@ -103,16 +119,117 @@ class Router {
 template<typename Weight>
 Router<Weight>::Router(const Graph &graph)
     : graph_(graph),
-      routes_internal_data_(
-          graph.GetVertexCount(),
-          std::vector<std::optional<RouteInternalData>>(graph.GetVertexCount())) {
-  InitializeRoutesInternalData();
-
+      routes_internal_data_(InitializeRoutesInternalData(graph)) {
   const size_t vertex_count = graph.GetVertexCount();
   for (VertexId vertex_through = 0; vertex_through < vertex_count;
        ++vertex_through) {
     RelaxRoutesInternalDataThroughVertex(vertex_through);
   }
+}
+
+template<typename Weight>
+std::unique_ptr<Router<Weight>> Router<Weight>::Deserialize(
+    const Graph &graph, const std::vector<Route> &routes) {
+  for (auto &route : routes) {
+    if (auto vertex_count = graph.GetVertexCount();
+        route.from >= vertex_count || route.to >= vertex_count) {
+      std::cerr << "Invalid vertices\n";
+      return nullptr;
+    }
+    if (route.prev_edge >= graph.GetEdgeCount()) {
+      std::cerr << "Invalid edge\n";
+      return nullptr;
+    }
+    auto &prev_edge = graph.GetEdge(route.prev_edge);
+    if (prev_edge.to != route.to) {
+      std::cerr << "Invalid prev_edge\n";
+      return nullptr;
+    }
+  }
+
+  auto routes_internal_data = InitializeRoutesInternalData(graph);
+
+  for (auto [from, to, prev_edge] : routes) {
+    if (auto &data = routes_internal_data[from][to]) {
+      data->prev_edge = prev_edge;
+    } else {
+      data = RouteInternalData{0, prev_edge};
+    }
+  }
+
+  std::stack<std::pair<VertexId, VertexId>> st;
+  for (auto [from, to, _] : routes) {
+    st.emplace(from, to);
+  }
+
+  std::vector<std::vector<bool>> visited(
+      graph.GetVertexCount(), std::vector<bool>(graph.GetVertexCount(), false));
+  for (int i = 0; i < graph.GetVertexCount(); ++i) {
+    visited[i][i] = true;
+  }
+
+  while (!st.empty()) {
+    auto [from, to] = st.top();
+    st.pop();
+
+    if (visited[from][to] &&
+        routes_internal_data[from][to]->weight != -1)
+      continue;
+
+    if (!routes_internal_data[from][to]) {
+      std::cerr << "Subroute from-to doesn't exist\n";
+      return nullptr;
+    }
+    auto &edge_id = routes_internal_data[from][to]->prev_edge;
+    if (!edge_id) {
+      std::cerr << "Route doesn't have prev_edge\n";
+      return nullptr;
+    }
+    auto second_to_last = graph.GetEdge(*edge_id).from;
+    if (routes_internal_data[second_to_last][to]->prev_edge != edge_id) {
+      std::cerr << "Route prev_edge must be an optimal path\n";
+      return nullptr;
+    }
+    if (visited[from][second_to_last] &&
+        routes_internal_data[from][second_to_last]->weight == -1) {
+      std::cerr << "Cycle detected in route\n";
+      return nullptr;
+    }
+
+    if (visited[from][second_to_last]) {
+      routes_internal_data[from][to]->weight =
+          routes_internal_data[from][second_to_last]->weight +
+              routes_internal_data[second_to_last][to]->weight;
+      visited[from][to] = true;
+      continue;
+    }
+
+    routes_internal_data[from][to]->weight = -1;
+    st.emplace(from, to);
+    st.emplace(from, second_to_last);
+  }
+  return std::make_unique<Router>(graph, routes_internal_data);
+}
+
+template<typename Weight>
+Router<Weight>::Router(const Graph &graph,
+                       RoutesInternalData routes_internal_data)
+    : graph_(graph),
+      routes_internal_data_(std::move(routes_internal_data)) {}
+
+template<typename Weight>
+std::vector<Route> Router<Weight>::Serialize() const {
+  std::vector<Route> routes;
+  for (size_t from = 0; from < routes_internal_data_.size(); ++from) {
+    for (size_t to = 0; to < routes_internal_data_[from].size(); ++to) {
+      auto &data = routes_internal_data_[from][to];
+      if (!data || !data->prev_edge) continue;
+      routes.push_back(Route{
+          .from = from, .to = to, .prev_edge = *data->prev_edge,
+      });
+    }
+  }
+  return routes;
 }
 
 template<typename Weight>
