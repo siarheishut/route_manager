@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "router.proto";
+import "rendering_settings.proto";
+import "transport_database.proto";
+
+package TransportCatalog;
+
+message TransportCatalog {
+  TransportDatabase database = 1;
+  Router router = 2;
+  RenderingSettings rendering_settings = 3;
+}

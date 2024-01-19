@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+import "rendering_settings.proto";
+
+package TransportCatalog;
+
+message RoutingSettings {
+  uint32 bus_wait_time = 1;
+  double bus_velocity = 2;
+}
+
+message Edge {
+  // Stop index in bus route.
+  uint32 from_idx = 1;
+  // Stop index in bus route.
+  uint32 to_idx = 2;
+  // Bus index in TransportDatabase.buses.
+  uint32 bus_id = 3;
+  double weight = 4;
+}
+
+message Route {
+  // Stop index in TransportDatabase.
+  uint32 from = 1;
+  // Stop index in TransportDatabase.
+  uint32 to = 2;
+  // Edge index in Router.edges.
+  uint32 last_edge_id = 3;
+}
+
+message Router {
+  repeated Edge edges = 1;
+  repeated Route routes = 2;
+  RoutingSettings settings = 3;
+}

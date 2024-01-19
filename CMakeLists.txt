@@ -12,6 +12,45 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+set(protobuf_BUILD_TESTS OFF)
+set(ABSL_PROPAGATE_CXX_STD ON)
+FetchContent_Declare(
+        Protobuf
+        GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
+        GIT_TAG v25.0
+)
+FetchContent_MakeAvailable(Protobuf)
+
+FetchContent_GetProperties(Protobuf SOURCE_DIR Protobuf_SOURCE_DIR)
+include(${Protobuf_SOURCE_DIR}/cmake/protobuf-generate.cmake)
+
+include_directories(
+        ${Protobuf_SOURCE_DIR}/src
+        ${Protobuf_SOURCE_DIR}/third_party/abseil-cpp
+)
+
+add_library(protolib
+        OBJECT
+        ${CMAKE_SOURCE_DIR}/proto/transport_catalog.proto
+        ${CMAKE_SOURCE_DIR}/proto/transport_database.proto
+        ${CMAKE_SOURCE_DIR}/proto/rendering_settings.proto
+        ${CMAKE_SOURCE_DIR}/proto/router.proto
+)
+target_link_libraries(protolib PRIVATE libprotobuf)
+
+target_include_directories(
+        protolib PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/proto>
+        $<INSTALL_INTERFACE:include>
+        ${INCLUDE_DIRECTORIES}
+)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto)
+protobuf_generate(
+        TARGET protolib
+        LANGUAGE cpp
+        IMPORT_DIRS ${CMAKE_SOURCE_DIR}/proto
+        PROTOC_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/proto
+)
 FetchContent_Declare(
         svg
         GIT_REPOSITORY https://github.com/siarheishut/svg.git

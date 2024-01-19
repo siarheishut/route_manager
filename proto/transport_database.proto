@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package TransportCatalog;
+
+message Bus {
+  string bus_name = 1;
+  int32 length = 2;
+  // Radio of real road distance and geographical distance.
+  double curvature = 3;
+  // Each point is an index in TransportDatabase.stops.
+  repeated uint32 route = 4;
+  // Key route stops(starting, ending, etc.).
+  // Each point is an index in TransportDatabase.stops.
+  repeated uint32 endpoints = 5;
+}
+
+message Coords {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+message Stop {
+  string stop_name = 1;
+  Coords coords = 2;
+}
+
+message TransportDatabase {
+  repeated Bus buses = 1;
+  repeated Stop stops = 2;
+}
+

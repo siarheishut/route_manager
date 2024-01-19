@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package TransportCatalog;
+
+enum MapLayer {
+  kBusLines = 0;
+  kBusLabels = 1;
+  kStopPoints = 2;
+  kStopLabels = 3;
+};
+
+message Frame {
+  double width = 1;
+  double height = 2;
+  double padding = 3;
+}
+
+message Offset {
+  double x = 1;
+  double y = 2;
+}
+
+message Rgb {
+  uint32 red = 1;
+  uint32 green = 2;
+  uint32 blue = 3;
+}
+
+message Rgba {
+  uint32 red = 1;
+  uint32 green = 2;
+  uint32 blue = 3;
+  double alpha = 4;
+}
+
+message Color {
+  oneof color {
+    Rgb rgb = 1;
+    Rgba rgba = 2;
+    string name = 3;
+  }
+}
+
+message RenderingSettings {
+  Frame frame = 1;
+  double stop_radius = 2;
+  double line_width = 3;
+  int32 stop_label_font_size = 4;
+  // Offset from stop coords to its label.
+  Offset stop_label_offset = 5;
+  Color underlayer_color = 6;
+  double underlayer_width = 7;
+  repeated Color color_palette = 8;
+  int32 bus_label_font_size = 9;
+  // Offset from bus coords to its label.
+  Offset bus_label_offset = 10;
+  repeated MapLayer layers = 11;
+  // Offset from semi-transparent rectangle, covering map, to map edges.
+  double outer_margin = 12;
+}
