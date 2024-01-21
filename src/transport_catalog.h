@@ -10,6 +10,7 @@
 #include "common.h"
 #include "request_types.h"
 #include "sphere.h"
+#include "transport_catalog.pb.h"
 
 namespace rm {
 class TransportCatalog {
@@ -17,12 +18,19 @@ class TransportCatalog {
   static std::unique_ptr<TransportCatalog> Create(
       std::vector<utils::PostRequest> requests);
 
+  static std::unique_ptr<TransportCatalog> Deserialize(
+      const ::TransportCatalog::TransportDatabase &proto_database);
+
+  ::TransportCatalog::TransportDatabase Serialize() const;
+
   const utils::StopDict &Stops() const;
 
   const utils::BusDict &Buses() const;
 
  private:
   explicit TransportCatalog(std::vector<utils::PostRequest> request);
+
+  explicit TransportCatalog(utils::StopDict stops, utils::BusDict buses);
 
   void AddStop(std::string stop, sphere::Coords coords,
                const std::map<std::string, int> &stops);

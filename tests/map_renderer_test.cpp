@@ -92,7 +92,7 @@ const rm::utils::PostStopRequest kClemens =
         .coords = {.latitude = 49.102842, .longitude = 39.845290}};
 
 TEST(TestMapRenderer, TestInitializingValid) {
-  auto catalog = rm::TransportCatalog::Create({});
+  auto catalog = rm::TransportCatalog::Create(std::vector<PostRequest>{});
   ASSERT_TRUE(catalog) << "Valid config";
   auto got =
       rm::MapRenderer::Create(std::move(catalog), kTestRenderingSettings);
@@ -100,7 +100,7 @@ TEST(TestMapRenderer, TestInitializingValid) {
 }
 
 TEST(TestMapRenderer, TestInitializingInvalid) {
-  auto catalog = rm::TransportCatalog::Create({});
+  auto catalog = rm::TransportCatalog::Create(std::vector<PostRequest>{});
   ASSERT_TRUE(catalog) << "Invalid config";
   auto got = [&] {
     auto settings = kTestRenderingSettings;
@@ -565,7 +565,7 @@ TEST(TestMapRenderer, TestRenderRoute) {
   };
 
   for (auto &[name, settings, route_info, want] : test_cases) {
-    auto catalog = TransportCatalog::Create(kTestConfig);
+    auto catalog = rm::TransportCatalog::Create(kTestConfig);
     EXPECT_TRUE(catalog) << name;
     if (!catalog) continue;
 
