@@ -178,8 +178,7 @@ bool operator==(const Frame &lhs, const Frame &rhs) {
 }
 
 bool operator==(const StopInfo &lhs, const StopInfo &rhs) {
-  return std::tie(lhs.dists, lhs.coords, lhs.buses) ==
-      std::tie(rhs.dists, rhs.coords, rhs.buses);
+  return std::tie(lhs.coords, lhs.buses) == std::tie(rhs.coords, rhs.buses);
 }
 
 bool operator==(const BusInfo &lhs, const BusInfo &rhs) {
@@ -323,8 +322,7 @@ ostream &operator<<(ostream &out, const RouteResponse &rr) {
 }
 
 ostream &operator<<(ostream &out, const StopInfo &si) {
-  return out << "Dists: " << si.dists << ". Coords: {" << si.coords
-             << "}. Buses: [" << si.buses << "].";
+  return out << "Coords: {" << si.coords << "}. Buses: [" << si.buses << "].";
 }
 
 ostream &operator<<(ostream &out, const BusInfo &bi) {

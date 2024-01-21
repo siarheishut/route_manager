@@ -90,7 +90,7 @@ TEST(TestBusManager, TestGetBusInfo) {
   };
 
   for (auto &[name, config, routing_settings, requests, want] : test_cases) {
-    auto catalog = TransportCatalog::Create(config);
+    auto catalog = rm::TransportCatalog::Create(config);
     EXPECT_TRUE(catalog) << name;
     if (!catalog) continue;
 
@@ -190,7 +190,7 @@ TEST(TestBusManager, TestGetStopInfo) {
   };
 
   for (auto &[name, config, routing_settings, requests, want] : test_cases) {
-    auto catalog = TransportCatalog::Create(config);
+    auto catalog = rm::TransportCatalog::Create(config);
     EXPECT_TRUE(catalog) << name;
     if (!catalog) continue;
 
@@ -409,7 +409,7 @@ TEST(TestBusManager, TestFindRouteInfo) {
   };
 
   for (auto &[name, config, routing_settings, requests, want] : test_cases) {
-    auto catalog = TransportCatalog::Create(config);
+    auto catalog = rm::TransportCatalog::Create(config);
     EXPECT_TRUE(catalog) << name;
     if (!catalog) continue;
 

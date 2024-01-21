@@ -76,7 +76,7 @@ add_executable(root_manager
         src/transport_catalog.cpp
 )
 
-target_link_libraries(root_manager json graph svg)
+target_link_libraries(root_manager PUBLIC json graph svg PRIVATE protolib)
 target_include_directories(root_manager PUBLIC .)
 # root_manager config end
 
@@ -103,7 +103,9 @@ add_executable(route_manager_tests
         tests/transport_catalog_test.cpp
 )
 
-target_link_libraries(route_manager_tests GTest::gtest_main GTest::gmock_main json graph svg)
+target_link_libraries(route_manager_tests
+        PUBLIC GTest::gtest_main GTest::gmock_main json graph svg
+        PRIVATE protolib)
 target_include_directories(route_manager_tests PUBLIC . tests)
 gtest_discover_tests(route_manager_tests)
 # tests end

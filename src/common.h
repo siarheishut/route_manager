@@ -18,6 +18,7 @@ struct Route {
 };
 
 struct StopInfo {
+  // TODO: remove.
   using Dists = std::unordered_map<std::string, int>;
   // Distances to other stops.
   Dists dists;
