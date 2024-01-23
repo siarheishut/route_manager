@@ -12,6 +12,7 @@
 #include "svg/common.h"
 
 #include "sphere.h"
+#include "rendering_settings.pb.h"
 
 namespace rm::utils {
 struct RoutingSettings {
@@ -31,6 +32,10 @@ enum class MapLayer {
 struct Frame { double width, height, padding; };
 
 struct RenderingSettings {
+  void Deserialize(const ::TransportCatalog::RenderingSettings &proto_settings);
+
+  ::TransportCatalog::RenderingSettings Serialize() const;
+
   Frame frame;
   double stop_radius;
   double line_width;

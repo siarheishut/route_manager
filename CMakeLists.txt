@@ -67,6 +67,7 @@ add_executable(root_manager
         src/bus_manager.cpp
         src/request_processor.cpp
         src/request_parser.cpp
+        src/request_types.cpp
         src/distance_computer.cpp
         src/sphere.cpp
         src/route_manager.cpp
@@ -91,11 +92,13 @@ add_executable(route_manager_tests
         src/color_parser.cpp
         src/coords_converter.cpp
         src/map_renderer.cpp
+        src/request_types.cpp
         src/transport_catalog.cpp
         tests/request_parser_test.cpp
         tests/bus_manager_test.cpp
         tests/test_utils.cpp
         tests/request_processor_test.cpp
+        tests/rendering_settings_test.cpp
         tests/settings_parser_test.cpp
         tests/color_parser_test.cpp
         tests/map_renderer_test.cpp
