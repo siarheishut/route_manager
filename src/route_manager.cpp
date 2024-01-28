@@ -8,34 +8,56 @@
 #include "common.h"
 #include "distance_computer.h"
 #include "request_types.h"
+#include "route_manager_utils.h"
 
 using namespace rm::utils;
 
-namespace rm {
+namespace {
+using namespace rm::route_manager;
+bool IsArrive(size_t vertex) {
+  return (vertex % 2 == 0);
+}
+
+bool IsDepart(size_t vertex) {
+  return (vertex % 2 == 1);
+}
+
+size_t ToStopId(size_t vertex) {
+  return vertex / 2;
+}
+
+size_t ToArrive(size_t stop_id) {
+  return stop_id * 2;
+}
+
+size_t ToDepart(size_t stop_id) {
+  return stop_id * 2 + 1;
+}
+}
+
+namespace rm::route_manager {
 RouteManager::RouteManager(const StopDict &stop_info,
                            const BusDict &bus_info,
                            const RoutingSettings &routing_settings)
     : settings_(routing_settings),
       graph_(stop_info.size() * 2),
-      vertices_(stop_info.size() * 2) {
+      stop_names_(stop_info.size()) {
   ReadStops(stop_info);
   ReadBuses(bus_info, stop_info);
   router_ = std::make_unique<Router>(graph_);
 }
 
 void RouteManager::ReadStops(const StopDict &stop_dict) {
-  int vertex_id = 0;
+  size_t stop_id = 0;
   for (auto &[stop, _] : stop_dict) {
-    auto &[arrive, depart] = stop_ids_[stop];
-    arrive = vertex_id++;
-    depart = vertex_id++;
-    vertices_[arrive] = Vertex{stop};
-    vertices_[depart] = Vertex{stop};
+    stop_ids_[stop] = stop_id;
+    stop_names_[stop_id] = stop;
     graph_.AddEdge({
-                       .from = arrive,
-                       .to = depart,
+                       .from = ToArrive(stop_id),
+                       .to = ToDepart(stop_id),
                        .weight = static_cast<double>(settings_.bus_wait_time)});
     edges_.emplace_back(WaitEdge{});
+    stop_id++;
   }
 }
 
@@ -45,7 +67,7 @@ void RouteManager::ReadBuses(const BusDict &bus_dict,
     auto &route = bus_info.stops;
     int stop_count = route.size();
     for (int from = 0; from + 1 < stop_count; ++from) {
-      const auto depart = stop_ids_[route[from]].depart;
+      const auto depart = ToDepart(stop_ids_[route[from]]);
       double distance = 0.0;
       for (int to = from + 1; to < stop_count; ++to) {
         distance += ComputeRoadDistance({route[to - 1], route[to]}, stop_dict);
@@ -53,7 +75,7 @@ void RouteManager::ReadBuses(const BusDict &bus_dict,
             .bus = bus,
             .start_idx = from,
             .span_count = to - from});
-        const auto arrive = stop_ids_[route[to]].arrive;
+        const auto arrive = ToArrive(stop_ids_[route[to]]);
         graph_.AddEdge(
             {
                 .from = depart,
@@ -72,8 +94,8 @@ std::optional<RouteInfo> RouteManager::FindRoute(const std::string &from,
   if (it_from == stop_ids_.end() || it_to == stop_ids_.end())
     return std::nullopt;
 
-  auto vertex_from = it_from->second.arrive;
-  auto vertex_to = it_to->second.arrive;
+  auto vertex_from = ToArrive(it_from->second);
+  auto vertex_to = ToArrive(it_to->second);
   auto route = router_->BuildRoute(vertex_from, vertex_to);
   if (!route) return std::nullopt;
 
@@ -92,7 +114,7 @@ std::optional<RouteInfo> RouteManager::FindRoute(const std::string &from,
           .span_count = ptr_r->span_count});
     } else if (std::holds_alternative<WaitEdge>(edges_[edge_id])) {
       route_info.items.emplace_back(RouteInfo::WaitItem{
-          .stop = vertices_[edge.from],
+          .stop = stop_names_[ToStopId(edge.from)],
           .time = static_cast<int>(edge.weight)});
     }
   }

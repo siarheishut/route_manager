@@ -28,7 +28,7 @@ class BusManager {
 
  private:
   std::shared_ptr<TransportCatalog> transport_catalog_;
-  std::unique_ptr<RouteManager> route_manager_;
+  std::unique_ptr<route_manager::RouteManager> route_manager_;
 };
 }
 

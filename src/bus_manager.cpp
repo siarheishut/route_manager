@@ -31,9 +31,9 @@ BusManager::BusManager(std::shared_ptr<TransportCatalog> transport_catalog,
     : transport_catalog_(transport_catalog) {
 
   route_manager_ =
-      std::make_unique<RouteManager>(transport_catalog_->Stops(),
-                                     transport_catalog_->Buses(),
-                                     routing_settings);
+      std::make_unique<route_manager::RouteManager>(transport_catalog_->Stops(),
+                                                    transport_catalog_->Buses(),
+                                                    routing_settings);
 }
 
 std::optional<BusResponse> BusManager::GetBusInfo(const std::string &bus) const {
