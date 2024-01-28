@@ -12,13 +12,10 @@
 
 #include "common.h"
 #include "request_types.h"
+#include "route_manager_utils.h"
 
 namespace rm {
 class RouteManager {
- private:
-  using Graph = graph::DirectedWeightedGraph<double>;
-  using Router = graph::Router<double>;
-
  public:
   RouteManager(const rm::utils::StopDict &stop_info,
                const rm::utils::BusDict &bus_info,
@@ -32,27 +29,12 @@ class RouteManager {
   void ReadBuses(const rm::utils::BusDict &stop_dict,
                  const rm::utils::StopDict &bus_dict);
 
-  struct StopIds {
-    graph::VertexId arrive;
-    graph::VertexId depart;
-  };
-
-  struct RoadEdge {
-    std::string bus;
-    int start_idx;
-    int span_count;
-  };
-  struct WaitEdge {};
-
-  using Edge = std::variant<RoadEdge, WaitEdge>;
-  using Vertex = std::string;
-
-  std::unique_ptr<Router> router_;
-  Graph graph_;
+  std::unique_ptr<route_manager::Router> router_;
+  route_manager::Graph graph_;
   rm::utils::RoutingSettings settings_;
-  std::vector<Edge> edges_;
-  std::vector<Vertex> vertices_;
-  std::unordered_map<std::string, StopIds> stop_ids_;
+  std::vector<route_manager::Edge> edges_;
+  std::vector<std::string> stop_names_;
+  std::unordered_map<std::string, size_t> stop_ids_;
 };
 }
 
