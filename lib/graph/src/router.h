@@ -208,7 +208,7 @@ std::unique_ptr<Router<Weight>> Router<Weight>::Deserialize(
     st.emplace(from, to);
     st.emplace(from, second_to_last);
   }
-  return std::make_unique<Router>(graph, routes_internal_data);
+  return std::unique_ptr<Router>(new Router(graph, routes_internal_data));
 }
 
 template<typename Weight>
