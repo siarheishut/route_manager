@@ -31,6 +31,7 @@ class Processor {
 
  private:
   Processor(std::shared_ptr<TransportCatalog> catalog,
+            std::shared_ptr<RouteManager> route_manager,
             std::unique_ptr<BusManager> bus_manager,
             std::unique_ptr<MapRenderer> map_renderer);
 
@@ -40,6 +41,7 @@ class Processor {
   json::Dict Process(const utils::GetMapRequest &request) const;
 
   std::shared_ptr<TransportCatalog> catalog_;
+  std::shared_ptr<RouteManager> route_manager_;
   std::unique_ptr<BusManager> bus_manager_;
   std::unique_ptr<MapRenderer> map_renderer_;
 };

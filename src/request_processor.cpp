@@ -114,13 +114,19 @@ std::unique_ptr<Processor> Processor::Create(
       TransportCatalog::Create(requests);
   if (!catalog) return nullptr;
 
-  auto bus_manager = std::make_unique<BusManager>(catalog, routing_settings);
+  auto route_manager = std::make_shared<RouteManager>(catalog->Stops(),
+                                                      catalog->Buses(),
+                                                      routing_settings);
+
+  auto bus_manager = std::make_unique<BusManager>(catalog,
+                                                  route_manager);
 
   auto [buses, stops] = MapRendererParams(requests);
   auto map_renderer = MapRenderer::Create(catalog, rendering_settings);
   if (!map_renderer) return nullptr;
 
   return std::unique_ptr<Processor>(new Processor(std::move(catalog),
+                                                  std::move(route_manager),
                                                   std::move(bus_manager),
                                                   std::move(map_renderer)));
 }
@@ -138,9 +144,11 @@ json::List Processor::Process(const std::vector<GetRequest> &requests) const {
 }
 
 Processor::Processor(std::shared_ptr<TransportCatalog> catalog,
+                     std::shared_ptr<RouteManager> route_manager,
                      std::unique_ptr<BusManager> bus_manager,
                      std::unique_ptr<MapRenderer> map_renderer)
     : catalog_(std::move(catalog)),
+      route_manager_(std::move(route_manager)),
       bus_manager_(std::move(bus_manager)),
       map_renderer_(std::move(map_renderer)) {}
 

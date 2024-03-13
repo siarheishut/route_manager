@@ -27,13 +27,9 @@ int ComputeUniqueCount(std::vector<std::string> stops) {
 
 namespace rm {
 BusManager::BusManager(std::shared_ptr<TransportCatalog> transport_catalog,
-                       const RoutingSettings &routing_settings)
-    : transport_catalog_(transport_catalog) {
-
-  route_manager_ =
-      std::make_unique<RouteManager>(transport_catalog_->Stops(),
-                                     transport_catalog_->Buses(),
-                                     routing_settings);
+                       std::shared_ptr<RouteManager> route_manager)
+    : transport_catalog_(std::move(transport_catalog)),
+      route_manager_(std::move(route_manager)) {
 }
 
 std::optional<BusResponse> BusManager::GetBusInfo(const std::string &bus) const {
