@@ -22,6 +22,9 @@ json::Dict ToJson(utils::MapResponse resp, int id);
 
 class Processor {
  public:
+  static std::unique_ptr<Processor> Deserialize(
+      const ::TransportCatalog::TransportCatalog &proto_catalog);
+
   static std::unique_ptr<Processor> Create(
       std::vector<utils::PostRequest> requests,
       const utils::RoutingSettings &routing_settings,
@@ -29,11 +32,14 @@ class Processor {
 
   json::List Process(const std::vector<utils::GetRequest> &requests) const;
 
+  ::TransportCatalog::TransportCatalog Serialize() const;
+
  private:
   Processor(std::shared_ptr<TransportCatalog> catalog,
             std::shared_ptr<RouteManager> route_manager,
             std::unique_ptr<BusManager> bus_manager,
-            std::unique_ptr<MapRenderer> map_renderer);
+            std::unique_ptr<MapRenderer> map_renderer,
+            utils::RenderingSettings rendering_settings);
 
   json::Dict Process(const utils::GetBusRequest &request) const;
   json::Dict Process(const utils::GetStopRequest &request) const;
@@ -44,6 +50,7 @@ class Processor {
   std::shared_ptr<RouteManager> route_manager_;
   std::unique_ptr<BusManager> bus_manager_;
   std::unique_ptr<MapRenderer> map_renderer_;
+  rm::utils::RenderingSettings rendering_settings_;
 };
 }
 
