@@ -11,6 +11,37 @@
 
 using namespace rm::utils;
 
+TEST(TestParseSettings, TestSerializationSettings) {
+  struct TestCase {
+    std::string name;
+    json::Dict input;
+    std::optional<SerializationSettings> want;
+  };
+
+  std::vector<TestCase> test_cases{
+      TestCase{
+          .name = "Wrong request: no <file>",
+          .input = json::Dict{{"fil3", "some_path"}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Wrong request: <file> isn't string",
+          .input = json::Dict{{"file", 3}},
+          .want = std::nullopt,
+      },
+      TestCase{
+          .name = "Valid settings",
+          .input = json::Dict{{"file", "some_path"}},
+          .want = SerializationSettings{"some_path"},
+      },
+  };
+
+  for (auto &[name, input, want] : test_cases) {
+    auto got = rm::ParseSerializationSettings(input);
+    EXPECT_EQ(want, got) << name;
+  }
+}
+
 TEST(TestParseSettings, TestRoutingSettings) {
   using namespace rm;
 
