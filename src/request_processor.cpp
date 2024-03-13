@@ -106,6 +106,39 @@ json::Dict ToJson(MapResponse resp, int id) {
   return json::Dict{{"request_id", id}, {"map", resp.map}};
 }
 
+std::unique_ptr<Processor> Processor::Deserialize(
+    const ::TransportCatalog::TransportCatalog &proto_catalog) {
+  auto catalog = std::shared_ptr(
+      rm::TransportCatalog::Deserialize(proto_catalog.database()));
+  if (!catalog) {
+    return nullptr;
+  }
+
+  auto route_manager = std::shared_ptr(
+      rm::RouteManager::Deserialize(proto_catalog, catalog));
+  if (!route_manager) {
+    return nullptr;
+  }
+
+  auto bus_manager = std::make_unique<BusManager>(catalog, route_manager);
+  if (!bus_manager) {
+    return nullptr;
+  }
+  RenderingSettings rendering_settings;
+  rendering_settings.Deserialize(proto_catalog.rendering_settings());
+  auto map_renderer = rm::MapRenderer::Create(catalog, rendering_settings);
+  if (!map_renderer) {
+    return nullptr;
+  }
+
+  return std::unique_ptr<Processor>(
+      new Processor(std::move(catalog),
+                    std::move(route_manager),
+                    std::move(bus_manager),
+                    std::move(map_renderer),
+                    std::move(rendering_settings)));
+}
+
 std::unique_ptr<Processor> Processor::Create(
     std::vector<PostRequest> requests,
     const RoutingSettings &routing_settings,
@@ -128,7 +161,8 @@ std::unique_ptr<Processor> Processor::Create(
   return std::unique_ptr<Processor>(new Processor(std::move(catalog),
                                                   std::move(route_manager),
                                                   std::move(bus_manager),
-                                                  std::move(map_renderer)));
+                                                  std::move(map_renderer),
+                                                  rendering_settings));
 }
 
 json::List Processor::Process(const std::vector<GetRequest> &requests) const {
@@ -143,14 +177,26 @@ json::List Processor::Process(const std::vector<GetRequest> &requests) const {
   return responses;
 }
 
+::TransportCatalog::TransportCatalog Processor::Serialize() const {
+  ::TransportCatalog::TransportCatalog proto_catalog;
+  *(proto_catalog.mutable_rendering_settings()) =
+      rendering_settings_.Serialize();
+  *(proto_catalog.mutable_database()) = catalog_->Serialize();
+  *(proto_catalog.mutable_router()) =
+      route_manager_->Serialize(proto_catalog.database());
+  return proto_catalog;
+}
+
 Processor::Processor(std::shared_ptr<TransportCatalog> catalog,
                      std::shared_ptr<RouteManager> route_manager,
                      std::unique_ptr<BusManager> bus_manager,
-                     std::unique_ptr<MapRenderer> map_renderer)
+                     std::unique_ptr<MapRenderer> map_renderer,
+                     utils::RenderingSettings rendering_settings)
     : catalog_(std::move(catalog)),
       route_manager_(std::move(route_manager)),
       bus_manager_(std::move(bus_manager)),
-      map_renderer_(std::move(map_renderer)) {}
+      map_renderer_(std::move(map_renderer)),
+      rendering_settings_(std::move(rendering_settings)) {}
 
 json::Dict Processor::Process(const GetBusRequest &request) const {
   return ToJson(bus_manager_->GetBusInfo(request.bus), request.id);
