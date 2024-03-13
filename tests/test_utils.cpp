@@ -193,6 +193,11 @@ bool operator==(const BusInfo &lhs, const BusInfo &rhs) {
   );
 }
 
+bool operator==(const SerializationSettings &lhs,
+                const SerializationSettings &rhs) {
+  return lhs.file_name == rhs.file_name;
+}
+
 bool operator!=(const BusInfo &lhs, const BusInfo &rhs) {
   return !(lhs == rhs);
 }
@@ -251,6 +256,11 @@ bool operator!=(const RouteResponse::RoadItem &lhs,
 }
 
 bool operator!=(const RouteResponse &lhs, const RouteResponse &rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator!=(const SerializationSettings &lhs,
+                const SerializationSettings &rhs) {
   return !(lhs == rhs);
 }
 
@@ -329,5 +339,9 @@ ostream &operator<<(ostream &out, const BusInfo &bi) {
   return out << "Stops: [" << bi.stops << "]. Endpoints: [" << bi.endpoints <<
              "]. Unique_count: " << bi.unique_stop_count << ". Distance: " <<
              bi.distance << ". Curvature: " << bi.curvature << '.';
+}
+
+std::ostream &operator<<(std::ostream &out, const SerializationSettings &bi) {
+  return out << "File_nam: \"" << bi.file_name << "\"\n";
 }
 }

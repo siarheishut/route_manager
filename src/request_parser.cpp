@@ -68,6 +68,15 @@ std::vector<MapLayer> AsLayers(const json::Node &node) {
 }
 
 namespace rm {
+std::optional<SerializationSettings> ParseSerializationSettings(
+    json::Dict settings) {
+  if (auto it = settings.find("file"); it != settings.end() &&
+      it->second.IsString()) {
+    return SerializationSettings{.file_name = it->second.AsString()};
+  }
+  return std::nullopt;
+}
+
 std::optional<RoutingSettings> ParseRoutingSettings(json::Dict settings) {
   auto bus_wait_time = settings.find("bus_wait_time");
   auto bus_velocity = settings.find("bus_velocity");

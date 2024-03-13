@@ -15,6 +15,10 @@
 #include "rendering_settings.pb.h"
 
 namespace rm::utils {
+struct SerializationSettings {
+  std::string file_name;
+};
+
 struct RoutingSettings {
   // measured in minutes.
   int bus_wait_time;

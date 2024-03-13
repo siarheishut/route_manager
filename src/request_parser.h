@@ -10,6 +10,9 @@
 #include "request_types.h"
 
 namespace rm {
+std::optional<utils::SerializationSettings> ParseSerializationSettings(
+    json::Dict settings);
+
 std::optional<utils::RoutingSettings> ParseRoutingSettings(json::Dict settings);
 std::optional<utils::RenderingSettings> ParseRenderingSettings(
     json::Dict settings);

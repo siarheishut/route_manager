@@ -110,6 +110,12 @@ bool operator==(const RouteResponse &lhs, const RouteResponse &rhs);
 
 bool operator!=(const RouteResponse &lhs, const RouteResponse &rhs);
 
+bool operator==(const SerializationSettings &lhs,
+                const SerializationSettings &rhs);
+
+bool operator!=(const SerializationSettings &lhs,
+                const SerializationSettings &rhs);
+
 template<typename T>
 std::ostream &operator<<(std::ostream &out, const std::vector<T> &str_v) {
   for (auto &item : str_v)
@@ -166,6 +172,8 @@ std::ostream &operator<<(std::ostream &out, const RouteResponse &rr);
 std::ostream &operator<<(std::ostream &out, const StopInfo &si);
 
 std::ostream &operator<<(std::ostream &out, const BusInfo &bi);
+
+std::ostream &operator<<(std::ostream &out, const SerializationSettings &bi);
 }
 
 #endif // ROOT_MANAGER_TESTS_TEST_UTILS_H_
