@@ -17,7 +17,7 @@ namespace rm {
 class BusManager {
  public:
   explicit BusManager(std::shared_ptr<TransportCatalog> transport_catalog,
-                      const utils::RoutingSettings &routing_setting);
+                      std::shared_ptr<RouteManager> route_manager);
 
   std::optional<utils::BusResponse> GetBusInfo(const std::string &bus) const;
 
@@ -28,7 +28,7 @@ class BusManager {
 
  private:
   std::shared_ptr<TransportCatalog> transport_catalog_;
-  std::unique_ptr<RouteManager> route_manager_;
+  std::shared_ptr<RouteManager> route_manager_;
 };
 }
 

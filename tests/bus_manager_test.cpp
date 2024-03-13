@@ -94,7 +94,10 @@ TEST(TestBusManager, TestGetBusInfo) {
     EXPECT_TRUE(catalog) << name;
     if (!catalog) continue;
 
-    auto bm = BusManager(std::move(catalog), routing_settings);
+    auto route_manager = std::make_shared<rm::RouteManager>(catalog->Stops(),
+                                                            catalog->Buses(),
+                                                            routing_settings);
+    auto bm = BusManager(std::move(catalog), std::move(route_manager));
 
     for (int i = 0; i < requests.size(); ++i) {
       auto got = bm.GetBusInfo(requests[i].bus);
@@ -194,7 +197,10 @@ TEST(TestBusManager, TestGetStopInfo) {
     EXPECT_TRUE(catalog) << name;
     if (!catalog) continue;
 
-    auto bm = BusManager(std::move(catalog), routing_settings);
+    auto route_manager = std::make_shared<rm::RouteManager>(catalog->Stops(),
+                                                            catalog->Buses(),
+                                                            routing_settings);
+    auto bm = BusManager(std::move(catalog), std::move(route_manager));
 
     for (int i = 0; i < requests.size(); ++i) {
       auto got = bm.GetStopInfo(requests[i].stop);
@@ -413,7 +419,10 @@ TEST(TestBusManager, TestFindRouteInfo) {
     EXPECT_TRUE(catalog) << name;
     if (!catalog) continue;
 
-    auto bm = BusManager(std::move(catalog), routing_settings);
+    auto route_manager = std::make_shared<rm::RouteManager>(catalog->Stops(),
+                                                            catalog->Buses(),
+                                                            routing_settings);
+    auto bm = BusManager(std::move(catalog), std::move(route_manager));
 
     for (int i = 0; i < requests.size(); ++i) {
       auto got = bm.GetRoute(requests[i].from, requests[i].to);
