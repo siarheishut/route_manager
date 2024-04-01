@@ -147,8 +147,7 @@ std::unique_ptr<Processor> Processor::Create(
       TransportCatalog::Create(requests);
   if (!catalog) return nullptr;
 
-  auto route_manager = std::make_shared<RouteManager>(catalog->Stops(),
-                                                      catalog->Buses(),
+  auto route_manager = std::make_shared<RouteManager>(catalog,
                                                       routing_settings);
 
   auto bus_manager = std::make_unique<BusManager>(catalog,

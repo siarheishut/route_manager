@@ -37,7 +37,6 @@ class RouteManager {
 
  private:
   struct Params {
-    std::shared_ptr<rm::TransportCatalog> catalog;
     std::unique_ptr<graph::Router<double>> router;
     graph::DirectedWeightedGraph<double> graph;
     rm::utils::RoutingSettings settings;
@@ -52,7 +51,6 @@ class RouteManager {
   void ReadBuses(const rm::utils::BusDict &stop_dict,
                  const rm::utils::StopDict &bus_dict);
 
-  std::shared_ptr<TransportCatalog> catalog_;
   std::unique_ptr<route_manager::Router> router_;
   route_manager::Graph graph_;
   rm::utils::RoutingSettings settings_;

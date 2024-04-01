@@ -83,7 +83,7 @@ struct GraphBuilder {
   int bus_wait_time;
 
   vector<rm::route_manager::Edge> BuildEdges() const {
-    vector<rm::route_manager::Edge> edges(router.edges_size());
+    vector<rm::route_manager::Edge> edges;
     for (int i = 0; i < stop_ids.size(); ++i) {
       edges.emplace_back(WaitEdge{});
     }
@@ -146,12 +146,11 @@ vector<::TransportCatalog::Edge> ProtoEdges(
     auto &edge = get<RoadEdge>(edges[i]);
     auto &graph_edge = graph.GetEdge(i);
 
-    ::TransportCatalog::Edge proto_edge;
+    auto &proto_edge = result.emplace_back();
     proto_edge.set_weight(graph_edge.weight);
     proto_edge.set_from_idx(edge.start_idx);
     proto_edge.set_to_idx(edge.start_idx + edge.span_count);
     proto_edge.set_bus_id(bus_indices.at(edge.bus));
-    result.push_back(std::move(proto_edge));
   }
   return result;
 }
@@ -234,12 +233,12 @@ RouteManager::RouteManager(const StopDict &stop_info,
   for (auto &proto_edge : ProtoEdges(graph_,
                                      edges_,
                                      BusIndices(proto_db.buses()))) {
-    *proto_router.add_edges() = std::move(proto_edge);
+    *proto_router.add_edges() = proto_edge;
   }
 
-  auto proto_edge_ids = EdgeIdToProtoEdgeId(edges_, catalog_->Stops().size());
+  auto proto_edge_ids = EdgeIdToProtoEdgeId(edges_, stop_names_.size());
   for (auto &route : ProtoRoutes(*router_, std::move(proto_edge_ids))) {
-    *proto_router.add_routes() = std::move(route);
+    *proto_router.add_routes() = route;
   }
 
   return proto_router;
@@ -256,20 +255,21 @@ unique_ptr<RouteManager> RouteManager::Deserialize(
       !ValidateEdges(proto_db, proto_router))
     return nullptr;
 
-  Graph graph{0};
   utils::RoutingSettings settings{
       static_cast<int>(proto_router.settings().bus_wait_time()),
       proto_router.settings().bus_velocity()};
+  Graph graph{0};
   vector<Edge> edges;
   vector<string> stop_names(stops.size());
-  unordered_map<string, size_t> stop_ids;
 
+  unordered_map<string, size_t> stop_ids;
   int stop_id = 0;
   for (auto &[stop, _] : stops) {
     stop_ids[stop] = stop_id;
     stop_names[stop_id] = stop;
     ++stop_id;
   }
+
   GraphBuilder
       graph_builder{proto_db, proto_router, stop_ids, settings.bus_wait_time};
   graph = graph_builder.BuildGraph();
@@ -283,13 +283,12 @@ unique_ptr<RouteManager> RouteManager::Deserialize(
   if (!router) return nullptr;
 
   return unique_ptr<RouteManager>(new RouteManager(Params{
-      std::move(catalog), std::move(router), std::move(graph),
-      settings, std::move(edges), std::move(stop_names), std::move(stop_ids)}));
+      std::move(router), std::move(graph), settings,
+      std::move(edges), std::move(stop_names), std::move(stop_ids)}));
 }
 
 RouteManager::RouteManager(Params config)
-    : catalog_(std::move(config.catalog)),
-      graph_(std::move(config.graph)),
+    : graph_(std::move(config.graph)),
       router_(std::move(config.router)),
       settings_(config.settings),
       edges_(std::move(config.edges)),

@@ -157,6 +157,10 @@ std::unique_ptr<Router<Weight>> Router<Weight>::Deserialize(
     }
   }
 
+//  for (auto &[from, to, prev_edge] : routes) {
+//    std::cout << '{' << from << ", " << to << "}: prev – " << prev_edge << '\n';
+//  }
+
   std::stack<std::pair<VertexId, VertexId>> st;
   for (auto [from, to, _] : routes) {
     st.emplace(from, to);
@@ -168,8 +172,27 @@ std::unique_ptr<Router<Weight>> Router<Weight>::Deserialize(
     visited[i][i] = true;
   }
 
+//  for (int i = 0; i < routes_internal_data.size(); ++i) {
+//    for (int j = 0; j < routes_internal_data[i].size(); ++j) {
+//      auto &smth = routes_internal_data[i][j];
+//      if (smth) {
+//        std::cout << '{' << i << "; " << j << '}' << ": Weight = " <<
+//                  smth->weight << ". Prev_edge = ";
+//        if (smth->prev_edge) {
+//          std::cout << *smth->prev_edge;
+//        } else {
+//          std::cout << "X";
+//        }
+//        std::cout << '\n';
+//      } else {
+//        std::cout << '{' << i << "; " << j << '}' << ": WTF\n";
+//      }
+//    }
+//  }
+
   while (!st.empty()) {
     auto [from, to] = st.top();
+//    std::cout << "{" << from << ", " << to << "}\n";
     st.pop();
 
     if (visited[from][to] &&
@@ -177,7 +200,7 @@ std::unique_ptr<Router<Weight>> Router<Weight>::Deserialize(
       continue;
 
     if (!routes_internal_data[from][to]) {
-      std::cerr << "Subroute from-to doesn't exist\n";
+      std::cerr << "Subroute " << from << '-' << to << " doesn't exist\n";
       return nullptr;
     }
     auto &edge_id = routes_internal_data[from][to]->prev_edge;
